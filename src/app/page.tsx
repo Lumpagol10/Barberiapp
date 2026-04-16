@@ -27,31 +27,45 @@ export default function Home() {
     const initApp = async () => {
       setFetchingSlots(true)
       try {
-        // Ejecutar peticiones en paralelo para máxima velocidad
+        // Ejecutar peticiones en paralelo para máxima velocidad.
+        // Si fallan, el catch se encargará de los fallbacks.
         const [configRes, turnsRes] = await Promise.all([
           supabase.from('configuracion_barberia').select('*').single(),
           supabase.from('turnos').select('hora').eq('fecha', fecha)
         ])
 
+        // 1. Procesar Configuración (o usar Fallbacks)
+        let finalConfig = { apertura: '09:00', cierre: '20:00', intervalo: 15 }
+        
         if (configRes.data) {
           const c = configRes.data
-          const newConfig = {
+          finalConfig = {
             apertura: c.hora_apertura,
             cierre: c.hora_cierre,
             intervalo: c.intervalo_minutos
           }
-          setConfig(newConfig)
-          setConfigLoaded(true)
-          
-          // Generar slots inmediatamente con la nueva config
-          generateSlots(c.hora_apertura, c.hora_cierre, c.intervalo_minutos)
         }
+        
+        // Seteamos la config (ya sea la de la DB o el Fallback)
+        setConfig(finalConfig)
+        setConfigLoaded(true)
+        
+        // Generar slots inmediatamente
+        generateSlots(finalConfig.apertura, finalConfig.cierre, finalConfig.intervalo)
 
+        // 2. Procesar Turnos Ocupados
         const booked = turnsRes.data?.map(t => t.hora.substring(0, 5)) || []
         setBookedSlots(booked)
+
       } catch (error) {
-        console.error('Error en carga inicial:', error)
+        console.error('Error en carga inicial, usando valores por defecto:', error)
+        // Fallback crítico: Generar slots con config estándar si todo falla
+        const fallback = { apertura: '09:00', cierre: '20:00', intervalo: 15 }
+        setConfig(fallback)
+        setConfigLoaded(true)
+        generateSlots(fallback.apertura, fallback.cierre, fallback.intervalo)
       } finally {
+        // Garantizar que la pantalla nunca se quede trabada
         setFetchingSlots(false)
       }
     }
