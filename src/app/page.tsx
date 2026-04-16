@@ -19,7 +19,12 @@ export default function Home() {
   // Availability States
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
-  const [config, setConfig] = useState({ apertura: '09:00', cierre: '20:00', intervalo: 15 })
+  const [config, setConfig] = useState({ 
+    apertura: '09:00', 
+    cierre: '20:00', 
+    intervalo: 15,
+    telefonoBarbero: '' 
+  })
 
   // Carga inicial: Solo Configuración (Background)
   useEffect(() => {
@@ -30,7 +35,8 @@ export default function Home() {
           setConfig({
             apertura: data.hora_apertura,
             cierre: data.hora_cierre,
-            intervalo: data.intervalo_minutos
+            intervalo: data.intervalo_minutos,
+            telefonoBarbero: data.telefono_barbero || ''
           })
         }
       } catch (error) {
@@ -45,7 +51,6 @@ export default function Home() {
     setShowSlots(true)
     
     // GENERACIÓN INSTANTÁNEA: Usamos los valores actuales (o defaults)
-    // No esperamos a la base de datos para mostrar los botones.
     generateSlots(config.apertura, config.cierre, config.intervalo)
     
     // Sincronización en Background: Solo buscamos los ocupados
@@ -53,7 +58,6 @@ export default function Home() {
   }
 
   const fetchBookedTurns = async (date: string) => {
-    // Nota: Ya no activamos fetchingSlots para el panel entero
     try {
       const { data } = await supabase
         .from('turnos')
@@ -112,30 +116,61 @@ export default function Home() {
     }
   }
 
+  const getWhatsAppLink = () => {
+    if (!config.telefonoBarbero) return null
+    
+    const mensaje = encodeURIComponent(
+      `Hola! Soy ${nombre}, acabo de reservar un turno para el ${fecha} a las ${horaSeleccionada}hs desde la web. ¿Me lo confirmas?`
+    )
+    return `https://wa.me/${config.telefonoBarbero}?text=${mensaje}`
+  }
+
   if (submitted) {
+    const waLink = getWhatsAppLink()
+
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 p-8 rounded-3xl text-center space-y-6 animate-in fade-in zoom-in duration-500">
+        <div className="max-w-md w-full bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 p-8 rounded-3xl text-center space-y-6 animate-in fade-in zoom-in duration-500 shadow-2xl">
           <div className="flex justify-center">
             <CheckCircle2 className="w-20 h-20 text-amber-500 animate-bounce" />
           </div>
-          <h2 className="text-3xl font-bold text-white">¡Turno Reservado!</h2>
-          <p className="text-zinc-400 text-lg">
-            Gracias <span className="text-white font-medium">{nombre}</span>. Tu turno para el <span className="text-amber-500 font-semibold">{fecha}</span> a las <span className="text-amber-500 font-semibold">{horaSeleccionada}hs</span> ha sido confirmado.
-          </p>
-          <button
-            onClick={() => {
-              setSubmitted(false)
-              setNombre('')
-              setTelefono('')
-              setFecha('')
-              setHoraSeleccionada('')
-              setShowSlots(false)
-            }}
-            className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-900/20"
-          >
-            Nueva Reserva
-          </button>
+          <h2 className="text-3xl font-bold text-white tracking-tight">¡Turno Reservado!</h2>
+          <div className="space-y-2">
+            <p className="text-zinc-400 text-lg">
+              Gracias <span className="text-white font-medium">{nombre}</span>. Tu turno para el <span className="text-amber-500 font-semibold">{fecha}</span> a las <span className="text-amber-500 font-semibold">{horaSeleccionada}hs</span> ha sido registrado.
+            </p>
+            <p className="text-amber-500/80 text-sm font-medium italic animate-pulse">
+              Paso final: Envía el WhatsApp para confirmar tu lugar.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-4">
+            {waLink && (
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-3 w-full py-5 bg-[#25D366] hover:bg-[#128C7E] text-white font-black text-lg rounded-2xl transition-all transform active:scale-[0.98] shadow-xl shadow-green-900/20"
+              >
+                <Phone className="w-6 h-6 fill-current" />
+                CONFIRMAR POR WHATSAPP
+              </a>
+            )}
+
+            <button
+              onClick={() => {
+                setSubmitted(false)
+                setNombre('')
+                setTelefono('')
+                setFecha('')
+                setHoraSeleccionada('')
+                setShowSlots(false)
+              }}
+              className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-all"
+            >
+              Nueva Reserva
+            </button>
+          </div>
         </div>
       </div>
     )

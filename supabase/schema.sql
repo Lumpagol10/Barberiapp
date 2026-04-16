@@ -25,12 +25,13 @@ create table configuracion_barberia (
   hora_apertura time not null default '09:00',
   hora_cierre time not null default '20:00',
   intervalo_minutos int not null default 15,
+  telefono_barbero text,
   created_at timestamptz default now()
 );
 
--- Insertar configuración inicial (15 minutos)
-insert into configuracion_barberia (hora_apertura, hora_cierre, intervalo_minutos)
-values ('09:00', '20:00', 15);
+-- Insertar configuración inicial (15 minutos) con teléfono de prueba
+insert into configuracion_barberia (hora_apertura, hora_cierre, intervalo_minutos, telefono_barbero)
+values ('09:00', '20:00', 15, '5491112345678');
 
 create table turnos (
   id uuid default gen_random_uuid() primary key,
