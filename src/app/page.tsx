@@ -102,7 +102,9 @@ export default function Home() {
 
     if (error) {
       console.error('Error saving appointment:', error)
-      alert('Hubo un error al guardar tu turno. Por favor intenta de nuevo.')
+      const errorMsg = error.message || 'Error desconocido'
+      const errorCode = error.code || 'N/A'
+      alert(`Error al guardar el turno:\n${errorMsg} (Código: ${errorCode})\n\nPor favor, verifica las políticas RLS en Supabase.`)
       setLoading(false)
     } else {
       setLoading(false)
