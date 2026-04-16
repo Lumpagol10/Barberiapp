@@ -8,11 +8,12 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [fetchingSlots, setFetchingSlots] = useState(false)
+  const [showSlots, setShowSlots] = useState(false)
   
   // Form States
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
-  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0])
+  const [fecha, setFecha] = useState('')
   const [horaSeleccionada, setHoraSeleccionada] = useState('')
   
   // Availability States
@@ -22,76 +23,54 @@ export default function Home() {
 
   const [configLoaded, setConfigLoaded] = useState(false)
 
-  // Carga inicial: Configuración y Turnos del día actual
+  // Carga inicial: Solo Configuración
   useEffect(() => {
-    const initApp = async () => {
-      setFetchingSlots(true)
+    const fetchConfig = async () => {
       try {
-        // Ejecutar peticiones en paralelo para máxima velocidad.
-        // Si fallan, el catch se encargará de los fallbacks.
-        const [configRes, turnsRes] = await Promise.all([
-          supabase.from('configuracion_barberia').select('*').single(),
-          supabase.from('turnos').select('hora').eq('fecha', fecha)
-        ])
-
-        // 1. Procesar Configuración (o usar Fallbacks)
-        let finalConfig = { apertura: '09:00', cierre: '20:00', intervalo: 15 }
-        
-        if (configRes.data) {
-          const c = configRes.data
-          finalConfig = {
-            apertura: c.hora_apertura,
-            cierre: c.hora_cierre,
-            intervalo: c.intervalo_minutos
-          }
+        const { data } = await supabase.from('configuracion_barberia').select('*').single()
+        if (data) {
+          setConfig({
+            apertura: data.hora_apertura,
+            cierre: data.hora_cierre,
+            intervalo: data.intervalo_minutos
+          })
+          setConfigLoaded(true)
         }
-        
-        // Seteamos la config (ya sea la de la DB o el Fallback)
-        setConfig(finalConfig)
-        setConfigLoaded(true)
-        
-        // Generar slots inmediatamente
-        generateSlots(finalConfig.apertura, finalConfig.cierre, finalConfig.intervalo)
-
-        // 2. Procesar Turnos Ocupados
-        const booked = turnsRes.data?.map(t => t.hora.substring(0, 5)) || []
-        setBookedSlots(booked)
-
       } catch (error) {
-        console.error('Error en carga inicial, usando valores por defecto:', error)
-        // Fallback crítico: Generar slots con config estándar si todo falla
-        const fallback = { apertura: '09:00', cierre: '20:00', intervalo: 15 }
-        setConfig(fallback)
-        setConfigLoaded(true)
-        generateSlots(fallback.apertura, fallback.cierre, fallback.intervalo)
-      } finally {
-        // Garantizar que la pantalla nunca se quede trabada
-        setFetchingSlots(false)
+        console.error('Error cargando config inicial:', error)
       }
     }
+    fetchConfig()
+  }, [])
 
-    initApp()
-  }, []) // Solo al montar
-
-  // Solo actualizar turnos cuando cambie la fecha
+  // Cargar turnos solo cuando se elige una fecha y se despliega el panel
   useEffect(() => {
-    if (configLoaded) {
-      fetchOnlyTurnos()
+    if (fecha && showSlots) {
+      if (!configLoaded) {
+        // Fallback si la config no cargó pero el usuario ya eligió fecha
+        generateSlots(config.apertura, config.cierre, config.intervalo)
+      }
+      fetchAvailability()
     }
-  }, [fecha])
+  }, [fecha, showSlots])
 
-  const fetchOnlyTurnos = async () => {
+  const fetchAvailability = async () => {
     setFetchingSlots(true)
     try {
-      const { data } = await supabase
+      const { data: turnsData } = await supabase
         .from('turnos')
         .select('hora')
         .eq('fecha', fecha)
       
-      const booked = data?.map(t => t.hora.substring(0, 5)) || []
+      const booked = turnsData?.map(t => t.hora.substring(0, 5)) || []
       setBookedSlots(booked)
+
+      // Siempre regenerar slots para asegurar consistencia
+      generateSlots(config.apertura, config.cierre, config.intervalo)
     } catch (error) {
-      console.error('Error al actualizar turnos:', error)
+      console.error('Error fetching availability:', error)
+      // Generar con defaults si falla la red
+      generateSlots(config.apertura, config.cierre, config.intervalo)
     } finally {
       setFetchingSlots(false)
     }
@@ -156,8 +135,9 @@ export default function Home() {
               setSubmitted(false)
               setNombre('')
               setTelefono('')
+              setFecha('')
               setHoraSeleccionada('')
-              fetchOnlyTurnos()
+              setShowSlots(false)
             }}
             className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-900/20"
           >
@@ -232,47 +212,52 @@ export default function Home() {
                   type="date"
                   value={fecha}
                   min={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => setFecha(e.target.value)}
-                  className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all text-white appearance-none"
+                  onChange={(e) => {
+                    setFecha(e.target.value)
+                    setShowSlots(true)
+                  }}
+                  className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all text-white appearance-none cursor-pointer"
                 />
               </div>
             </div>
 
-            <div className="space-y-4">
-              <label className="text-sm font-medium text-zinc-400 ml-1 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Horarios Disponibles (Intervalos de {config.intervalo} min)
-              </label>
-              
-              {fetchingSlots ? (
-                <div className="flex justify-center py-10">
-                  <div className="w-8 h-8 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {availableSlots.map((slot) => {
-                    const isBooked = bookedSlots.includes(slot)
-                    const isSelected = horaSeleccionada === slot
-                    
-                    return (
-                      <button
-                        key={slot}
-                        type="button"
-                        disabled={isBooked}
-                        onClick={() => setHoraSeleccionada(slot)}
-                        className={`
-                          py-3 rounded-xl text-center text-sm font-bold transition-all border
-                          ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : 
-                            isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 
-                            'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}
-                        `}
-                      >
-                        {slot}
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
+            {showSlots && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                <label className="text-sm font-medium text-zinc-400 ml-1 flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Horarios Disponibles (Intervalos de {config.intervalo} min)
+                </label>
+                
+                {fetchingSlots ? (
+                  <div className="flex justify-center py-10">
+                    <div className="w-8 h-8 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {availableSlots.map((slot) => {
+                      const isBooked = bookedSlots.includes(slot)
+                      const isSelected = horaSeleccionada === slot
+                      
+                      return (
+                        <button
+                          key={slot}
+                          type="button"
+                          disabled={isBooked}
+                          onClick={() => setHoraSeleccionada(slot)}
+                          className={`
+                            py-3 rounded-xl text-center text-sm font-bold transition-all border
+                            ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : 
+                              isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 
+                              'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}
+                          `}
+                        >
+                          {slot}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             <button
               disabled={loading || !horaSeleccionada}
