@@ -20,44 +20,64 @@ export default function Home() {
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
   const [config, setConfig] = useState({ apertura: '09:00', cierre: '20:00', intervalo: 15 })
 
+  const [configLoaded, setConfigLoaded] = useState(false)
+
+  // Carga inicial: Configuración y Turnos del día actual
   useEffect(() => {
-    fetchAvailability()
+    const initApp = async () => {
+      setFetchingSlots(true)
+      try {
+        // Ejecutar peticiones en paralelo para máxima velocidad
+        const [configRes, turnsRes] = await Promise.all([
+          supabase.from('configuracion_barberia').select('*').single(),
+          supabase.from('turnos').select('hora').eq('fecha', fecha)
+        ])
+
+        if (configRes.data) {
+          const c = configRes.data
+          const newConfig = {
+            apertura: c.hora_apertura,
+            cierre: c.hora_cierre,
+            intervalo: c.intervalo_minutos
+          }
+          setConfig(newConfig)
+          setConfigLoaded(true)
+          
+          // Generar slots inmediatamente con la nueva config
+          generateSlots(c.hora_apertura, c.hora_cierre, c.intervalo_minutos)
+        }
+
+        const booked = turnsRes.data?.map(t => t.hora.substring(0, 5)) || []
+        setBookedSlots(booked)
+      } catch (error) {
+        console.error('Error en carga inicial:', error)
+      } finally {
+        setFetchingSlots(false)
+      }
+    }
+
+    initApp()
+  }, []) // Solo al montar
+
+  // Solo actualizar turnos cuando cambie la fecha
+  useEffect(() => {
+    if (configLoaded) {
+      fetchOnlyTurnos()
+    }
   }, [fecha])
 
-  const fetchAvailability = async () => {
+  const fetchOnlyTurnos = async () => {
     setFetchingSlots(true)
     try {
-      // 1. Fetch Config
-      const { data: configData } = await supabase
-        .from('configuracion_barberia')
-        .select('*')
-        .single()
-      
-      if (configData) {
-        setConfig({
-          apertura: configData.hora_apertura,
-          cierre: configData.hora_cierre,
-          intervalo: configData.intervalo_minutos
-        })
-      }
-
-      // 2. Fetch Booked Turns for selected date
-      const { data: turnsData } = await supabase
+      const { data } = await supabase
         .from('turnos')
         .select('hora')
         .eq('fecha', fecha)
       
-      const booked = turnsData?.map(t => t.hora.substring(0, 5)) || []
+      const booked = data?.map(t => t.hora.substring(0, 5)) || []
       setBookedSlots(booked)
-
-      // 3. Generate All Possible Slots
-      generateSlots(
-        configData?.hora_apertura || '09:00',
-        configData?.hora_cierre || '20:00',
-        configData?.intervalo_minutos || 15
-      )
     } catch (error) {
-      console.error('Error fetching availability:', error)
+      console.error('Error al actualizar turnos:', error)
     } finally {
       setFetchingSlots(false)
     }
@@ -123,7 +143,7 @@ export default function Home() {
               setNombre('')
               setTelefono('')
               setHoraSeleccionada('')
-              fetchAvailability()
+              fetchOnlyTurnos()
             }}
             className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-900/20"
           >
