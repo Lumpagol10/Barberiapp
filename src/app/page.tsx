@@ -21,9 +21,7 @@ export default function Home() {
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
   const [config, setConfig] = useState({ apertura: '09:00', cierre: '20:00', intervalo: 15 })
 
-  const [configLoaded, setConfigLoaded] = useState(false)
-
-  // Carga inicial: Solo Configuración
+  // Carga inicial: Solo Configuración (Background)
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -34,7 +32,6 @@ export default function Home() {
             cierre: data.hora_cierre,
             intervalo: data.intervalo_minutos
           })
-          setConfigLoaded(true)
         }
       } catch (error) {
         console.error('Error cargando config inicial:', error)
@@ -43,36 +40,30 @@ export default function Home() {
     fetchConfig()
   }, [])
 
-  // Cargar turnos solo cuando se elige una fecha y se despliega el panel
-  useEffect(() => {
-    if (fecha && showSlots) {
-      if (!configLoaded) {
-        // Fallback si la config no cargó pero el usuario ya eligió fecha
-        generateSlots(config.apertura, config.cierre, config.intervalo)
-      }
-      fetchAvailability()
-    }
-  }, [fecha, showSlots])
+  const handleDateChange = (nuevaFecha: string) => {
+    setFecha(nuevaFecha)
+    setShowSlots(true)
+    
+    // GENERACIÓN INSTANTÁNEA: Usamos los valores actuales (o defaults)
+    // No esperamos a la base de datos para mostrar los botones.
+    generateSlots(config.apertura, config.cierre, config.intervalo)
+    
+    // Sincronización en Background: Solo buscamos los ocupados
+    fetchBookedTurns(nuevaFecha)
+  }
 
-  const fetchAvailability = async () => {
-    setFetchingSlots(true)
+  const fetchBookedTurns = async (date: string) => {
+    // Nota: Ya no activamos fetchingSlots para el panel entero
     try {
-      const { data: turnsData } = await supabase
+      const { data } = await supabase
         .from('turnos')
         .select('hora')
-        .eq('fecha', fecha)
+        .eq('fecha', date)
       
-      const booked = turnsData?.map(t => t.hora.substring(0, 5)) || []
+      const booked = data?.map(t => t.hora.substring(0, 5)) || []
       setBookedSlots(booked)
-
-      // Siempre regenerar slots para asegurar consistencia
-      generateSlots(config.apertura, config.cierre, config.intervalo)
     } catch (error) {
-      console.error('Error fetching availability:', error)
-      // Generar con defaults si falla la red
-      generateSlots(config.apertura, config.cierre, config.intervalo)
-    } finally {
-      setFetchingSlots(false)
+      console.error('Error sincronizando disponibilidad:', error)
     }
   }
 
@@ -212,10 +203,7 @@ export default function Home() {
                   type="date"
                   value={fecha}
                   min={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => {
-                    setFecha(e.target.value)
-                    setShowSlots(true)
-                  }}
+                  onChange={(e) => handleDateChange(e.target.value)}
                   className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all text-white appearance-none cursor-pointer"
                 />
               </div>
@@ -224,38 +212,32 @@ export default function Home() {
             {showSlots && (
               <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-500">
                 <label className="text-sm font-medium text-zinc-400 ml-1 flex items-center gap-2">
-                  <Clock className="w-4 h-4" /> Horarios Disponibles (Intervalos de {config.intervalo} min)
+                  <Clock className="w-4 h-4" /> Horarios Disponibles
                 </label>
                 
-                {fetchingSlots ? (
-                  <div className="flex justify-center py-10">
-                    <div className="w-8 h-8 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                    {availableSlots.map((slot) => {
-                      const isBooked = bookedSlots.includes(slot)
-                      const isSelected = horaSeleccionada === slot
-                      
-                      return (
-                        <button
-                          key={slot}
-                          type="button"
-                          disabled={isBooked}
-                          onClick={() => setHoraSeleccionada(slot)}
-                          className={`
-                            py-3 rounded-xl text-center text-sm font-bold transition-all border
-                            ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : 
-                              isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 
-                              'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}
-                          `}
-                        >
-                          {slot}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {availableSlots.map((slot) => {
+                    const isBooked = bookedSlots.includes(slot)
+                    const isSelected = horaSeleccionada === slot
+                    
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        disabled={isBooked}
+                        onClick={() => setHoraSeleccionada(slot)}
+                        className={`
+                          py-3 rounded-xl text-center text-sm font-bold transition-all border
+                          ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : 
+                            isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 
+                            'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}
+                        `}
+                      >
+                        {slot}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             )}
 
