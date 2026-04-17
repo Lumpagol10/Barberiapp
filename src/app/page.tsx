@@ -1,303 +1,87 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { Scissors, Clock, Phone, User, CheckCircle2, Calendar as CalendarIcon } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { Scissors, ArrowRight, CheckCircle2, Globe, Phone, ShieldCheck } from 'lucide-react'
+import Link from 'next/link'
 
 export default function Home() {
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [fetchingSlots, setFetchingSlots] = useState(false)
-  const [showSlots, setShowSlots] = useState(false)
-  
-  // Form States
-  const [nombre, setNombre] = useState('')
-  const [telefono, setTelefono] = useState('')
-  const [fecha, setFecha] = useState('')
-  const [horaSeleccionada, setHoraSeleccionada] = useState('')
-  
-  // Availability States
-  const [availableSlots, setAvailableSlots] = useState<string[]>([])
-  const [bookedSlots, setBookedSlots] = useState<string[]>([])
-  const [config, setConfig] = useState({ 
-    apertura: '09:00', 
-    cierre: '20:00', 
-    intervalo: 15,
-    telefonoBarbero: '' 
-  })
-
-  // Carga inicial: Solo Configuración (Background)
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const { data } = await supabase.from('configuracion_barberia').select('*').single()
-        if (data) {
-          setConfig({
-            apertura: data.hora_apertura,
-            cierre: data.hora_cierre,
-            intervalo: data.intervalo_minutos,
-            telefonoBarbero: data.telefono_barbero || ''
-          })
-        }
-      } catch (error) {
-        console.error('Error cargando config inicial:', error)
-      }
-    }
-    fetchConfig()
-  }, [])
-
-  const handleDateChange = (nuevaFecha: string) => {
-    setFecha(nuevaFecha)
-    setShowSlots(true)
-    
-    // GENERACIÓN INSTANTÁNEA: Usamos los valores actuales (o defaults)
-    generateSlots(config.apertura, config.cierre, config.intervalo)
-    
-    // Sincronización en Background: Solo buscamos los ocupados
-    fetchBookedTurns(nuevaFecha)
-  }
-
-  const fetchBookedTurns = async (date: string) => {
-    try {
-      const { data } = await supabase
-        .from('turnos')
-        .select('hora')
-        .eq('fecha', date)
-      
-      const booked = data?.map(t => t.hora.substring(0, 5)) || []
-      setBookedSlots(booked)
-    } catch (error) {
-      console.error('Error sincronizando disponibilidad:', error)
-    }
-  }
-
-  const generateSlots = (apertura: string, cierre: string, intervalo: number) => {
-    const slots = []
-    let current = new Date(`2024-01-01T${apertura}`)
-    const end = new Date(`2024-01-01T${cierre}`)
-
-    while (current < end) {
-      const timeString = current.toTimeString().substring(0, 5)
-      slots.push(timeString)
-      current.setMinutes(current.getMinutes() + intervalo)
-    }
-    setAvailableSlots(slots)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!horaSeleccionada) {
-      alert('Por favor selecciona un horario')
-      return
-    }
-
-    setLoading(true)
-    
-    const { error } = await supabase
-      .from('turnos')
-      .insert([
-        { 
-          cliente_nombre: nombre, 
-          cliente_telefono: telefono, 
-          fecha: fecha, 
-          hora: horaSeleccionada 
-        }
-      ])
-
-    if (error) {
-      console.error('Error saving appointment:', error)
-      const errorMsg = error.message || 'Error desconocido'
-      const errorCode = error.code || 'N/A'
-      alert(`Error al guardar el turno:\n${errorMsg} (Código: ${errorCode})\n\nPor favor, verifica las políticas RLS en Supabase.`)
-      setLoading(false)
-    } else {
-      setLoading(false)
-      setSubmitted(true)
-    }
-  }
-
-  const getWhatsAppLink = () => {
-    if (!config.telefonoBarbero) return null
-    
-    const mensaje = encodeURIComponent(
-      `Hola! Soy ${nombre}, acabo de reservar un turno para el ${fecha} a las ${horaSeleccionada}hs desde la web. ¿Me lo confirmas?`
-    )
-    return `https://wa.me/${config.telefonoBarbero}?text=${mensaje}`
-  }
-
-  if (submitted) {
-    const waLink = getWhatsAppLink()
-
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 p-8 rounded-3xl text-center space-y-6 animate-in fade-in zoom-in duration-500 shadow-2xl">
-          <div className="flex justify-center">
-            <CheckCircle2 className="w-20 h-20 text-amber-500 animate-bounce" />
-          </div>
-          <h2 className="text-3xl font-bold text-white tracking-tight">¡Turno Reservado!</h2>
-          <div className="space-y-2">
-            <p className="text-zinc-400 text-lg">
-              Gracias <span className="text-white font-medium">{nombre}</span>. Tu turno para el <span className="text-amber-500 font-semibold">{fecha}</span> a las <span className="text-amber-500 font-semibold">{horaSeleccionada}hs</span> ha sido registrado.
-            </p>
-            <p className="text-amber-500/80 text-sm font-medium italic animate-pulse">
-              Paso final: Envía el WhatsApp para confirmar tu lugar.
-            </p>
-          </div>
-
-          <div className="space-y-3 pt-4">
-            {waLink && (
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 w-full py-5 bg-[#25D366] hover:bg-[#128C7E] text-white font-black text-lg rounded-2xl transition-all transform active:scale-[0.98] shadow-xl shadow-green-900/20"
-              >
-                <Phone className="w-6 h-6 fill-current" />
-                CONFIRMAR POR WHATSAPP
-              </a>
-            )}
-
-            <button
-              onClick={() => {
-                setSubmitted(false)
-                setNombre('')
-                setTelefono('')
-                setFecha('')
-                setHoraSeleccionada('')
-                setShowSlots(false)
-              }}
-              className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl transition-all"
-            >
-              Nueva Reserva
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-900/20 rounded-full blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-900/10 rounded-full blur-[120px]" />
+    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 font-sans selection:bg-amber-500 selection:text-black">
+      {/* Hero Section */}
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center p-6 overflow-hidden">
+        {/* Abstract Background */}
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-amber-600/10 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-amber-900/5 rounded-full blur-[150px]" />
 
-      <header className="mb-10 text-center relative z-10">
-        <div className="flex items-center justify-center mb-4">
-          <div className="p-3 bg-amber-600 rounded-2xl shadow-xl shadow-amber-900/30">
-            <Scissors className="w-8 h-8 text-black" />
+        <div className="relative z-10 text-center max-w-4xl mx-auto">
+          <header className="mb-12 inline-block">
+            <div className="flex items-center justify-center gap-3 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="p-4 bg-amber-600 rounded-3xl shadow-2xl shadow-amber-900/40">
+                <Scissors className="w-10 h-10 text-black" />
+              </div>
+              <span className="text-3xl font-black tracking-tighter uppercase italic">Barberiapp</span>
+            </div>
+            <h1 className="text-6xl sm:text-8xl font-black tracking-tight leading-[0.9] uppercase mb-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+              Transformá tu <span className="text-amber-500">Barbería</span> en un SaaS.
+            </h1>
+            <p className="text-zinc-400 text-lg sm:text-2xl font-medium max-w-2xl mx-auto mb-10 leading-relaxed italic animate-in fade-in slide-in-from-bottom-12 duration-1000">
+              Gestioná turnos, centralizá clientes y recibí confirmaciones por WhatsApp automáticamente. Todo desde tu propia URL personalizada.
+            </p>
+          </header>
+
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-in fade-in slide-in-from-bottom-[60px] duration-1000">
+            <Link 
+              href="/admin/auth" 
+              className="group relative px-10 py-6 bg-amber-600 hover:bg-amber-500 text-black font-black text-xl rounded-2xl transition-all shadow-2xl shadow-amber-900/20 active:scale-95 flex items-center gap-3 uppercase tracking-tighter"
+            >
+              Comenzar Ahora 
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <p className="text-zinc-600 font-bold uppercase tracking-widest text-xs border border-zinc-800 px-6 py-4 rounded-2xl">
+              Partner de Franmark Digital
+            </p>
           </div>
         </div>
-        <h1 className="text-5xl font-extrabold tracking-tighter sm:text-6xl mb-2">
-          BARBERI<span className="text-amber-500 text-6xl">APP</span>
-        </h1>
-        <p className="text-zinc-400 text-lg font-light tracking-wide italic">LUXURY GROOMING SERVICES</p>
-      </header>
+      </section>
 
-      <main className="w-full max-w-2xl relative z-10">
-        <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-8 sm:p-10 rounded-[2.5rem] shadow-2xl">
-          <h2 className="text-2xl font-semibold mb-8 text-center text-zinc-200">Reserva tu Turno</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400 ml-1">Nombre Completo</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                  <input
-                    required
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    type="text"
-                    placeholder="Ej: Juan Pérez"
-                    className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all placeholder:text-zinc-600 text-white"
-                  />
-                </div>
+      {/* Features Grid */}
+      <section className="py-24 px-6 bg-[#050505]">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-10 bg-zinc-900/30 border border-white/5 rounded-[3rem] hover:border-amber-500/30 transition-all group">
+              <div className="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-amber-600 transition-colors">
+                <Globe className="w-7 h-7 text-amber-500 group-hover:text-black" />
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400 ml-1">Teléfono</label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                  <input
-                    required
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                    type="tel"
-                    placeholder="+54 11 1234 5678"
-                    className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all placeholder:text-zinc-600 text-white"
-                  />
-                </div>
-              </div>
+              <h3 className="text-2xl font-black uppercase tracking-tight mb-4">Tu propia URL</h3>
+              <p className="text-zinc-500 leading-relaxed">Cada barbero obtiene un link único (ej: barberiapp.com/reserva/tu-estilo) para compartir en Instagram y redes.</p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-400 ml-1">Selecciona una Fecha</label>
-              <div className="relative">
-                <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                <input
-                  required
-                  type="date"
-                  value={fecha}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => handleDateChange(e.target.value)}
-                  className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all text-white appearance-none cursor-pointer"
-                />
+            <div className="p-10 bg-zinc-900/30 border border-white/5 rounded-[3rem] hover:border-amber-500/30 transition-all group">
+              <div className="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-amber-600 transition-colors">
+                <Phone className="w-7 h-7 text-amber-500 group-hover:text-black" />
               </div>
+              <h3 className="text-2xl font-black uppercase tracking-tight mb-4">WhatsApp Integrado</h3>
+              <p className="text-zinc-500 leading-relaxed">Recibí una notificación directa al móvil por cada turno nuevo con el detalle completo del cliente.</p>
             </div>
 
-            {showSlots && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-500">
-                <label className="text-sm font-medium text-zinc-400 ml-1 flex items-center gap-2">
-                  <Clock className="w-4 h-4" /> Horarios Disponibles
-                </label>
-                
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {availableSlots.map((slot) => {
-                    const isBooked = bookedSlots.includes(slot)
-                    const isSelected = horaSeleccionada === slot
-                    
-                    return (
-                      <button
-                        key={slot}
-                        type="button"
-                        disabled={isBooked}
-                        onClick={() => setHoraSeleccionada(slot)}
-                        className={`
-                          py-3 rounded-xl text-center text-sm font-bold transition-all border
-                          ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : 
-                            isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 
-                            'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}
-                        `}
-                      >
-                        {slot}
-                      </button>
-                    )
-                  })}
-                </div>
+            <div className="p-10 bg-zinc-900/30 border border-white/5 rounded-[3rem] hover:border-amber-500/30 transition-all group">
+              <div className="w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-amber-600 transition-colors">
+                <ShieldCheck className="w-7 h-7 text-amber-500 group-hover:text-black" />
               </div>
-            )}
-
-            <button
-              disabled={loading || !horaSeleccionada}
-              type="submit"
-              className="w-full py-5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-black text-lg rounded-2xl transition-all transform active:scale-[0.98] shadow-xl shadow-amber-900/20 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-4 border-black/30 border-t-black rounded-full animate-spin" />
-              ) : (
-                'CONFIRMAR RESERVA'
-              )}
-            </button>
-          </form>
+              <h3 className="text-2xl font-black uppercase tracking-tight mb-4">Control Total</h3>
+              <p className="text-zinc-500 leading-relaxed">Administrá tus horarios de apertura, cierre e intervalos de corte de forma simple desde tu panel de control.</p>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <footer className="mt-8 text-center">
-          <p className="text-zinc-500 text-sm">
-            Powered by <span className="text-zinc-400 font-semibold tracking-tighter">Franmark Digital</span>
-          </p>
-        </footer>
-      </main>
+      {/* Social Proof / Footer */}
+      <footer className="py-20 text-center border-t border-white/5">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <CheckCircle2 className="w-5 h-5 text-amber-500" />
+          <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Utilizado por +40 barberías en Argentina</p>
+        </div>
+        <p className="text-zinc-600 text-sm">
+          © 2024 Barberiapp. Una solución de <span className="text-zinc-400 font-bold tracking-tighter">Franmark Digital</span>.
+        </p>
+      </footer>
     </div>
   )
 }
