@@ -185,7 +185,7 @@ export default function Dashboard() {
           .from('turnos')
           .select('*')
           .eq('barbero_id', userId)
-          .eq('fecha', dateToFetch || viewDate)
+          .eq('fecha', viewDate)
           .eq('estado', 'pendiente')
           .order('hora', { ascending: true })
         
