@@ -34,6 +34,8 @@ CREATE TABLE turnos (
   cliente_telefono TEXT NOT NULL,
   fecha DATE NOT NULL,
   hora TIME NOT NULL,
+  precio NUMERIC DEFAULT 0,
+  estado TEXT DEFAULT 'pendiente', -- 'pendiente', 'completado'
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

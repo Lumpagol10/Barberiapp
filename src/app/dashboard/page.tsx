@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, LogOut, Scissors, Users, Calendar, TrendingUp, Settings, ExternalLink, Phone, Clock, Type, MessageCircle } from 'lucide-react'
+import { CheckCircle, LogOut, Scissors, Users, Calendar, TrendingUp, Settings, ExternalLink, Phone, Clock, Type, MessageCircle, DollarSign } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<'agenda' | 'config' | 'programar'>('agenda')
+  const [activeTab, setActiveTab] = useState<'agenda' | 'config' | 'programar' | 'finanzas'>('agenda')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [user, setUser] = useState<any>(null)
@@ -20,6 +20,16 @@ export default function Dashboard() {
       month: '2-digit',
       day: '2-digit'
     }).format(new Date())
+  })
+  
+  // Estados para Finanzas
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
+  const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null)
+  const [checkoutPrice, setCheckoutPrice] = useState('')
+  const [financesData, setFinancesData] = useState<any>({
+    dailyTotal: 0,
+    monthlyTotal: 0,
+    history: []
   })
   
   // Estados para Agenda Flexible (0-6)
@@ -44,9 +54,47 @@ export default function Dashboard() {
       }
       setUser(user)
       fetchData(user.id, viewDate)
+      fetchFinances(user.id)
     }
     checkUser()
-  }, [viewDate])
+  }, [viewDate, activeTab])
+
+  const fetchFinances = async (userId: string) => {
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+    const firstDayOfMonth = todayStr.substring(0, 8) + '01'
+
+    const { data: dailyData } = await supabase
+      .from('turnos')
+      .select('precio')
+      .eq('barbero_id', userId)
+      .eq('estado', 'completado')
+      .eq('fecha', todayStr)
+
+    const { data: monthlyData } = await supabase
+      .from('turnos')
+      .select('precio')
+      .eq('barbero_id', userId)
+      .eq('estado', 'completado')
+      .gte('fecha', firstDayOfMonth)
+
+    const { data: historyData } = await supabase
+      .from('turnos')
+      .select('*')
+      .eq('barbero_id', userId)
+      .eq('estado', 'completado')
+      .order('fecha', { ascending: false })
+      .order('hora', { ascending: false })
+      .limit(10)
+
+    const dailyTotal = dailyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+    const monthlyTotal = monthlyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+
+    setFinancesData({
+      dailyTotal,
+      monthlyTotal,
+      history: historyData || []
+    })
+  }
 
   const fetchData = async (userId: string, dateToFetch?: string) => {
     setLoading(true)
@@ -91,6 +139,7 @@ export default function Dashboard() {
           .select('*')
           .eq('barbero_id', userId)
           .eq('fecha', dateToFetch || viewDate)
+          .eq('estado', 'pendiente')
           .order('hora', { ascending: true })
         
         setTurns(turnsData || [])
@@ -198,16 +247,35 @@ export default function Dashboard() {
     alert('📋 Horarios copiados a toda la semana')
   }
 
-  const handleFinish = async (id: string) => {
+  const handleFinish = (id: string) => {
+    setSelectedTurnId(id)
+    setCheckoutPrice('')
+    setShowCheckoutModal(true)
+  }
+
+  const confirmCheckout = async (omitValue: boolean = false) => {
+    if (!selectedTurnId) return
+    setSaving(true)
+    
+    const finalPrice = omitValue ? 0 : Number(checkoutPrice)
+    
     const { error } = await supabase
       .from('turnos')
-      .delete()
-      .eq('id', id)
+      .update({ 
+        estado: 'completado', 
+        precio: finalPrice 
+      })
+      .eq('id', selectedTurnId)
       .eq('barbero_id', user.id)
 
     if (!error) {
-      setTurns(prev => prev.filter(t => t.id !== id))
+      setTurns(prev => prev.filter(t => t.id !== selectedTurnId))
+      setShowCheckoutModal(false)
+      fetchFinances(user.id)
+    } else {
+      alert(`Error al cobrar: ${error.message}`)
     }
+    setSaving(false)
   }
 
   const handleLogout = async () => {
@@ -286,6 +354,13 @@ export default function Dashboard() {
             <Clock className="w-5 h-5" /> Programar Agenda
           </button>
 
+          <button 
+            onClick={() => setActiveTab('finanzas')}
+            className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all border uppercase text-sm tracking-wider ${activeTab === 'finanzas' ? 'bg-emerald-600/10 text-emerald-500 border-emerald-500/10' : 'text-zinc-400 border-transparent hover:bg-zinc-800/50 hover:text-white'}`}
+          >
+            <DollarSign className="w-5 h-5" /> Finanzas
+          </button>
+
           <Link href={`/reserva/${config?.slug}`} target="_blank" className="w-full flex items-center gap-4 px-4 py-4 text-zinc-400 hover:bg-zinc-800/50 hover:text-white rounded-2xl transition-all uppercase text-sm font-bold tracking-wider">
             <ExternalLink className="w-5 h-5" /> Ver Mi Web
           </Link>
@@ -306,6 +381,7 @@ export default function Dashboard() {
       {/* Navegación Mobile */}
       <nav className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900/90 backdrop-blur-xl border border-white/5 px-4 py-3 rounded-full flex items-center gap-2 z-50 shadow-2xl">
         <button onClick={() => setActiveTab('agenda')} className={`p-4 rounded-full transition-all ${activeTab === 'agenda' ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/40' : 'text-zinc-500'}`}><Calendar className="w-6 h-6" /></button>
+        <button onClick={() => setActiveTab('finanzas')} className={`p-4 rounded-full transition-all ${activeTab === 'finanzas' ? 'bg-emerald-600 text-black shadow-lg shadow-emerald-900/40' : 'text-zinc-500'}`}><DollarSign className="w-6 h-6" /></button>
         <Link href={`/reserva/${config?.slug}`} target="_blank" className="p-4 text-zinc-500"><ExternalLink className="w-6 h-6" /></Link>
         <button onClick={() => setActiveTab('config')} className={`p-4 rounded-full transition-all ${activeTab === 'config' ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/40' : 'text-zinc-500'}`}><Settings className="w-6 h-6" /></button>
         <div className="w-[1px] h-6 bg-zinc-800 mx-2" />
@@ -547,6 +623,94 @@ export default function Dashboard() {
           </div>
         )}
 
+        {activeTab === 'finanzas' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="mb-12">
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Finanzas y Caja</h1>
+              <p className="text-zinc-500 font-medium italic">Control de ingresos y balance de servicios</p>
+            </header>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              {/* Total Diario */}
+              <div className="bg-zinc-900/50 border border-emerald-500/20 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-emerald-500 text-[10px] font-black uppercase tracking-widest">Total Diario (Hoy)</p>
+                  <div className="p-3 bg-emerald-600/10 rounded-2xl text-emerald-500 group-hover:scale-110 transition-transform">
+                    <DollarSign className="w-6 h-6" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-6xl font-black text-white tracking-tighter">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
+                </div>
+              </div>
+
+              {/* Total Mensual */}
+              <div className="bg-zinc-900/50 border border-amber-500/20 p-8 rounded-[2.5rem] shadow-xl shadow-amber-950/10 backdrop-blur-xl group hover:border-amber-500/40 transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-amber-500 text-[10px] font-black uppercase tracking-widest">Total Mensual</p>
+                  <div className="p-3 bg-amber-600/10 rounded-2xl text-amber-500 group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-6 h-6" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-6xl font-black text-white tracking-tighter">${financesData.monthlyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
+              <div className="p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-900/20">
+                <h3 className="text-xl font-black uppercase italic tracking-tighter">Últimos Cobros</h3>
+                <div className="p-2 bg-emerald-600/10 rounded-lg text-emerald-500">
+                  <DollarSign className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-zinc-800/30 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
+                      <th className="px-8 py-6">Cliente</th>
+                      <th className="px-8 py-6">Fecha y Hora</th>
+                      <th className="px-8 py-6 text-right">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/20">
+                    {financesData.history.length > 0 ? (
+                      financesData.history.map((item: any) => (
+                        <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
+                          <td className="px-8 py-6">
+                            <span className="font-black text-zinc-100 uppercase tracking-tight">{item.cliente_nombre}</span>
+                          </td>
+                          <td className="px-8 py-6">
+                            <div className="text-xs text-zinc-500 font-bold">
+                              {new Date(item.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} - {item.hora.substring(0, 5)}hs
+                            </div>
+                          </td>
+                          <td className="px-8 py-6 text-right">
+                            <span className="font-black text-emerald-500 text-lg group-hover:scale-110 transition-transform inline-block">
+                              +${(Number(item.precio) || 0).toLocaleString('es-AR')}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={3} className="px-8 py-20 text-center">
+                          <div className="text-zinc-700 text-4xl font-black uppercase opacity-20 mb-4 tracking-tighter italic">Sin Cobros</div>
+                          <p className="text-zinc-600 font-medium italic">Todavía no has registrado ingresos.</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'config' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-4xl">
             <header className="mb-12">
@@ -678,6 +842,58 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+      {/* Modal de Cobro */}
+      {showCheckoutModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="bg-zinc-900 border border-white/10 w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
+            <div className="flex flex-col items-center text-center mb-8">
+              <div className="p-4 bg-emerald-600/10 rounded-full mb-6 text-emerald-500">
+                <DollarSign className="w-10 h-10" />
+              </div>
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white">Finalizar y Cobrar</h2>
+              <p className="text-zinc-500 mt-2 font-medium italic">Ingresa el monto del servicio para tu registro.</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="relative group">
+                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-emerald-500 group-focus-within:text-emerald-400 transition-colors">$</span>
+                <input 
+                  type="number"
+                  inputMode="decimal"
+                  autoFocus
+                  placeholder="0.00"
+                  value={checkoutPrice}
+                  onChange={(e) => setCheckoutPrice(e.target.value)}
+                  className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-emerald-500/50 rounded-2xl py-6 pl-12 pr-6 text-3xl font-black text-white outline-none transition-all placeholder:text-zinc-800"
+                />
+              </div>
+
+              <div className="grid gap-3">
+                <button 
+                  onClick={() => confirmCheckout(false)}
+                  disabled={saving || !checkoutPrice}
+                  className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 text-black font-black text-xl rounded-2xl transition-all shadow-xl shadow-emerald-900/20 active:scale-95 uppercase tracking-tighter"
+                >
+                  {saving ? 'PROCESANDO...' : 'CONFIRMAR Y GUARDAR'}
+                </button>
+                <button 
+                  onClick={() => confirmCheckout(true)}
+                  disabled={saving}
+                  className="w-full py-4 text-zinc-500 hover:text-white font-black text-sm uppercase tracking-widest transition-colors"
+                >
+                  OMITIR MONTO
+                </button>
+                <button 
+                  onClick={() => setShowCheckoutModal(false)}
+                  className="w-full py-2 text-zinc-700 hover:text-zinc-500 font-bold text-xs uppercase tracking-widest transition-colors mt-2"
+                >
+                  CANCELAR
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
