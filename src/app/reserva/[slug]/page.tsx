@@ -51,7 +51,7 @@ export default async function BookingPage({ params }: PageProps) {
 
   const { data: barber } = await supabase
     .from('configuracion_barberia')
-    .select('id, user_id, slug, nombre_barberia, google_maps_link, telefono_barbero')
+    .select('id, user_id, slug, nombre_barberia, google_maps_link, telefono_barbero, logo_url')
     .eq('slug', slug)
     .single()
 

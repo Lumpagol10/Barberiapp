@@ -45,6 +45,8 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
     setFecha(nuevaFecha)
     setShowSlots(true)
     setAvailableSlots([]) // Limpiar mientras carga
+    setBookedSlots([]) // Limpiar ocupados
+    setHoraSeleccionada('') // RESETEAR HORARIO AL CAMBIAR FECHA
     setDiaCerrado(false)
     
     if (barberConfig) {
@@ -83,7 +85,11 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
         .eq('fecha', date)
         .eq('barbero_id', barberConfig.user_id)
       
-      const booked = data?.map(t => t.hora.substring(0, 5)) || []
+      // Normalizar a HH:mm para la comparación en el frontend
+      const booked = data?.map(t => {
+        const h = t.hora
+        return h.substring(0, 5)
+      }) || []
       setBookedSlots(booked)
     } catch (error) {
       console.error('Error sincronizando disponibilidad:', error)
@@ -96,6 +102,9 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
 
     setLoading(true)
     
+    // NORMALIZACIÓN DE HORA PARA DB (HH:mm:00)
+    const timeForDB = horaSeleccionada.length === 5 ? `${horaSeleccionada}:00` : horaSeleccionada
+
     // VALIDACIÓN DE ÚLTIMO SEGUNDO: Verificar si el turno se ocupó justo ahora
     try {
       const { data: existing } = await supabase
@@ -103,7 +112,7 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
         .select('id')
         .eq('barbero_id', barberConfig.user_id)
         .eq('fecha', fecha)
-        .eq('hora', horaSeleccionada)
+        .eq('hora', timeForDB)
         .maybeSingle()
 
       if (existing) {
@@ -122,7 +131,7 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
             cliente_nombre: nombre, 
             cliente_telefono: `+54${phoneSuffix}`, 
             fecha: fecha, 
-            hora: horaSeleccionada 
+            hora: timeForDB 
           }
         ])
 

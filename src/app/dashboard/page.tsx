@@ -170,7 +170,7 @@ export default function Dashboard() {
     try {
       const { data: configData } = await supabase
         .from('configuracion_barberia')
-        .select('*')
+        .select('id, user_id, nombre_barberia, slug, telefono_barbero, google_maps_link, logo_url')
         .eq('user_id', userId)
         .single()
 
@@ -603,8 +603,8 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-12 h-12 rounded-xl shadow-lg shrink-0 flex items-center justify-center overflow-hidden border border-amber-500/20 bg-zinc-900">
-              {config?.logo_url ? (
-                <img src={config.logo_url} alt="Logo" className="w-full h-full object-cover" />
+              {(editLogoUrl || config?.logo_url) ? (
+                <img src={editLogoUrl || config?.logo_url || ""} alt="Logo" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center">
                   <Store className="w-6 h-6 text-zinc-500" />
@@ -707,8 +707,8 @@ export default function Dashboard() {
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 lg:mb-16">
               <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl border-2 border-amber-500/20 p-1.5 shadow-2xl shrink-0 flex items-center justify-center overflow-hidden bg-zinc-900/50 backdrop-blur-sm">
-                   {config?.logo_url ? (
-                      <img src={config.logo_url} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
+                   {(editLogoUrl || config?.logo_url) ? (
+                      <img src={editLogoUrl || config?.logo_url || ""} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
                    ) : (
                       <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center rounded-2xl">
                          <Store className="w-10 h-10 text-zinc-600" />
