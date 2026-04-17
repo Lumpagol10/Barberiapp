@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Scissors, Calendar as CalendarIcon, Clock, User, Phone, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react'
+import { Scissors, Calendar as CalendarIcon, Clock, User, Phone, CheckCircle2, AlertTriangle, ArrowLeft, Globe } from 'lucide-react'
 import Link from 'next/link'
 
 export default function BookingPage({ params }: { params: Promise<{ slug: string }> }) {
