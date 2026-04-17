@@ -12,6 +12,7 @@ interface AgendaTabProps {
   config: ConfiguracionBarberia | null
   onShare: () => void
   onOpenSidebar: () => void
+  fetchingTurns?: boolean
 }
 
 export default function AgendaTab({
@@ -21,7 +22,8 @@ export default function AgendaTab({
   onFinishTurn,
   config,
   onShare,
-  onOpenSidebar
+  onOpenSidebar,
+  fetchingTurns = false
 }: AgendaTabProps) {
   
   const isToday = viewDate === new Intl.DateTimeFormat('en-CA', { 
@@ -38,6 +40,12 @@ export default function AgendaTab({
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <style jsx>{`
+        @keyframes loading-bar {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(333%); }
+        }
+      `}</style>
       <DashboardHeader 
         title={`HOY ES ${formattedDate}`}
         config={config}
@@ -76,8 +84,15 @@ export default function AgendaTab({
           </div>
         </div>
 
+        {/* Loading Indicator for Date Change (Subtle) */}
+        {fetchingTurns && (
+          <div className="h-1 bg-amber-600/20 relative overflow-hidden">
+            <div className="absolute inset-y-0 left-0 bg-amber-500 animate-[loading-bar_1.5s_infinite]" style={{ width: '30%' }} />
+          </div>
+        )}
+
         {/* Vista Mobile: Cards */}
-        <div className="block md:hidden">
+        <div className={`block md:hidden transition-opacity duration-300 ${fetchingTurns ? 'opacity-50' : 'opacity-100'}`}>
           {turns.length > 0 ? (
             <div className="divide-y divide-zinc-800/30">
               {turns.map((turn) => (
@@ -121,7 +136,7 @@ export default function AgendaTab({
         </div>
 
         {/* Vista Desktop: Tabla */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className={`hidden md:block overflow-x-auto transition-opacity duration-300 ${fetchingTurns ? 'opacity-50' : 'opacity-100'}`}>
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-zinc-800/30 text-zinc-500 text-[10px] font-black uppercase tracking-widest">

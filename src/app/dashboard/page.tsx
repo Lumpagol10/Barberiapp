@@ -32,6 +32,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal'
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('agenda')
   const [loading, setLoading] = useState(true)
+  const [fetchingTurns, setFetchingTurns] = useState(false)
   const [saving, setSaving] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [config, setConfig] = useState<ConfiguracionBarberia | null>(null)
@@ -71,7 +72,6 @@ export default function Dashboard() {
   })
   
   // Schedule states
-  const [masterRoutine, setMasterRoutine] = useState<HorarioRutina[]>([])
   const [planningSchedule, setPlanningSchedule] = useState<HorarioEspecifico[]>([])
   
   // Config states
@@ -124,9 +124,29 @@ export default function Dashboard() {
     })
   }, [financesDate, financesMonth, historyFilterMode])
 
+  const fetchTurnsForDate = useCallback(async (userId: string, targetDate: string) => {
+    setFetchingTurns(true)
+    try {
+      const { data: turnsData } = await supabase
+        .from('turnos')
+        .select('*')
+        .eq('barbero_id', userId)
+        .eq('fecha', targetDate)
+        .eq('estado', 'pendiente')
+        .order('hora', { ascending: true })
+      
+      setTurns((turnsData as Turno[]) || [])
+    } catch (error) {
+      console.error('Error fetching turns:', error)
+    } finally {
+      setFetchingTurns(false)
+    }
+  }, [])
+
   const fetchData = useCallback(async (userId: string) => {
     if (!config) setLoading(true)
     try {
+      // 1. Configuración básica
       const { data: configData } = await supabase
         .from('configuracion_barberia')
         .select('*')
@@ -140,24 +160,14 @@ export default function Dashboard() {
         setEditMaps(configData.google_maps_link || '')
         setEditLogoUrl(configData.logo_url || null)
 
+        // 2. Horarios base (solo para planificación, ya no se editan aquí como rutina maestra activa)
         const { data: scheduleData } = await supabase
           .from('horarios_barberia')
           .select('*')
           .eq('user_id', userId)
           .order('dia_semana', { ascending: true })
 
-        if (scheduleData && scheduleData.length > 0) {
-          setMasterRoutine(scheduleData)
-        } else {
-          const initial = [0,1,2,3,4,5,6].map(dia => ({
-            user_id: userId,
-            dia_semana: dia,
-            activo: dia !== 0,
-            slots: ["09:00", "10:00", "11:00", "15:00", "16:00", "17:00"]
-          }))
-          setMasterRoutine(initial)
-        }
-
+        // 3. Planificación de los próximos 7 días
         const today = new Date()
         const next7Days: string[] = []
         for (let i = 0; i < 7; i++) {
@@ -175,9 +185,6 @@ export default function Dashboard() {
            return { fecha: fechaStr, user_id: userId, activo: false, slots: routine?.slots || [], isNew: true }
         })
         setPlanningSchedule(finalPlanning)
-
-        const { data: turnsData } = await supabase.from('turnos').select('*').eq('barbero_id', userId).eq('fecha', viewDate).eq('estado', 'pendiente').order('hora', { ascending: true })
-        setTurns((turnsData as Turno[]) || [])
       } else {
         router.push('/dashboard/onboarding')
       }
@@ -186,8 +193,16 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
-  }, [config, router, viewDate])
+  }, [config, router])
 
+  // Efecto para cambios de fecha (optimizado: solo carga turnos)
+  useEffect(() => {
+    if (user?.id) {
+      fetchTurnsForDate(user.id, viewDate)
+    }
+  }, [viewDate, user?.id, fetchTurnsForDate])
+
+  // Efecto inicial y finanzas
   useEffect(() => {
     if (user?.id) {
       fetchData(user.id)
@@ -248,24 +263,7 @@ export default function Dashboard() {
     }
   }
 
-  const handleUpdateMasterRoutine = async () => {
-    if (!user) return
-    setSaving(true)
-    try {
-      const { error } = await supabase.from('horarios_barberia').upsert(
-        masterRoutine.map(s => ({ user_id: user.id, dia_semana: s.dia_semana, activo: s.activo, slots: s.slots || [] })),
-        { onConflict: 'user_id,dia_semana' }
-      )
-      if (error) throw error
-      toast.success('✅ Rutina Maestra actualizada')
-      fetchData(user.id)
-    } catch (err: unknown) {
-      const error = err as { message?: string }
-      toast.error(`Error: ${error.message}`)
-    } finally {
-      setSaving(false)
-    }
-  }
+  /* handleUpdateMasterRoutine eliminada por pedido usuario */
 
   const handleUpdatePlanning = async () => {
     if (!user) return
@@ -360,19 +358,19 @@ export default function Dashboard() {
                 onFinishTurn={(id) => { setSelectedTurnId(id); setShowCheckoutModal(true); }}
                 config={config} onShare={() => setShowShareModal(true)}
                 onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+                fetchingTurns={fetchingTurns}
               />
             )}
             {activeTab === 'programar' && (
               <ProgramarTab 
-                masterRoutine={masterRoutine} setMasterRoutine={setMasterRoutine}
                 planningSchedule={planningSchedule} setPlanningSchedule={setPlanningSchedule}
-                onUpdateMasterRoutine={handleUpdateMasterRoutine}
                 onUpdatePlanning={handleUpdatePlanning}
-                copyRoutineToPlanning={(idx) => {
+                copyRoutineToPlanning={async (idx) => {
+                   const { data: scheduleData } = await supabase.from('horarios_barberia').select('*').eq('user_id', user?.id).order('dia_semana', { ascending: true })
                    const dayObj = new Date(planningSchedule[idx].fecha + 'T12:00:00')
-                   const routine = masterRoutine.find(r => r.dia_semana === dayObj.getDay())
+                   const routine = (scheduleData || []).find(r => r.dia_semana === dayObj.getDay())
                    if (routine) {
-                     const newSched = [...planningSchedule]; newSched[idx].slots = [...routine.slots]; newSched[idx].activo = true; setPlanningSchedule(newSched)
+                     const newSched = [...planningSchedule]; newSched[idx].slots = [...(routine.slots || [])]; newSched[idx].activo = true; setPlanningSchedule(newSched)
                    }
                 }}
                 addPlanningSlot={(idx) => {

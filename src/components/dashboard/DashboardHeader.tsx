@@ -33,15 +33,15 @@ export default function DashboardHeader({
       <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
         
         {/* FILA 1: MARCA (Logo + Nombre) - OCULTO EN DESKTOP por redundancia con Sidebar */}
-        <div className="flex lg:hidden flex-row items-center justify-center gap-3 w-full md:w-auto">
-          <div className="w-10 h-10 md:w-20 md:h-20 rounded-2xl border-2 border-amber-500/10 p-1 shadow-2xl shrink-0 flex items-center justify-center overflow-hidden bg-zinc-900/50 backdrop-blur-sm relative">
+        <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full md:w-auto">
+          <div className="w-14 h-14 md:w-20 md:h-20 shrink-0 flex items-center justify-center overflow-hidden relative">
             {config?.logo_url ? (
               <Image 
                 src={config.logo_url} 
                 alt="Logo" 
                 fill 
                 className="object-cover rounded-xl"
-                sizes="(max-width: 768px) 40px, 80px"
+                sizes="(max-width: 768px) 56px, 80px"
                 priority
                 unoptimized
               />
@@ -51,7 +51,7 @@ export default function DashboardHeader({
               </div>
             )}
           </div>
-          <span className="text-lg md:text-3xl font-black tracking-tighter uppercase italic text-white truncate max-w-[180px] md:max-w-none">
+          <span className="text-xl md:text-3xl font-bold tracking-tighter uppercase italic text-white truncate max-w-[220px] md:max-w-none">
             {config?.nombre_barberia}
           </span>
         </div>

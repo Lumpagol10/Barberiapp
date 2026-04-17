@@ -6,11 +6,8 @@ import { HorarioRutina, HorarioEspecifico, ConfiguracionBarberia } from '@/types
 import DashboardHeader from '../DashboardHeader'
 
 interface ProgramarTabProps {
-  masterRoutine: HorarioRutina[]
-  setMasterRoutine: (routine: HorarioRutina[]) => void
   planningSchedule: HorarioEspecifico[]
   setPlanningSchedule: (planning: HorarioEspecifico[]) => void
-  onUpdateMasterRoutine: () => void
   onUpdatePlanning: () => void
   copyRoutineToPlanning: (idx: number) => void
   addPlanningSlot: (idx: number) => void
@@ -22,11 +19,8 @@ interface ProgramarTabProps {
 }
 
 export default function ProgramarTab({
-  masterRoutine,
-  setMasterRoutine,
   planningSchedule,
   setPlanningSchedule,
-  onUpdateMasterRoutine,
   onUpdatePlanning,
   copyRoutineToPlanning,
   addPlanningSlot,
@@ -40,7 +34,7 @@ export default function ProgramarTab({
   const diasLetras = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl">
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl pb-24 lg:pb-0">
       <DashboardHeader 
         title="Agenda Semanal"
         subtitle={<p className="text-zinc-500 font-medium italic hidden md:block">Confirmá los días que vas a trabajar esta semana</p>}
@@ -49,73 +43,7 @@ export default function ProgramarTab({
         icon={<Scissors className="w-6 h-6 rotate-90" />}
       />
 
-      <div className="flex justify-end mb-8 -mt-8">
-        <button 
-          onClick={() => setShowMasterRoutine(!showMasterRoutine)}
-          className="px-6 py-3 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-400 hover:text-amber-500 rounded-xl text-xs font-black uppercase tracking-widest transition-all italic flex items-center gap-2"
-        >
-          <Settings className="w-4 h-4" /> Configurar Rutina Maestra
-        </button>
-      </div>
-
-      {/* MODAL / SECCIÓN RUTINA MAESTRA */}
-      {showMasterRoutine && (
-        <div className="bg-zinc-900/80 border border-amber-600/20 rounded-[2.5rem] p-8 lg:p-12 mb-12 animate-in slide-in-from-top-4 duration-500">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-amber-500">⚙️ Rutina Maestra (Plantilla base)</h3>
-            <button onClick={() => setShowMasterRoutine(false)} className="text-zinc-500">Cerrar</button>
-          </div>
-          <p className="text-zinc-500 text-sm mb-10 italic">Los horarios que definas acá servirán de base para las nuevas semanas, pero tenés que confirmarlos en la &apos;Agenda Semanal&apos; para que el cliente los vea.</p>
-          
-          <div className="space-y-4">
-            {masterRoutine.map((r, idx) => (
-              <div key={r.dia_semana} className="flex flex-wrap items-center justify-between gap-4 p-4 bg-zinc-950/30 rounded-2xl border border-zinc-900">
-                <div className="flex items-center gap-4 min-w-[150px]">
-                  <span className="font-black italic uppercase text-zinc-400">{diasLetras[r.dia_semana]}</span>
-                  <button 
-                    onClick={() => {
-                       const newR = [...masterRoutine]
-                       newR[idx].activo = !newR[idx].activo
-                       setMasterRoutine(newR)
-                    }}
-                    className={`w-10 h-6 rounded-full relative transition-all ${r.activo ? 'bg-amber-600' : 'bg-zinc-800'}`}
-                  >
-                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${r.activo ? 'left-5' : 'left-1'}`} />
-                  </button>
-                </div>
-                <div className="flex-1 flex flex-wrap gap-2">
-                   {r.slots.map((s, sIdx) => (
-                     <input 
-                      key={sIdx}
-                      type="time" 
-                      value={s}
-                      onChange={(e) => {
-                         const newR = [...masterRoutine]
-                         newR[idx].slots[sIdx] = e.target.value
-                         setMasterRoutine(newR)
-                      }}
-                      className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1 text-xs font-bold text-white [color-scheme:dark]"
-                     />
-                   ))}
-                   <button 
-                    onClick={() => {
-                       const newR = [...masterRoutine]
-                       newR[idx].slots.push("09:00")
-                       setMasterRoutine(newR)
-                    }}
-                    className="px-2 py-1 text-amber-500 font-bold"
-                   >+</button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button 
-            onClick={onUpdateMasterRoutine}
-            disabled={saving}
-            className="mt-8 w-full py-4 bg-amber-600 text-black font-black uppercase rounded-xl transition-all active:scale-95"
-          >Guardar Rutina Maestra</button>
-        </div>
-      )}
+      {/* SECCIÓN RUTINA MAESTRA ELIMINADA POR USUARIO */}
 
       <div className="mb-10 p-6 bg-amber-600/10 border border-amber-600/20 rounded-[2rem] flex items-center gap-4">
         <div className="p-3 bg-amber-600 rounded-xl text-black shadow-lg shadow-amber-900/40">
@@ -181,7 +109,7 @@ export default function ProgramarTab({
                         type="time" 
                         value={slot} 
                         onChange={(e) => updatePlanningSlot(idx, slotIdx, e.target.value)}
-                        className="w-full bg-zinc-950/50 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl py-4 px-4 text-xl font-black text-center [color-scheme:dark] transition-all focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                        className="w-full bg-zinc-950/50 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl py-4 px-2 text-base font-black text-center [color-scheme:dark] transition-all focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
                       />
                       <button 
                         onClick={() => removePlanningSlot(idx, slotIdx)}
@@ -222,7 +150,7 @@ export default function ProgramarTab({
         <button 
           onClick={onUpdatePlanning}
           disabled={saving}
-          className="w-full md:w-auto px-16 py-6 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 text-black font-black text-xl rounded-2xl transition-all shadow-2xl shadow-emerald-900/40 active:scale-95 flex items-center justify-center gap-4 uppercase tracking-tighter"
+          className="w-full md:w-auto px-10 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 text-black font-black text-sm rounded-xl transition-all shadow-2xl shadow-emerald-900/40 active:scale-95 flex items-center justify-center gap-3 uppercase tracking-tighter"
         >
           {saving ? 'GUARDANDO...' : '🚀 PUBLICAR AGENDA SEMANAL'}
         </button>
