@@ -18,38 +18,18 @@ export async function middleware(req: NextRequest) {
           return req.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          req.cookies.set({
-            name,
-            value,
-            ...options,
-          })
+          req.cookies.set({ name, value, ...options })
           res = NextResponse.next({
-            request: {
-              headers: req.headers,
-            },
+            request: { headers: req.headers },
           })
-          res.cookies.set({
-            name,
-            value,
-            ...options,
-          })
+          res.cookies.set({ name, value, ...options })
         },
         remove(name: string, options: CookieOptions) {
-          req.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
+          req.cookies.set({ name, value: '', ...options })
           res = NextResponse.next({
-            request: {
-              headers: req.headers,
-            },
+            request: { headers: req.headers },
           })
-          res.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
+          res.cookies.set({ name, value: '', ...options })
         },
       },
     }
@@ -59,27 +39,24 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
-  // Proteger rutas de /dashboard
-  if (req.nextUrl.pathname.startsWith('/dashboard')) {
+  const url = req.nextUrl.clone()
+
+  // 1. Proteger /dashboard y subrutas
+  if (url.pathname.startsWith('/dashboard')) {
     if (!session) {
-      return NextResponse.redirect(new URL('/', req.url))
+      return NextResponse.redirect(new URL('/admin/auth', req.url))
     }
+    // NOTA SAAS: Eliminamos el bloqueo de 'authorized' manual para permitir Onboarding inmediato.
+  }
 
-    // Verificar autorización en la tabla profiles
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('authorized')
-      .eq('id', session.user.id)
-      .single()
-
-    if (!profile || !profile.authorized) {
-      return NextResponse.redirect(new URL('/espera', req.url))
-    }
+  // 2. Redirección inteligente desde la Home si ya está logueado
+  if (url.pathname === '/' && session) {
+    return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
   return res
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/dashboard/:path*', '/dashboard', '/'],
 }
