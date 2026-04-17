@@ -177,24 +177,26 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
       
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-900/20 rounded-full blur-[120px]" />
       
-      <header className="mb-10 text-center relative z-10">
-        <div className="flex items-center justify-center mb-4">
-          <div className="p-3 bg-amber-600 rounded-2xl shadow-xl shadow-amber-900/30">
+      <header className="mb-10 text-center relative z-10 px-4">
+        <div className="flex items-center justify-center mb-6">
+          <div className="p-4 bg-amber-600 rounded-2xl shadow-xl shadow-amber-900/30">
             <Scissors className="w-8 h-8 text-black" />
           </div>
         </div>
-        <h1 className="text-5xl font-extrabold tracking-tighter uppercase mb-2">
+        <h1 className="text-3xl md:text-6xl font-black tracking-tighter uppercase mb-4 break-words px-2">
           {barberConfig.nombre_barberia}
         </h1>
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-zinc-500 tracking-widest text-sm font-medium">RESERVAS ONLINE | POTENCIADO POR BARBERIAPP</p>
+        <div className="flex flex-col items-center gap-6">
+          <p className="text-zinc-500 tracking-wider md:tracking-widest text-[10px] md:text-xs font-bold uppercase leading-relaxed max-w-[280px] md:max-w-none">
+            RESERVAS ONLINE | POTENCIADO POR BARBERIAPP
+          </p>
           
           {barberConfig.google_maps_link && (
             <a 
               href={barberConfig.google_maps_link} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="mt-2 flex items-center gap-2 px-6 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-400 hover:text-amber-500 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-200 shadow-xl active:scale-95"
+              className="mt-4 flex items-center gap-3 px-10 py-4 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-400 hover:text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 shadow-2xl active:scale-95"
             >
               <Globe className="w-4 h-4" />
               CÓMO LLEGAR
@@ -203,8 +205,8 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
         </div>
       </header>
 
-      <main className="w-full max-w-2xl relative z-10">
-        <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl">
+      <main className="w-full max-w-2xl relative z-10 px-2 sm:px-0">
+        <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-6 md:p-10 rounded-[2.5rem] shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
