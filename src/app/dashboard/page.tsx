@@ -13,9 +13,6 @@ export default function Dashboard() {
   const [turns, setTurns] = useState<any[]>([])
   const router = useRouter()
 
-  const [turns, setTurns] = useState<any[]>([])
-  const router = useRouter()
-
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
