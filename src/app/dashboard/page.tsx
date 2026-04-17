@@ -413,14 +413,14 @@ export default function Dashboard() {
         </button>
       </aside>
 
-      {/* Navegación Mobile */}
-      <nav className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900/90 backdrop-blur-xl border border-white/5 px-4 py-3 rounded-full flex items-center gap-2 z-50 shadow-2xl">
-        <button onClick={() => setActiveTab('agenda')} className={`p-4 rounded-full transition-all ${activeTab === 'agenda' ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/40' : 'text-zinc-500'}`}><Calendar className="w-6 h-6" /></button>
-        <button onClick={() => setActiveTab('finanzas')} className={`p-4 rounded-full transition-all ${activeTab === 'finanzas' ? 'bg-emerald-600 text-black shadow-lg shadow-emerald-900/40' : 'text-zinc-500'}`}><DollarSign className="w-6 h-6" /></button>
-        <Link href={`/reserva/${config?.slug}`} target="_blank" className="p-4 text-zinc-500"><ExternalLink className="w-6 h-6" /></Link>
-        <button onClick={() => setActiveTab('config')} className={`p-4 rounded-full transition-all ${activeTab === 'config' ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/40' : 'text-zinc-500'}`}><Settings className="w-6 h-6" /></button>
-        <div className="w-[1px] h-6 bg-zinc-800 mx-2" />
-        <button onClick={handleLogout} className="p-4 text-red-500/50"><LogOut className="w-6 h-6" /></button>
+      {/* Navegación Mobile Compacta */}
+      <nav className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-zinc-900/80 backdrop-blur-2xl border border-white/10 px-3 py-2 rounded-full flex items-center gap-1 z-50 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+        <button onClick={() => setActiveTab('agenda')} className={`p-3 rounded-full transition-all ${activeTab === 'agenda' ? 'bg-amber-600 text-black' : 'text-zinc-500'}`}><Calendar className="w-5 h-5" /></button>
+        <button onClick={() => setActiveTab('finanzas')} className={`p-3 rounded-full transition-all ${activeTab === 'finanzas' ? 'bg-emerald-600 text-black' : 'text-zinc-500'}`}><DollarSign className="w-5 h-5" /></button>
+        <Link href={`/reserva/${config?.slug}`} target="_blank" className="p-3 text-zinc-500"><ExternalLink className="w-5 h-5" /></Link>
+        <button onClick={() => setActiveTab('config')} className={`p-3 rounded-full transition-all ${activeTab === 'config' ? 'bg-amber-600 text-black' : 'text-zinc-500'}`}><Settings className="w-5 h-5" /></button>
+        <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
+        <button onClick={handleLogout} className="p-3 text-red-500/40"><LogOut className="w-5 h-5" /></button>
       </nav>
 
       <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full max-w-[100vw]">
@@ -441,9 +441,9 @@ export default function Dashboard() {
               </div>
             </header>
 
-            <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
-              <div className="p-8 border-b border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-zinc-900/20">
-                <div>
+            <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
+              <div className="p-6 sm:p-8 border-b border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-zinc-900/20">
+                <div className="w-full sm:w-auto">
                   <h3 className="text-xl font-black uppercase italic tracking-tighter">
                     {viewDate === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()) 
                       ? 'Próximos Turnos' 
@@ -452,24 +452,69 @@ export default function Dashboard() {
                   </h3>
                 </div>
                 
-                <div className="flex items-center gap-4 w-full sm:w-auto">
-                  <div className="relative group flex-1 sm:flex-initial">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none" />
-                    <input 
-                      type="date"
-                      value={viewDate}
-                      onChange={(e) => setViewDate(e.target.value)}
-                      className="w-full sm:w-auto bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/50 rounded-xl py-3 pl-12 pr-4 text-xs font-black text-white uppercase outline-none transition-all [color-scheme:dark]"
-                    />
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                  <div className="w-full sm:w-auto">
+                    <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1 block sm:hidden">Cambiar Fecha:</label>
+                    <div className="relative group">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none" />
+                      <input 
+                        type="date"
+                        value={viewDate}
+                        onChange={(e) => setViewDate(e.target.value)}
+                        className="w-full sm:w-auto bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/50 rounded-xl py-3.5 pl-12 pr-4 text-xs font-black text-white uppercase outline-none transition-all [color-scheme:dark]"
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="hidden sm:flex items-center gap-2 shrink-0">
                     <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                     <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest hidden xs:inline">ACTUALIZADO</span>
                   </div>
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Vista Mobile: Cards (Agenda) */}
+              <div className="block md:hidden">
+                {turns.length > 0 ? (
+                  <div className="divide-y divide-zinc-800/30">
+                    {turns.map((turn) => (
+                      <div key={turn.id} className="p-6 space-y-4 active:bg-white/[0.02] transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-black text-lg text-zinc-100 uppercase tracking-tight">{turn.cliente_nombre}</div>
+                            <div className="text-[10px] text-zinc-500 font-bold flex items-center gap-2 mt-1 uppercase"><Phone className="w-3 h-3" /> {turn.cliente_telefono}</div>
+                          </div>
+                          <a 
+                            href={`https://wa.me/${turn.cliente_telefono.replace('+', '')}`}
+                            target="_blank"
+                            className="p-3 bg-emerald-600 text-black rounded-full shadow-lg"
+                          >
+                            <MessageCircle className="w-5 h-5" />
+                          </a>
+                        </div>
+                        <div className="flex items-center justify-between pt-2">
+                          <div className="px-3 py-1.5 bg-amber-600/10 text-amber-500 rounded-lg font-mono font-black text-xs border border-amber-600/10 uppercase">
+                            {turn.hora.substring(0, 5)}hs
+                          </div>
+                          <button
+                            onClick={() => handleFinish(turn.id)}
+                            className="px-5 py-2.5 bg-emerald-600 text-black rounded-xl font-black text-[10px] uppercase tracking-tighter"
+                          >
+                            FINALIZAR
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-20 text-center px-8">
+                    <div className="text-zinc-700 text-3xl font-black uppercase opacity-20 mb-2 italic">Sin Turnos</div>
+                    <p className="text-zinc-600 text-xs font-medium italic uppercase tracking-widest">Día despejado</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Vista Desktop: Tabla (Agenda) */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-zinc-800/30 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
@@ -665,12 +710,12 @@ export default function Dashboard() {
               <p className="text-zinc-500 text-sm sm:text-base font-medium italic">Control de ingresos y balance de servicios</p>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-10 lg:mb-12">
               {/* Total Diario */}
-              <div className="bg-zinc-900/50 border border-emerald-500/20 p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
-                <div className="flex flex-row items-start justify-between gap-4 mb-6">
+              <div className="bg-zinc-900/50 border border-emerald-500/20 p-5 sm:p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
+                <div className="flex flex-row items-start justify-between gap-4 mb-4 sm:mb-6">
                   <div className="flex-1">
-                    <label className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2 block transition-colors ${historyFilterMode === 'day' ? 'text-emerald-500' : 'text-zinc-600'}`}>
+                    <label className={`text-[8.5px] sm:text-[10px] font-black uppercase tracking-widest mb-1.5 block transition-colors ${historyFilterMode === 'day' ? 'text-emerald-500' : 'text-zinc-600'}`}>
                       Monto Diario {historyFilterMode === 'day' && '• ACTIVO'}
                     </label>
                     <input 
@@ -680,7 +725,7 @@ export default function Dashboard() {
                         setFinancesDate(e.target.value)
                         setHistoryFilterMode('day')
                       }}
-                      className="bg-zinc-950/50 sm:bg-transparent border border-zinc-800 sm:border-none rounded-lg px-3 py-2 sm:p-0 w-full sm:w-auto text-zinc-400 sm:text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
+                      className="bg-zinc-950/80 sm:bg-transparent border border-zinc-800 sm:border-none rounded-lg px-3 py-2.5 sm:p-0 w-full sm:w-auto text-zinc-300 sm:text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
                     />
                   </div>
                   <div 
@@ -691,16 +736,16 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
-                  <span className="text-zinc-500 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest italic">ARS</span>
+                  <span className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-zinc-500 font-bold uppercase text-[8px] sm:text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
 
               {/* Total Mensual */}
-              <div className="bg-zinc-900/50 border border-amber-500/20 p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-amber-950/10 backdrop-blur-xl group hover:border-amber-500/40 transition-all">
-                <div className="flex flex-row items-start justify-between gap-4 mb-6">
+              <div className="bg-zinc-900/50 border border-amber-500/20 p-5 sm:p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-amber-950/10 backdrop-blur-xl group hover:border-amber-500/40 transition-all">
+                <div className="flex flex-row items-start justify-between gap-4 mb-4 sm:mb-6">
                   <div className="flex-1">
-                    <label className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2 block transition-colors ${historyFilterMode === 'month' ? 'text-amber-500' : 'text-zinc-600'}`}>
+                    <label className={`text-[8.5px] sm:text-[10px] font-black uppercase tracking-widest mb-1.5 block transition-colors ${historyFilterMode === 'month' ? 'text-amber-500' : 'text-zinc-600'}`}>
                       Cierre Mensual {historyFilterMode === 'month' && '• ACTIVO'}
                     </label>
                     <input 
@@ -710,7 +755,7 @@ export default function Dashboard() {
                         setFinancesMonth(e.target.value)
                         setHistoryFilterMode('month')
                       }}
-                      className="bg-zinc-950/50 sm:bg-transparent border border-zinc-800 sm:border-none rounded-lg px-3 py-2 sm:p-0 w-full sm:w-auto text-zinc-400 sm:text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
+                      className="bg-zinc-950/80 sm:bg-transparent border border-zinc-800 sm:border-none rounded-lg px-3 py-2.5 sm:p-0 w-full sm:w-auto text-zinc-300 sm:text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
                     />
                   </div>
                   <div 
@@ -721,25 +766,25 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.monthlyTotal.toLocaleString('es-AR')}</span>
-                  <span className="text-zinc-500 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest italic">ARS</span>
+                  <span className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.monthlyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-zinc-500 font-bold uppercase text-[8px] sm:text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
 
               {/* Total Anual */}
-              <div className="bg-zinc-900/50 border border-blue-500/20 p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-blue-950/10 backdrop-blur-xl group hover:border-blue-500/40 transition-all">
-                <div className="flex flex-row items-start justify-between gap-4 mb-6">
+              <div className="bg-zinc-900/50 border border-blue-500/20 p-5 sm:p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-blue-950/10 backdrop-blur-xl group hover:border-blue-500/40 transition-all">
+                <div className="flex flex-row items-start justify-between gap-4 mb-4 sm:mb-6">
                   <div className="flex-1">
-                    <p className="text-blue-500 text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2">Balance Anual</p>
-                    <span className="text-zinc-600 text-xs font-bold uppercase tracking-widest block py-2 sm:py-0">Año {new Date().getFullYear()}</span>
+                    <p className="text-blue-500 text-[8.5px] sm:text-[10px] font-black uppercase tracking-widest mb-1.5">Balance Anual</p>
+                    <span className="text-zinc-600 text-xs font-bold uppercase tracking-widest block py-1 sm:py-0">Año {new Date().getFullYear()}</span>
                   </div>
                   <div className="p-2.5 sm:p-3 bg-blue-600/10 rounded-xl sm:rounded-2xl text-blue-500 group-hover:scale-110 transition-transform">
                     <Scissors className="w-5 h-5 sm:w-6 sm:h-6 rotate-90" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.annualTotal.toLocaleString('es-AR')}</span>
-                  <span className="text-zinc-500 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest italic">ARS</span>
+                  <span className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.annualTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-zinc-500 font-bold uppercase text-[8px] sm:text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
             </div>
@@ -752,7 +797,36 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Vista Mobile: Cards (Finanzas) */}
+              <div className="block md:hidden">
+                {financesData.history.length > 0 ? (
+                  <div className="divide-y divide-zinc-800/30">
+                    {financesData.history.map((item: any) => (
+                      <div key={item.id} className="p-6 flex justify-between items-center active:bg-white/[0.02] transition-colors">
+                        <div>
+                          <div className="font-black text-zinc-100 uppercase tracking-tight">{item.cliente_nombre}</div>
+                          <div className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">
+                            {new Date(item.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} • {item.hora.substring(0, 5)}hs
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-black text-emerald-500 text-lg">
+                            +${(Number(item.precio) || 0).toLocaleString('es-AR')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-20 text-center px-8">
+                    <div className="text-zinc-700 text-3xl font-black uppercase opacity-20 mb-2 italic">Sin Ingresos</div>
+                    <p className="text-zinc-600 text-xs font-medium italic uppercase tracking-widest">Esperando el primer cobro</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Vista Desktop: Tabla (Finanzas) */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-zinc-800/30 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
