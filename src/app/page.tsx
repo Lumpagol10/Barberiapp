@@ -18,11 +18,11 @@ export default function Home() {
               </div>
               <span className="text-3xl font-black tracking-tighter uppercase italic">Barberiapp</span>
             </div>
-            <h1 className="text-4xl sm:text-7xl md:text-8xl font-black tracking-tight leading-[0.9] uppercase mb-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 px-4">
-              DALE EL LOOK QUE TU <span className="text-amber-500">BARBERÍA</span> AMERITA.
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] sm:leading-[0.9] uppercase mb-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 px-4">
+              DALE EL LOOK QUE TU <span className="text-amber-500">BARBERÍA</span> AMERITA
             </h1>
-            <p className="text-zinc-400 text-base sm:text-xl md:text-2xl font-medium max-w-3xl mx-auto mb-10 leading-relaxed italic animate-in fade-in slide-in-from-bottom-12 duration-1000 px-6">
-              Gestión de turnos inteligente para profesionales que no pierden el tiempo. Unite a la red de Franmark Digital.
+            <p className="text-zinc-400 text-lg sm:text-xl md:text-2xl font-medium max-w-3xl mx-auto mb-10 leading-relaxed italic animate-in fade-in slide-in-from-bottom-12 duration-1000 px-6">
+              Gestión de turnos inteligente y personalizada para barberos profesionales. Unite a la red de Franmark Digital.
             </p>
           </header>
 
