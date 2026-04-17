@@ -207,6 +207,8 @@ export default function Dashboard() {
     router.push('/admin/auth')
   }
 
+  const diasLetras = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+
   const getFormattedDate = () => {
     return new Intl.DateTimeFormat('es-AR', {
       weekday: 'long',
