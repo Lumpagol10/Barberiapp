@@ -13,6 +13,14 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [config, setConfig] = useState<any>(null)
   const [turns, setTurns] = useState<any[]>([])
+  const [viewDate, setViewDate] = useState(() => {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date())
+  })
   
   // Estados para Agenda Flexible (0-6)
   const [weeklySchedule, setWeeklySchedule] = useState<any[]>([])
@@ -35,12 +43,12 @@ export default function Dashboard() {
         return
       }
       setUser(user)
-      fetchData(user.id)
+      fetchData(user.id, viewDate)
     }
     checkUser()
-  }, [])
+  }, [viewDate])
 
-  const fetchData = async (userId: string) => {
+  const fetchData = async (userId: string, dateToFetch?: string) => {
     setLoading(true)
     try {
       const { data: configData } = await supabase
@@ -82,7 +90,7 @@ export default function Dashboard() {
           .from('turnos')
           .select('*')
           .eq('barbero_id', userId)
-          .order('fecha', { ascending: true })
+          .eq('fecha', dateToFetch || viewDate)
           .order('hora', { ascending: true })
         
         setTurns(turnsData || [])
@@ -323,11 +331,30 @@ export default function Dashboard() {
             </header>
 
             <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
-              <div className="p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-900/20">
-                <h3 className="text-xl font-black uppercase italic tracking-tighter">Próximos Turnos</h3>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">ACTUALIZADO</span>
+              <div className="p-8 border-b border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-zinc-900/20">
+                <div>
+                  <h3 className="text-xl font-black uppercase italic tracking-tighter">
+                    {viewDate === new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()) 
+                      ? 'Próximos Turnos' 
+                      : `Turnos del ${new Date(viewDate + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}`
+                    }
+                  </h3>
+                </div>
+                
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <div className="relative group flex-1 sm:flex-initial">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none" />
+                    <input 
+                      type="date"
+                      value={viewDate}
+                      onChange={(e) => setViewDate(e.target.value)}
+                      className="w-full sm:w-auto bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/50 rounded-xl py-3 pl-12 pr-4 text-xs font-black text-white uppercase outline-none transition-all [color-scheme:dark]"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest hidden xs:inline">ACTUALIZADO</span>
+                  </div>
                 </div>
               </div>
 
@@ -386,8 +413,8 @@ export default function Dashboard() {
                     ) : (
                       <tr>
                         <td colSpan={3} className="px-8 py-20 text-center">
-                          <div className="text-zinc-700 text-4xl font-black uppercase opacity-20 mb-4 tracking-tighter italic">Sin Turnos</div>
-                          <p className="text-zinc-600 font-medium italic">Todo despejado por hoy.</p>
+                          <div className="text-zinc-700 text-4xl font-black uppercase opacity-20 mb-4 tracking-tighter italic">No hay turnos</div>
+                          <p className="text-zinc-600 font-medium italic">Todo despejado para esta fecha.</p>
                         </td>
                       </tr>
                     )}
