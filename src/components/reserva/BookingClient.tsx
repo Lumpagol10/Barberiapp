@@ -51,7 +51,7 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
       const dateParts = nuevaFecha.split('-').map(Number)
       const dayOfWeek = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getDay()
       
-      // 2. BUSCAR EXCEPCIÓN ESPECÍFICA PARA ESTA FECHA (PRIORIDAD 1)
+      // 2. BUSCAR PLANIFICACIÓN ESPECÍFICA PARA ESTA FECHA (STRICT MODE)
       const { data: specificShed } = await supabase
         .from('horarios_especificos')
         .select('*')
@@ -67,26 +67,8 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
           setAvailableSlots(sortedSlots)
           fetchBookedTurns(nuevaFecha)
         }
-        return // EXCEPCIÓN ENCONTRADA, NO SEGUIMOS CON LA RUTINA
-      }
-
-      // 3. SI NO HAY EXCEPCIÓN, BUSCAR RUTINA SEMANAL (FALLBACK)
-      const { data: dayShed } = await supabase
-        .from('horarios_barberia')
-        .select('*')
-        .eq('user_id', barberConfig.user_id)
-        .eq('dia_semana', dayOfWeek)
-        .single()
-
-      if (dayShed) {
-        if (!dayShed.activo) {
-          setDiaCerrado(true)
-        } else {
-          const sortedSlots = (dayShed.slots || []).sort((a: string, b: string) => a.localeCompare(b))
-          setAvailableSlots(sortedSlots)
-          fetchBookedTurns(nuevaFecha)
-        }
       } else {
+        // SI NO HAY PLANIFICACIÓN ESPECÍFICA, EL DÍA ESTÁ CERRADO (CONTROL TOTAL)
         setDiaCerrado(true)
       }
     }
@@ -240,14 +222,23 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
               <label className="text-sm font-medium text-zinc-400 ml-1">Fecha</label>
               <div className="relative">
                 <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                <input required type="date" value={fecha} min={new Date().toISOString().split('T')[0]} onChange={(e) => handleDateChange(e.target.value)} className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 rounded-2xl py-4 pl-12 pr-4 outline-none text-white transition-all cursor-pointer" />
+                <input 
+                  type="date" 
+                  required 
+                  value={fecha} 
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  min={new Date().toLocaleDateString('en-CA')}
+                  max={new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')}
+                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark]" 
+                />
               </div>
             </div>
 
+            {/* Selector de Horas */}
             {showSlots && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <label className="text-sm font-black uppercase tracking-widest text-amber-500/80 ml-1 flex items-center gap-2 italic">
-                  <Clock className="w-4 h-4" /> TURNOS DISPONIBLES PARA EL {getFormattedDate(fecha)}
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
+                  <Clock className="w-3 h-3" /> Seleccioná el Horario
                 </label>
                 
                 {diaCerrado ? (
@@ -255,8 +246,8 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
                     <div className="w-20 h-20 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-8">
                       <AlertTriangle className="w-10 h-10 text-red-500" />
                     </div>
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic mb-4">Día Cerrado</h3>
-                    <p className="text-zinc-500 font-medium italic max-w-xs mx-auto">El barbero no trabaja este día o se encuentra fuera de servicio. Por favor, seleccioná otra fecha.</p>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter italic mb-4">Agenda No Programada</h3>
+                    <p className="text-zinc-500 font-medium italic max-w-xs mx-auto">El barbero aún no ha confirmado su disponibilidad para este día. Por favor, intentá con otra fecha o consultale por WhatsApp.</p>
                   </div>
                 ) : availableSlots.length === 0 ? (
                   <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[2.5rem] text-center space-y-6 animate-in zoom-in-95 duration-300">

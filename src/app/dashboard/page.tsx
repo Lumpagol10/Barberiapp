@@ -41,8 +41,10 @@ export default function Dashboard() {
     history: []
   })
   
-  // Estados para Agenda Flexible (0-6)
-  const [weeklySchedule, setWeeklySchedule] = useState<any[]>([])
+  // Estados para Agenda Inteligente
+  const [masterRoutine, setMasterRoutine] = useState<any[]>([]) // La plantilla base (L-D)
+  const [planningSchedule, setPlanningSchedule] = useState<any[]>([]) // Los 7-14 días concretos
+  const [showMasterRoutine, setShowMasterRoutine] = useState(false)
   
   // States for Editing Config
   const [editNombre, setEditNombre] = useState('')
@@ -173,17 +175,47 @@ export default function Dashboard() {
           .order('dia_semana', { ascending: true })
 
         if (scheduleData && scheduleData.length > 0) {
-          setWeeklySchedule(scheduleData)
+          setMasterRoutine(scheduleData)
         } else {
           // Migración automática: Crear base L-S activa, D inactiva
           const initial = [0,1,2,3,4,5,6].map(dia => ({
             dia_semana: dia,
             activo: dia !== 0,
-            h_apertura: configData.hora_apertura,
-            h_cierre: configData.hora_cierre
+            slots: ["09:00", "10:00", "11:00", "15:00", "16:00", "17:00"]
           }))
-          setWeeklySchedule(initial)
+          setMasterRoutine(initial)
         }
+
+        // --- CARGAR PLANIFICACIÓN DE LOS PRÓXIMOS 7 DÍAS ---
+        const today = new Date()
+        const next7Days: string[] = []
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(today)
+          d.setDate(today.getDate() + i)
+          next7Days.push(d.toLocaleDateString('en-CA'))
+        }
+
+        const { data: exceptionsData } = await supabase
+          .from('horarios_especificos')
+          .select('*')
+          .eq('user_id', userId)
+          .in('fecha', next7Days)
+
+        const finalPlanning = next7Days.map(fechaStr => {
+           const specific = exceptionsData?.find(e => e.fecha === fechaStr)
+           if (specific) return { ...specific, isNew: false }
+           
+           // Si no hay específico, pre-cargamos de la rutina
+           const dObj = new Date(fechaStr + 'T12:00:00')
+           const routine = (scheduleData || []).find(r => r.dia_semana === dObj.getDay())
+           return {
+             fecha: fechaStr,
+             activo: false, // Por defecto APAGADO hasta que el barbero lo confirme (Batch Planning)
+             slots: routine?.slots || [],
+             isNew: true
+           }
+        })
+        setPlanningSchedule(finalPlanning)
 
         const { data: turnsData } = await supabase
           .from('turnos')
@@ -217,10 +249,7 @@ export default function Dashboard() {
         nombre_barberia: editNombre,
         slug: newSlug,
         telefono_barbero: `+54${editPhone}`,
-        google_maps_link: editMaps,
-        hora_apertura: editApertura,
-        hora_cierre: editCierre,
-        intervalo_minutos: editIntervalo
+        google_maps_link: editMaps
       })
       .eq('user_id', user.id)
 
@@ -228,19 +257,18 @@ export default function Dashboard() {
       alert(`Error al actualizar: ${error.message}`)
     } else {
       await fetchData(user.id)
-      alert('Configuración actualizada con éxito')
-      setActiveTab('agenda')
+      alert('Perfil actualizado con éxito')
     }
     setSaving(false)
   }
 
-  const handleUpdateSchedule = async () => {
+  const handleUpdateMasterRoutine = async () => {
     setSaving(true)
     try {
       const { error } = await supabase
         .from('horarios_barberia')
         .upsert(
-          weeklySchedule.map(s => ({
+          masterRoutine.map(s => ({
             user_id: user.id,
             dia_semana: s.dia_semana,
             activo: s.activo,
@@ -250,7 +278,35 @@ export default function Dashboard() {
         )
 
       if (error) throw error
-      alert('✅ Agenda de Slots guardada con éxito')
+      alert('✅ Rutina Maestra actualizada')
+      setShowMasterRoutine(false)
+      fetchData(user.id) // Refrescar planning con la nueva rutina
+    } catch (error: any) {
+      alert(`Error: ${error.message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleUpdatePlanning = async () => {
+    setSaving(true)
+    try {
+      // Guardamos todos los días de la planificación actual como excepciones
+      const { error } = await supabase
+        .from('horarios_especificos')
+        .upsert(
+          planningSchedule.map(s => ({
+            user_id: user.id,
+            fecha: s.fecha,
+            activo: s.activo,
+            slots: s.slots || []
+          })),
+          { onConflict: 'user_id,fecha' }
+        )
+
+      if (error) throw error
+      alert('✅ Agenda Semanal confirmada y publicada')
+      fetchData(user.id)
     } catch (error: any) {
       alert(`Error al guardar agenda: ${error.message}`)
     } finally {
@@ -258,44 +314,40 @@ export default function Dashboard() {
     }
   }
 
-  const addSlot = (dayIndex: number) => {
-    const newShed = [...weeklySchedule]
-    const daySlots = [...(newShed[dayIndex].slots || [])]
-    
-    // Sugerir última hora + 1 hora, o 09:00 por defecto
+  const addPlanningSlot = (idx: number) => {
+    const newSched = [...planningSchedule]
+    const daySlots = [...(newSched[idx].slots || [])]
     let nextTime = "09:00"
     if (daySlots.length > 0) {
       const last = daySlots[daySlots.length - 1]
       const [h, m] = last.split(':').map(Number)
       nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
     }
-    
-    newShed[dayIndex].slots = [...daySlots, nextTime]
-    setWeeklySchedule(newShed)
+    newSched[idx].slots = [...daySlots, nextTime]
+    setPlanningSchedule(newSched)
   }
 
-  const removeSlot = (dayIndex: number, slotIndex: number) => {
-    const newShed = [...weeklySchedule]
-    newShed[dayIndex].slots = newShed[dayIndex].slots.filter((_: any, i: number) => i !== slotIndex)
-    setWeeklySchedule(newShed)
+  const removePlanningSlot = (dayIdx: number, slotIdx: number) => {
+    const newSched = [...planningSchedule]
+    newSched[dayIdx].slots = newSched[dayIdx].slots.filter((_: any, i: number) => i !== slotIdx)
+    setPlanningSchedule(newSched)
   }
 
-  const updateSlot = (dayIndex: number, slotIndex: number, newValue: string) => {
-    const newShed = [...weeklySchedule]
-    newShed[dayIndex].slots[slotIndex] = newValue
-    setWeeklySchedule(newShed)
+  const updatePlanningSlot = (dayIdx: number, slotIdx: number, newValue: string) => {
+    const newSched = [...planningSchedule]
+    newSched[dayIdx].slots[slotIdx] = newValue
+    setPlanningSchedule(newSched)
   }
 
-  const copyToAll = (dayIndex: number) => {
-    const sourceSlots = [...(weeklySchedule[dayIndex].slots || [])]
-    const sourceActive = weeklySchedule[dayIndex].activo
-    const newShed = weeklySchedule.map(dia => ({
-      ...dia,
-      slots: [...sourceSlots],
-      activo: sourceActive
-    }))
-    setWeeklySchedule(newShed)
-    alert('📋 Horarios copiados a toda la semana')
+  const copyRoutineToPlanning = (dayIdx: number) => {
+    const dayObj = new Date(planningSchedule[dayIdx].fecha + 'T12:00:00')
+    const routine = masterRoutine.find(r => r.dia_semana === dayObj.getDay())
+    if (routine) {
+      const newSched = [...planningSchedule]
+      newSched[dayIdx].slots = [...routine.slots]
+      newSched[dayIdx].activo = true
+      setPlanningSchedule(newSched)
+    }
   }
 
   // Cargar Excepción por Fecha
@@ -314,7 +366,7 @@ export default function Dashboard() {
         } else {
           // Fallback visual: Cargar la rutina de ese día de la semana como base
           const dayOfWeek = new Date(exceptionDate + 'T12:00:00').getDay()
-          const routine = weeklySchedule.find(s => s.dia_semana === dayOfWeek)
+          const routine = masterRoutine.find((s: any) => s.dia_semana === dayOfWeek)
           setExceptionSchedule({ 
             activo: routine?.activo ?? true, 
             slots: routine?.slots ?? [] 
@@ -323,7 +375,7 @@ export default function Dashboard() {
       }
       fetchException()
     }
-  }, [exceptionDate, user?.id, weeklySchedule])
+  }, [exceptionDate, user?.id, masterRoutine])
 
   const handleSaveException = async () => {
     if (!exceptionDate) return
@@ -450,18 +502,8 @@ export default function Dashboard() {
     <div className={`bg-zinc-800/50 animate-pulse rounded-2xl ${className}`} />
   )
 
-  const getOrderedSchedule = () => {
-    const today = new Date().getDay()
-    const ordered = []
-    for (let i = 0; i < 7; i++) {
-      const dayIndex = (today + i) % 7
-      // Buscamos el día en la lista original y guardamos su índice real
-      const originalIdx = weeklySchedule.findIndex(s => s.dia_semana === dayIndex)
-      if (originalIdx !== -1) {
-        ordered.push({ ...weeklySchedule[originalIdx], originalIdx })
-      }
-    }
-    return ordered
+  const getOrderedPlanning = () => {
+    return planningSchedule
   }
 
   return (
@@ -716,153 +758,126 @@ export default function Dashboard() {
 
         {activeTab === 'programar' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl">
-            <header className="mb-12">
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Programar Agenda</h1>
-              <p className="text-zinc-500 font-medium italic">Definí los días y horarios que vas a estar disponible</p>
+            <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Agenda Semanal</h1>
+                <p className="text-zinc-500 font-medium italic">Confirmá los días que vas a trabajar esta semana</p>
+              </div>
+              <button 
+                onClick={() => setShowMasterRoutine(!showMasterRoutine)}
+                className="px-6 py-3 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-400 hover:text-amber-500 rounded-xl text-xs font-black uppercase tracking-widest transition-all italic flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" /> Configurar Rutina Maestra
+              </button>
             </header>
 
-            <div className="mb-10 p-6 bg-amber-600/10 border border-amber-600/20 rounded-[2rem] flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-700">
+            {/* MODAL / SECCIÓN RUTINA MAESTRA */}
+            {showMasterRoutine && (
+              <div className="bg-zinc-900/80 border border-amber-600/20 rounded-[2.5rem] p-8 lg:p-12 mb-12 animate-in slide-in-from-top-4 duration-500">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-2xl font-black italic uppercase tracking-tighter text-amber-500">⚙️ Rutina Maestra (Plantilla base)</h3>
+                  <button onClick={() => setShowMasterRoutine(false)} className="text-zinc-500">Cerrar</button>
+                </div>
+                <p className="text-zinc-500 text-sm mb-10 italic">Los horarios que definas acá servirán de base para las nuevas semanas, pero tenés que confirmarlos en la 'Agenda Semanal' para que el cliente los vea.</p>
+                
+                <div className="space-y-4">
+                  {masterRoutine.map((r, idx) => (
+                    <div key={r.dia_semana} className="flex flex-wrap items-center justify-between gap-4 p-4 bg-zinc-950/30 rounded-2xl border border-zinc-900">
+                      <div className="flex items-center gap-4 min-w-[150px]">
+                        <span className="font-black italic uppercase text-zinc-400">{diasLetras[r.dia_semana]}</span>
+                        <button 
+                          onClick={() => {
+                             const newR = [...masterRoutine]
+                             newR[idx].activo = !newR[idx].activo
+                             setMasterRoutine(newR)
+                          }}
+                          className={`w-10 h-6 rounded-full relative transition-all ${r.activo ? 'bg-amber-600' : 'bg-zinc-800'}`}
+                        >
+                           <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${r.activo ? 'left-5' : 'left-1'}`} />
+                        </button>
+                      </div>
+                      <div className="flex-1 flex flex-wrap gap-2">
+                         {r.slots.map((s: string, sIdx: number) => (
+                           <input 
+                            key={sIdx}
+                            type="time" 
+                            value={s}
+                            onChange={(e) => {
+                               const newR = [...masterRoutine]
+                               newR[idx].slots[sIdx] = e.target.value
+                               setMasterRoutine(newR)
+                            }}
+                            className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1 text-xs font-bold text-white [color-scheme:dark]"
+                           />
+                         ))}
+                         <button 
+                          onClick={() => {
+                             const newR = [...masterRoutine]
+                             newR[idx].slots.push("09:00")
+                             setMasterRoutine(newR)
+                          }}
+                          className="px-2 py-1 text-amber-500 font-bold"
+                         >+</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button 
+                  onClick={handleUpdateMasterRoutine}
+                  disabled={saving}
+                  className="mt-8 w-full py-4 bg-amber-600 text-black font-black uppercase rounded-xl"
+                >Guardar Rutina Maestra</button>
+              </div>
+            )}
+
+            <div className="mb-10 p-6 bg-amber-600/10 border border-amber-600/20 rounded-[2rem] flex items-center gap-4">
               <div className="p-3 bg-amber-600 rounded-xl text-black shadow-lg shadow-amber-900/40">
-                <Clock className="w-5 h-5" />
+                <Calendar className="w-5 h-5" />
               </div>
               <p className="text-amber-500 text-sm font-black uppercase tracking-tighter leading-tight italic">
-                Recordá cargar al menos un horario en los días disponibles <br className="hidden md:block" /> 
-                para que tus clientes puedan reservar turnos.
+                Solo los días que marques como "ACTIVOS" y guardes serán visibles para tus clientes en la web de reserva.
               </p>
             </div>
 
-            {/* SECCIÓN EXCEPCIONES POR FECHA */}
-            <div className="bg-zinc-900/40 border border-amber-500/10 rounded-[2.5rem] p-8 lg:p-12 mb-12 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                <Calendar className="w-32 h-32 text-amber-500" />
-              </div>
-
-              <div className="relative z-10 flex flex-col gap-10">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 text-amber-500">
-                    <Calendar className="w-6 h-6" />
-                    <h2 className="text-2xl font-black uppercase italic tracking-tight">Excepciones por Fecha</h2>
-                  </div>
-                  <p className="text-zinc-500 text-sm font-medium italic">Personalizá un día específico (feriados, eventos o cambios de último momento)</p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-10 items-start">
-                   <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Elegí la fecha a personalizar</label>
-                      <input 
-                        type="date" 
-                        value={exceptionDate}
-                        onChange={(e) => setExceptionDate(e.target.value)}
-                        className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark] text-xl"
-                      />
-                   </div>
-
-                   {exceptionDate && (
-                     <div className="bg-zinc-950/30 border border-zinc-800 rounded-3xl p-6 lg:p-8 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
-                           <div className="space-y-1">
-                              <h4 className="text-xl font-black uppercase italic tracking-tighter">Estado del Día</h4>
-                              <p className={`text-[10px] font-black uppercase tracking-widest ${exceptionSchedule.activo ? 'text-emerald-500' : 'text-red-500'}`}>
-                                {exceptionSchedule.activo ? 'Disponible (Con slots)' : 'Cerrado / Bloqueado'}
-                              </p>
-                           </div>
-                           <button 
-                            onClick={() => setExceptionSchedule({ ...exceptionSchedule, activo: !exceptionSchedule.activo })}
-                            className={`relative w-16 h-8 rounded-full transition-all duration-300 ${exceptionSchedule.activo ? 'bg-emerald-600' : 'bg-red-900/40'}`}
-                          >
-                            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-md ${exceptionSchedule.activo ? 'left-9' : 'left-1'}`} />
-                          </button>
-                        </div>
-
-                        {exceptionSchedule.activo && (
-                          <div className="space-y-6">
-                             <div className="grid grid-cols-2 gap-3">
-                                {exceptionSchedule.slots.map((slot, idx) => (
-                                  <div key={idx} className="group relative">
-                                    <input 
-                                      type="time" 
-                                      value={slot}
-                                      onChange={(e) => {
-                                        const newSlots = [...exceptionSchedule.slots]
-                                        newSlots[idx] = e.target.value
-                                        setExceptionSchedule({ ...exceptionSchedule, slots: newSlots })
-                                      }}
-                                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 px-3 text-lg font-black text-center [color-scheme:dark]"
-                                    />
-                                    <button 
-                                      onClick={() => setExceptionSchedule({ ...exceptionSchedule, slots: exceptionSchedule.slots.filter((_, i) => i !== idx) })}
-                                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center text-[8px] opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >✕</button>
-                                  </div>
-                                ))}
-                                <button 
-                                  onClick={addExceptionSlot}
-                                  className="border-2 border-dashed border-zinc-800 hover:border-amber-500/50 rounded-xl py-3 text-zinc-600 hover:text-amber-500 transition-all font-black"
-                                >+</button>
-                             </div>
-                          </div>
-                        )}
-
-                        <button 
-                          onClick={handleSaveException}
-                          disabled={saving}
-                          className="w-full py-4 bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-800 text-black font-black uppercase tracking-tighter rounded-xl transition-all shadow-xl shadow-amber-900/10 active:scale-95"
-                        >
-                           {saving ? 'GUARDANDO...' : 'GUARDAR EXCEPCIÓN'}
-                        </button>
-                     </div>
-                   )}
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-10 p-6 bg-zinc-900/20 border border-zinc-800 rounded-[2rem] flex items-center gap-4">
-              <div className="p-3 bg-zinc-800 rounded-xl text-zinc-500">
-                <Clock className="w-5 h-5" />
-              </div>
-              <h3 className="text-xl font-black uppercase tracking-tight italic text-zinc-400">Rutina Semanal General</h3>
-            </div>
-
             <div className="grid gap-6 mb-12">
-              {getOrderedSchedule().map((dia) => (
-                <div key={dia.dia_semana} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-amber-500/20 shadow-lg' : 'border-white/5 opacity-60'}`}>
+              {getOrderedPlanning().map((dia, idx) => (
+                <div key={dia.fecha} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-emerald-500/20 shadow-lg mb-4' : 'border-white/5 opacity-60'}`}>
                   {/* Header del Día */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-zinc-800/50">
                     <div>
                       <div className="flex items-center gap-3">
                         <h3 className="text-3xl font-black uppercase tracking-tight italic">
-                          {diasLetras[dia.dia_semana]} {getShedDate(dia.dia_semana)}
+                          {diasLetras[new Date(dia.fecha + 'T12:00:00').getDay()]} {new Date(dia.fecha + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}
                         </h3>
-                        {dia.dia_semana === new Date().getDay() && (
+                        {dia.fecha === new Date().toLocaleDateString('en-CA') && (
                           <span className="px-3 py-1 bg-amber-600 text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-amber-900/40 animate-pulse">
                             HOY
                           </span>
                         )}
+                        {dia.isNew && <span className="text-[10px] text-zinc-500 font-bold italic tracking-tighter">(Usando plantilla)</span>}
                       </div>
-                      <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${dia.activo ? 'text-amber-500' : 'text-zinc-600'}`}>
-                        {dia.activo ? '🟢 Disponible para turnos' : '🔴 Local Cerrado'}
+                      <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${dia.activo ? 'text-emerald-500' : 'text-zinc-600'}`}>
+                        {dia.activo ? '🟢 Publicado en la web' : '🔴 No programado (Invisible)'}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-4">
-                      {dia.activo && (
-                        <button 
-                          onClick={() => copyToAll(dia.originalIdx)}
-                          className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-transparent hover:border-zinc-600"
-                        >
-                          Copiar a todos
-                        </button>
+                      {dia.activo === false && (
+                         <button 
+                          onClick={() => copyRoutineToPlanning(idx)}
+                          className="px-4 py-2 text-[10px] font-bold text-amber-500 border border-amber-500/20 rounded-lg hover:bg-amber-500/10 transition-all"
+                         >Cargar Rutina</button>
                       )}
                       
                       {/* Switch de Activo */}
                       <button 
                         type="button"
                         onClick={() => {
-                          const newShed = [...weeklySchedule]
-                          newShed[dia.originalIdx].activo = !newShed[dia.originalIdx].activo
-                          setWeeklySchedule(newShed)
+                          const newShed = [...planningSchedule]
+                          newShed[idx].activo = !newShed[idx].activo
+                          setPlanningSchedule(newShed)
                         }}
-                        className={`relative w-20 h-10 rounded-full transition-all duration-300 shadow-inner shrink-0 ${dia.activo ? 'bg-amber-600' : 'bg-zinc-800'}`}
+                        className={`relative w-20 h-10 rounded-full transition-all duration-300 shadow-inner shrink-0 ${dia.activo ? 'bg-emerald-600' : 'bg-zinc-800'}`}
                       >
                         <div className={`absolute top-1 w-8 h-8 bg-white rounded-full transition-all shadow-md ${dia.activo ? 'left-11' : 'left-1'}`} />
                       </button>
@@ -878,11 +893,11 @@ export default function Dashboard() {
                             <input 
                               type="time" 
                               value={slot} 
-                              onChange={(e) => updateSlot(dia.originalIdx, slotIdx, e.target.value)}
-                              className="w-full bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/30 rounded-2xl py-4 px-4 text-xl font-black text-center [color-scheme:dark] transition-all focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none"
+                              onChange={(e) => updatePlanningSlot(idx, slotIdx, e.target.value)}
+                              className="w-full bg-zinc-950/50 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl py-4 px-4 text-xl font-black text-center [color-scheme:dark] transition-all focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
                             />
                             <button 
-                              onClick={() => removeSlot(dia.originalIdx, slotIdx)}
+                              onClick={() => removePlanningSlot(idx, slotIdx)}
                               className="absolute -top-2 -right-2 w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
                             >
                               ✕
@@ -891,8 +906,8 @@ export default function Dashboard() {
                         ))}
                         
                         <button 
-                          onClick={() => addSlot(dia.originalIdx)}
-                          className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-800 hover:border-amber-500/40 hover:bg-amber-500/5 rounded-2xl py-4 transition-all text-zinc-600 hover:text-amber-500"
+                          onClick={() => addPlanningSlot(idx)}
+                          className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-800 hover:border-emerald-500/40 hover:bg-emerald-500/5 rounded-2xl py-4 transition-all text-zinc-600 hover:text-emerald-500"
                         >
                           <span className="text-2xl font-black">+</span>
                           <span className="text-[10px] font-black uppercase tracking-widest">Agregar</span>
@@ -903,8 +918,8 @@ export default function Dashboard() {
                         <div className="py-12 text-center bg-zinc-950/20 rounded-[2rem] border border-dashed border-zinc-800">
                           <p className="text-zinc-600 font-bold uppercase text-xs tracking-widest">No hay horarios cargados para este día</p>
                           <button 
-                            onClick={() => addSlot(dia.originalIdx)}
-                            className="mt-4 text-amber-500 font-black uppercase text-[10px] underline tracking-widest"
+                            onClick={() => addPlanningSlot(idx)}
+                            className="mt-4 text-emerald-500 font-black uppercase text-[10px] underline tracking-widest"
                           >
                             Hacé clic acá para empezar
                           </button>
@@ -918,17 +933,17 @@ export default function Dashboard() {
 
             <div className="flex justify-end sticky bottom-6 z-50">
               <button 
-                onClick={handleUpdateSchedule}
+                onClick={handleUpdatePlanning}
                 disabled={saving}
-                className="w-full md:w-auto px-16 py-6 bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-800 text-black font-black text-xl rounded-2xl transition-all shadow-2xl shadow-amber-900/40 active:scale-95 flex items-center justify-center gap-4 uppercase tracking-tighter"
+                className="w-full md:w-auto px-16 py-6 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 text-black font-black text-xl rounded-2xl transition-all shadow-2xl shadow-emerald-900/40 active:scale-95 flex items-center justify-center gap-4 uppercase tracking-tighter"
               >
-                {saving ? 'GUARDANDO...' : '✅ GUARDAR AGENDA FLEXIBLE'}
+                {saving ? 'GUARDANDO...' : '🚀 PUBLICAR AGENDA SEMANAL'}
               </button>
             </div>
           </div>
         )}
 
-            {activeTab === 'finanzas' && (
+        {activeTab === 'finanzas' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <header className="mb-10 lg:mb-12">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Finanzas y Caja</h1>
