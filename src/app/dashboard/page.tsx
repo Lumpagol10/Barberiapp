@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [financesMonth, setFinancesMonth] = useState(() => {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit' }).format(new Date())
   })
+  const [historyFilterMode, setHistoryFilterMode] = useState<'day' | 'month'>('day')
   const [financesData, setFinancesData] = useState<any>({
     dailyTotal: 0,
     monthlyTotal: 0,
@@ -63,12 +64,14 @@ export default function Dashboard() {
       fetchFinances(user.id)
     }
     checkUser()
-  }, [viewDate, activeTab, financesDate, financesMonth])
+  }, [viewDate, activeTab, financesDate, financesMonth, historyFilterMode])
 
   const fetchFinances = async (userId: string) => {
     const firstDayOfMonth = financesMonth + '-01'
-    const lastDayOfMonth = financesMonth + '-31'
+    const dateObj = new Date(financesMonth + '-01T12:00:00')
+    const lastDayOfMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).toISOString().split('T')[0]
 
+    // Consulta Independiente: Total Diario
     const { data: dailyData } = await supabase
       .from('turnos')
       .select('precio')
@@ -76,6 +79,7 @@ export default function Dashboard() {
       .eq('estado', 'completado')
       .eq('fecha', financesDate)
 
+    // Consulta Independiente: Total Mensual
     const { data: monthlyData } = await supabase
       .from('turnos')
       .select('precio')
@@ -84,16 +88,22 @@ export default function Dashboard() {
       .gte('fecha', firstDayOfMonth)
       .lte('fecha', lastDayOfMonth)
 
-    const { data: historyData } = await supabase
+    // Consulta de Historial: Según el modo de filtro activo
+    const historyQuery = supabase
       .from('turnos')
       .select('*')
       .eq('barbero_id', userId)
       .eq('estado', 'completado')
-      .gte('fecha', firstDayOfMonth)
-      .lte('fecha', lastDayOfMonth)
       .order('fecha', { ascending: false })
       .order('hora', { ascending: false })
-      .limit(50)
+
+    if (historyFilterMode === 'day') {
+      historyQuery.eq('fecha', financesDate)
+    } else {
+      historyQuery.gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth)
+    }
+
+    const { data: historyData } = await historyQuery.limit(50)
 
     const dailyTotal = dailyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
     const monthlyTotal = monthlyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
@@ -644,15 +654,23 @@ export default function Dashboard() {
               <div className="bg-zinc-900/50 border border-emerald-500/20 p-6 lg:p-8 rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
-                    <p className="text-emerald-500 text-[10px] font-black uppercase tracking-widest mb-1">Recaudación Diaria</p>
+                    <label className={`text-[10px] font-black uppercase tracking-widest mb-1 block transition-colors ${historyFilterMode === 'day' ? 'text-emerald-500' : 'text-zinc-600'}`}>
+                      Recaudación Diaria {historyFilterMode === 'day' && '• FILTRO ACTIVO'}
+                    </label>
                     <input 
                       type="date" 
                       value={financesDate}
-                      onChange={(e) => setFinancesDate(e.target.value)}
-                      className="bg-transparent text-zinc-500 text-xs font-bold outline-none [color-scheme:dark]"
+                      onChange={(e) => {
+                        setFinancesDate(e.target.value)
+                        setHistoryFilterMode('day')
+                      }}
+                      className="bg-transparent text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
                     />
                   </div>
-                  <div className="p-3 bg-emerald-600/10 rounded-2xl text-emerald-500 group-hover:scale-110 transition-transform self-start">
+                  <div 
+                    onClick={() => setHistoryFilterMode('day')}
+                    className={`p-3 rounded-2xl transition-all cursor-pointer ${historyFilterMode === 'day' ? 'bg-emerald-600 text-black shadow-lg shadow-emerald-900/40' : 'bg-emerald-600/10 text-emerald-500 group-hover:scale-110'}`}
+                  >
                     <DollarSign className="w-6 h-6" />
                   </div>
                 </div>
@@ -666,15 +684,23 @@ export default function Dashboard() {
               <div className="bg-zinc-900/50 border border-amber-500/20 p-6 lg:p-8 rounded-[2.5rem] shadow-xl shadow-amber-950/10 backdrop-blur-xl group hover:border-amber-500/40 transition-all">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
-                    <p className="text-amber-500 text-[10px] font-black uppercase tracking-widest mb-1">Cierre Mensual</p>
+                    <label className={`text-[10px] font-black uppercase tracking-widest mb-1 block transition-colors ${historyFilterMode === 'month' ? 'text-amber-500' : 'text-zinc-600'}`}>
+                      Cierre Mensual {historyFilterMode === 'month' && '• FILTRO ACTIVO'}
+                    </label>
                     <input 
                       type="month" 
                       value={financesMonth}
-                      onChange={(e) => setFinancesMonth(e.target.value)}
-                      className="bg-transparent text-zinc-500 text-xs font-bold outline-none [color-scheme:dark]"
+                      onChange={(e) => {
+                        setFinancesMonth(e.target.value)
+                        setHistoryFilterMode('month')
+                      }}
+                      className="bg-transparent text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
                     />
                   </div>
-                  <div className="p-3 bg-amber-600/10 rounded-2xl text-amber-500 group-hover:scale-110 transition-transform self-start">
+                  <div 
+                    onClick={() => setHistoryFilterMode('month')}
+                    className={`p-3 rounded-2xl transition-all cursor-pointer ${historyFilterMode === 'month' ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/40' : 'bg-amber-600/10 text-amber-500 group-hover:scale-110'}`}
+                  >
                     <TrendingUp className="w-6 h-6" />
                   </div>
                 </div>
@@ -687,7 +713,9 @@ export default function Dashboard() {
 
             <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
               <div className="p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-900/20">
-                <h3 className="text-xl font-black uppercase italic tracking-tighter">Historial de Turnos Cobrados</h3>
+                <h3 className="text-xl font-black uppercase italic tracking-tighter">
+                  {historyFilterMode === 'day' ? 'Cobros del día seleccionado' : 'Historial del mes seleccionado'}
+                </h3>
                 <div className="p-2 bg-emerald-600/10 rounded-lg text-emerald-500">
                   <DollarSign className="w-4 h-4" />
                 </div>
