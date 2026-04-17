@@ -312,6 +312,12 @@ export default function Dashboard() {
     }
     setSaving(false)
   }
+  // Sincronizar título del navegador dinámicamente
+  useEffect(() => {
+    if (config?.nombre_barberia) {
+      document.title = `${config.nombre_barberia.toUpperCase()} | PANEL DE CONTROL`
+    }
+  }, [config?.nombre_barberia])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -408,9 +414,10 @@ export default function Dashboard() {
           </button>
         </nav>
 
-        <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-zinc-500 hover:text-red-400 transition-colors mt-auto font-bold uppercase text-xs tracking-widest">
-          <LogOut className="w-5 h-5" /> Cerrar Sesión
-        </button>
+        <div className="flex items-center gap-3 px-4 py-3 text-zinc-700 font-bold uppercase text-[10px] tracking-widest mt-auto border-t border-zinc-800/30 pt-6">
+          <User className="w-4 h-4" />
+          <span className="truncate max-w-[150px]">{user?.email}</span>
+        </div>
       </aside>
 
       {/* Navegación Mobile Compacta */}
@@ -420,7 +427,7 @@ export default function Dashboard() {
         <Link href={`/reserva/${config?.slug}`} target="_blank" className="p-3 text-zinc-500"><ExternalLink className="w-5 h-5" /></Link>
         <button onClick={() => setActiveTab('config')} className={`p-3 rounded-full transition-all ${activeTab === 'config' ? 'bg-amber-600 text-black' : 'text-zinc-500'}`}><Settings className="w-5 h-5" /></button>
         <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
-        <button onClick={handleLogout} className="p-3 text-red-500/40"><LogOut className="w-5 h-5" /></button>
+        <div className="p-3 text-zinc-700"><User className="w-5 h-5" /></div>
       </nav>
 
       <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full max-w-[100vw]">
@@ -871,37 +878,40 @@ export default function Dashboard() {
 
         {activeTab === 'config' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-4xl">
-            <header className="mb-12">
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Mi Perfil</h1>
-              <p className="text-zinc-500 font-medium italic">Configurá la identidad de tu negocio</p>
+            <header className="mb-10 lg:mb-12">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Mi Perfil</h1>
+              <p className="text-zinc-500 text-sm sm:text-base font-medium italic">Configurá la identidad y cuenta de tu negocio</p>
             </header>
 
-            <form onSubmit={handleUpdateConfig} className="space-y-8">
+            <form onSubmit={handleUpdateConfig} className="space-y-6 sm:space-y-8">
               {/* Sección Identidad */}
-              <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-2xl">
-                <div className="flex items-center gap-4 text-amber-500 mb-2">
-                  <div className="p-3 bg-amber-600/10 rounded-2xl"><Type className="w-6 h-6" /></div>
-                  <h3 className="text-xl font-black uppercase italic tracking-tighter">Identidad del Local</h3>
+              <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl">
+                <div className="flex items-center gap-4 text-amber-500">
+                  <div className="p-2.5 sm:p-3 bg-amber-600/10 rounded-xl sm:rounded-2xl"><Store className="w-5 h-5 sm:w-6 sm:h-6" /></div>
+                  <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Identidad del Local</h3>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
                   <div className="space-y-3">
-                    <label className="text-sm font-black uppercase tracking-widest text-zinc-500 ml-1">Nombre de la Barbería</label>
+                    <label className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Nombre de la Barbería</label>
                     <input 
                       required 
                       value={editNombre} 
                       onChange={(e) => setEditNombre(e.target.value)} 
-                      className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all" 
+                      placeholder="Ej: Lampa Barbers"
+                      className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-xl sm:rounded-2xl py-4 sm:py-5 px-5 sm:px-6 outline-none text-white font-bold transition-all text-sm sm:text-base" 
                     />
                     {editNombre !== config.nombre_barberia && (
-                      <p className="text-[10px] text-amber-500 font-black uppercase tracking-widest mt-2 animate-pulse">
-                        ⚠️ ATENCIÓN: Al cambiar el nombre, tu URL de reserva también cambiará.
-                      </p>
+                      <div className="bg-amber-600/5 border border-amber-600/10 p-4 rounded-xl mt-3">
+                        <p className="text-[9px] sm:text-[10px] text-amber-500 font-black uppercase tracking-widest leading-relaxed">
+                          ⚠️ ATENCIÓN: Al cambiar el nombre, tu URL de reserva dinámica cambiará. El link actual dejará de funcionar.
+                        </p>
+                      </div>
                     )}
                   </div>
                   <div className="space-y-3">
-                    <label className="text-sm font-black uppercase tracking-widest text-zinc-500 ml-1">Link de Reserva (Slug)</label>
-                    <div className="bg-zinc-950/30 border border-zinc-800 rounded-2xl py-5 px-6 text-zinc-600 font-mono text-sm truncate">
+                    <label className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Link de Reserva Dinámico</label>
+                    <div className="bg-zinc-950/30 border border-zinc-800 rounded-xl sm:rounded-2xl py-4 sm:py-5 px-5 sm:px-6 text-zinc-600 font-mono text-[10px] sm:text-xs truncate italic">
                       barberiapp.com/reserva/{editNombre.toLowerCase().trim().replace(/\s+/g, '-')}
                     </div>
                   </div>
@@ -909,91 +919,71 @@ export default function Dashboard() {
               </div>
 
               {/* Sección Contacto */}
-              <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-2xl">
-                <div className="flex items-center gap-4 text-amber-500 mb-2">
-                  <div className="p-3 bg-amber-600/10 rounded-2xl"><Phone className="w-6 h-6" /></div>
-                  <h3 className="text-xl font-black uppercase italic tracking-tighter">Contacto y Ubicación</h3>
+              <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl">
+                <div className="flex items-center gap-4 text-emerald-500">
+                  <div className="p-2.5 sm:p-3 bg-emerald-600/10 rounded-xl sm:rounded-2xl"><Phone className="w-5 h-5 sm:w-6 sm:h-6" /></div>
+                  <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Canal de Ventas</h3>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
                   <div className="space-y-3">
-                    <label className="text-sm font-black uppercase tracking-widest text-zinc-500 ml-1">WhatsApp de Reservas</label>
-                    <div className="flex bg-zinc-950/50 border border-zinc-800 rounded-2xl overflow-hidden focus-within:border-amber-500/50 transition-all">
-                      <div className="bg-zinc-900 px-6 py-5 border-r border-zinc-800 text-zinc-500 font-black">+54</div>
+                    <label className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">WhatsApp de Reservas</label>
+                    <div className="flex bg-zinc-950/50 border border-zinc-800 rounded-xl sm:rounded-2xl overflow-hidden focus-within:border-emerald-500/50 transition-all">
+                      <div className="bg-zinc-900 px-4 sm:px-6 py-4 sm:py-5 border-r border-zinc-800 text-zinc-500 font-black text-xs sm:text-sm">+54</div>
                       <input 
                         required 
                         value={editPhone} 
                         onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, ''))} 
-                        className="flex-1 bg-transparent py-5 px-6 outline-none text-white font-bold" 
+                        className="flex-1 bg-transparent py-4 sm:py-5 px-5 sm:px-6 outline-none text-white font-bold text-sm sm:text-base" 
                         placeholder="2634XXXXXX"
                       />
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <label className="text-sm font-black uppercase tracking-widest text-zinc-500 ml-1">Google Maps Link (Opcional)</label>
+                    <label className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Ubicación (Google Maps)</label>
                     <input 
                       value={editMaps} 
                       onChange={(e) => setEditMaps(e.target.value)} 
-                      placeholder="https://maps.google.com/..."
-                      className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all" 
+                      placeholder="Pega aquí el link de tu ubicación"
+                      className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-emerald-500/50 rounded-xl sm:rounded-2xl py-4 sm:py-5 px-5 sm:px-6 outline-none text-white font-bold transition-all text-sm sm:text-base" 
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Sección Horarios */}
-              <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-2xl">
-                <div className="flex items-center gap-4 text-amber-500 mb-2">
-                  <div className="p-3 bg-amber-600/10 rounded-2xl"><Clock className="w-6 h-6" /></div>
-                  <h3 className="text-xl font-black uppercase italic tracking-tighter">Horarios de Atención</h3>
+              {/* Sección Cuenta y Seguridad */}
+              <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl">
+                <div className="flex items-center gap-4 text-zinc-400">
+                  <div className="p-2.5 sm:p-3 bg-zinc-800 rounded-xl sm:rounded-2xl"><User className="w-5 h-5 sm:w-6 sm:h-6" /></div>
+                  <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Cuenta y Seguridad</h3>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-                  <div className="space-y-3">
-                    <label className="text-sm font-black uppercase tracking-widest text-zinc-500 ml-1">Apertura</label>
-                    <input 
-                      type="time" 
-                      required 
-                      value={editApertura} 
-                      onChange={(e) => setEditApertura(e.target.value)} 
-                      className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark]" 
-                    />
+                <div className="grid md:grid-cols-2 gap-8 items-end">
+                  <div className="space-y-3 opacity-60">
+                    <label className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Email de la Cuenta (No Editable)</label>
+                    <div className="w-full bg-zinc-950/20 border border-zinc-800/50 rounded-xl sm:rounded-2xl py-4 sm:py-5 px-5 sm:px-6 text-zinc-400 font-bold text-sm sm:text-base select-none">
+                      {user?.email}
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-sm font-black uppercase tracking-widest text-zinc-500 ml-1">Cierre</label>
-                    <input 
-                      type="time" 
-                      required 
-                      value={editCierre} 
-                      onChange={(e) => setEditCierre(e.target.value)} 
-                      className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark]" 
-                    />
-                  </div>
-                  <div className="space-y-3 col-span-2 md:col-span-1">
-                    <label className="text-sm font-black uppercase tracking-widest text-zinc-500 ml-1">Intervalo (Minutos)</label>
-                    <select 
-                      value={editIntervalo} 
-                      onChange={(e) => setEditIntervalo(parseInt(e.target.value))}
-                      className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold appearance-none transition-all cursor-pointer"
-                    >
-                      <option value={15}>15 minutos</option>
-                      <option value={30}>30 minutos</option>
-                      <option value={45}>45 minutos</option>
-                      <option value={60}>1 hora</option>
-                    </select>
-                  </div>
+                  <button 
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full bg-red-950/10 border border-red-900/20 hover:bg-red-900/20 text-red-500 font-black py-5 px-6 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-3 uppercase text-xs sm:text-sm tracking-widest italic"
+                  >
+                    <LogOut className="w-5 h-5" /> Cerrar Sesión Segura
+                  </button>
                 </div>
               </div>
 
-              {/* Botón Guardar */}
-              <div className="flex justify-end pt-8">
+              {/* Botón Guardar Flotante en Mobile / Fijo en Desktop */}
+              <div className="flex justify-end pt-4 sm:pt-8 sticky bottom-4 sm:relative z-40">
                 <button 
                   type="submit" 
                   disabled={saving}
-                  className="w-full md:w-auto px-12 py-6 bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-800 text-black font-black text-xl rounded-2xl transition-all shadow-2xl shadow-amber-900/20 active:scale-95 flex items-center justify-center gap-3 uppercase tracking-tighter"
+                  className="w-full md:w-auto px-10 sm:px-12 py-5 sm:py-6 bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-800 text-black font-black text-lg sm:text-xl rounded-xl sm:rounded-2xl transition-all shadow-2xl shadow-amber-900/40 active:scale-95 flex items-center justify-center gap-3 uppercase tracking-tighter"
                 >
                   {saving && <Loader2 className="w-6 h-6 animate-spin" />}
-                  {saving ? 'GUARDANDO...' : 'GUARDAR CONFIGURACIÓN'}
+                  {saving ? 'GUARDANDO...' : 'ACTUALIZAR PERFIL'}
                 </button>
               </div>
             </form>
