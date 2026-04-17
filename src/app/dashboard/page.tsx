@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [financesData, setFinancesData] = useState<any>({
     dailyTotal: 0,
     monthlyTotal: 0,
+    annualTotal: 0,
     history: []
   })
   
@@ -70,6 +71,7 @@ export default function Dashboard() {
     const firstDayOfMonth = financesMonth + '-01'
     const dateObj = new Date(financesMonth + '-01T12:00:00')
     const lastDayOfMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).toISOString().split('T')[0]
+    const firstDayOfYear = new Date().getFullYear() + '-01-01'
 
     // Consulta Independiente: Total Diario
     const { data: dailyData } = await supabase
@@ -88,29 +90,43 @@ export default function Dashboard() {
       .gte('fecha', firstDayOfMonth)
       .lte('fecha', lastDayOfMonth)
 
+    // Consulta Independiente: Total Anual
+    const { data: annualData } = await supabase
+      .from('turnos')
+      .select('precio')
+      .eq('barbero_id', userId)
+      .eq('estado', 'completado')
+      .gte('fecha', firstDayOfYear)
+
     // Consulta de Historial: Según el modo de filtro activo
     const historyQuery = supabase
       .from('turnos')
       .select('*')
       .eq('barbero_id', userId)
       .eq('estado', 'completado')
-      .order('fecha', { ascending: false })
-      .order('hora', { ascending: false })
 
     if (historyFilterMode === 'day') {
-      historyQuery.eq('fecha', financesDate)
+      historyQuery
+        .eq('fecha', financesDate)
+        .order('hora', { ascending: true }) // Cronológico
     } else {
-      historyQuery.gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth)
+      historyQuery
+        .gte('fecha', firstDayOfMonth)
+        .lte('fecha', lastDayOfMonth)
+        .order('fecha', { ascending: false })
+        .order('hora', { ascending: false })
     }
 
     const { data: historyData } = await historyQuery.limit(50)
 
     const dailyTotal = dailyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
     const monthlyTotal = monthlyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+    const annualTotal = annualData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
 
     setFinancesData({
       dailyTotal,
       monthlyTotal,
+      annualTotal,
       history: historyData || []
     })
   }
@@ -649,13 +665,13 @@ export default function Dashboard() {
               <p className="text-zinc-500 font-medium italic">Control de ingresos y balance de servicios</p>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {/* Total Diario */}
               <div className="bg-zinc-900/50 border border-emerald-500/20 p-6 lg:p-8 rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
                     <label className={`text-[10px] font-black uppercase tracking-widest mb-1 block transition-colors ${historyFilterMode === 'day' ? 'text-emerald-500' : 'text-zinc-600'}`}>
-                      Recaudación Diaria {historyFilterMode === 'day' && '• FILTRO ACTIVO'}
+                      Monto Diario {historyFilterMode === 'day' && '• ACTIVO'}
                     </label>
                     <input 
                       type="date" 
@@ -675,7 +691,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl lg:text-6xl font-black text-white tracking-tighter">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
                   <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
@@ -685,7 +701,7 @@ export default function Dashboard() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
                     <label className={`text-[10px] font-black uppercase tracking-widest mb-1 block transition-colors ${historyFilterMode === 'month' ? 'text-amber-500' : 'text-zinc-600'}`}>
-                      Cierre Mensual {historyFilterMode === 'month' && '• FILTRO ACTIVO'}
+                      Cierre Mensual {historyFilterMode === 'month' && '• ACTIVO'}
                     </label>
                     <input 
                       type="month" 
@@ -705,7 +721,24 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl lg:text-6xl font-black text-white tracking-tighter">${financesData.monthlyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter">${financesData.monthlyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
+                </div>
+              </div>
+
+              {/* Total Anual */}
+              <div className="bg-zinc-900/50 border border-blue-500/20 p-6 lg:p-8 rounded-[2.5rem] shadow-xl shadow-blue-950/10 backdrop-blur-xl group hover:border-blue-500/40 transition-all">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <p className="text-blue-500 text-[10px] font-black uppercase tracking-widest mb-1">Balance Anual</p>
+                    <span className="text-zinc-600 text-xs font-bold uppercase tracking-widest">Año {new Date().getFullYear()}</span>
+                  </div>
+                  <div className="p-3 bg-blue-600/10 rounded-2xl text-blue-500 group-hover:scale-110 transition-transform self-start">
+                    <Scissors className="w-6 h-6 rotate-90" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter">${financesData.annualTotal.toLocaleString('es-AR')}</span>
                   <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
@@ -713,9 +746,7 @@ export default function Dashboard() {
 
             <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
               <div className="p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-900/20">
-                <h3 className="text-xl font-black uppercase italic tracking-tighter">
-                  {historyFilterMode === 'day' ? 'Cobros del día seleccionado' : 'Historial del mes seleccionado'}
-                </h3>
+                <h3 className="text-xl font-black uppercase italic tracking-tighter">Cronograma de Ingresos</h3>
                 <div className="p-2 bg-emerald-600/10 rounded-lg text-emerald-500">
                   <DollarSign className="w-4 h-4" />
                 </div>
