@@ -18,11 +18,11 @@ export default function Home() {
               </div>
               <span className="text-3xl font-black tracking-tighter uppercase italic">Barberiapp</span>
             </div>
-            <h1 className="text-6xl sm:text-8xl font-black tracking-tight leading-[0.9] uppercase mb-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-              Transformá tu <span className="text-amber-500">Barbería</span> en un SaaS.
+            <h1 className="text-4xl sm:text-7xl md:text-8xl font-black tracking-tight leading-[0.9] uppercase mb-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 px-4">
+              DALE EL LOOK QUE TU <span className="text-amber-500">BARBERÍA</span> AMERITA.
             </h1>
-            <p className="text-zinc-400 text-lg sm:text-2xl font-medium max-w-2xl mx-auto mb-10 leading-relaxed italic animate-in fade-in slide-in-from-bottom-12 duration-1000">
-              Gestioná turnos, centralizá clientes y recibí confirmaciones por WhatsApp automáticamente. Todo desde tu propia URL personalizada.
+            <p className="text-zinc-400 text-base sm:text-xl md:text-2xl font-medium max-w-3xl mx-auto mb-10 leading-relaxed italic animate-in fade-in slide-in-from-bottom-12 duration-1000 px-6">
+              Gestión de turnos inteligente para profesionales que no pierden el tiempo. Unite a la red de Franmark Digital.
             </p>
           </header>
 
@@ -31,12 +31,15 @@ export default function Home() {
               href="/admin/auth" 
               className="group relative px-10 py-6 bg-amber-600 hover:bg-amber-500 text-black font-black text-xl rounded-2xl transition-all shadow-2xl shadow-amber-900/20 active:scale-95 flex items-center gap-3 uppercase tracking-tighter"
             >
-              Comenzar Ahora 
+              Comenzar ahora 
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <p className="text-zinc-600 font-bold uppercase tracking-widest text-xs border border-zinc-800 px-6 py-4 rounded-2xl">
-              Partner de Franmark Digital
-            </p>
+            <div className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-800 px-6 py-4 rounded-2xl">
+              <ShieldCheck className="w-5 h-5 text-amber-500" />
+              <p className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">
+                Partner de Franmark Digital
+              </p>
+            </div>
           </div>
         </div>
       </section>
