@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Scissors, Calendar as CalendarIcon, Clock, User, Phone, CheckCircle2, AlertTriangle, ArrowLeft, Globe, MessageCircle } from 'lucide-react'
+import { Scissors, Calendar as CalendarIcon, Clock, User, Phone, CheckCircle2, AlertTriangle, ArrowLeft, Globe, MessageCircle, Store } from 'lucide-react'
 import Link from 'next/link'
 
 interface BookingClientProps {
@@ -160,8 +160,14 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
       
       <header className="mb-10 text-center relative z-10 px-4">
         <div className="flex items-center justify-center mb-6">
-          <div className="p-4 bg-amber-600 rounded-2xl shadow-xl shadow-amber-900/30">
-            <Scissors className="w-8 h-8 text-black" />
+          <div className="w-24 h-24 md:w-32 md:h-32 bg-zinc-900 rounded-full border-4 border-amber-600/20 p-2 shadow-2xl overflow-hidden flex items-center justify-center relative group">
+            <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden">
+              {barberConfig.logo_url ? (
+                <img src={barberConfig.logo_url} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <Store className="w-10 h-10 md:w-14 md:h-14 text-zinc-800" />
+              )}
+            </div>
           </div>
         </div>
         <h1 className="text-3xl md:text-6xl font-black tracking-tighter uppercase mb-4 break-words px-2">

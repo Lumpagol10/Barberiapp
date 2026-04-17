@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, LogOut, Scissors, Users, Calendar, TrendingUp, Settings, ExternalLink, Phone, Clock, Type as TypeIcon, MessageCircle, DollarSign, Share2, Store, Loader2, User as UserIcon } from 'lucide-react'
+import { CheckCircle, LogOut, Scissors, Users, Calendar, TrendingUp, Settings, ExternalLink, Phone, Clock, Type as TypeIcon, MessageCircle, DollarSign, Share2, Store, Loader2, User as UserIcon, Camera, Trash2, Globe, Copy } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -50,6 +50,7 @@ export default function Dashboard() {
   const [editNombre, setEditNombre] = useState('')
   const [editPhone, setEditPhone] = useState('')
   const [editMaps, setEditMaps] = useState('')
+  const [editLogoUrl, setEditLogoUrl] = useState<string | null>(null)
   const [editApertura, setEditApertura] = useState('')
   const [editCierre, setEditCierre] = useState('')
   const [editIntervalo, setEditIntervalo] = useState(30)
@@ -163,6 +164,7 @@ export default function Dashboard() {
         setEditNombre(configData.nombre_barberia)
         setEditPhone(configData.telefono_barbero.replace('+54', ''))
         setEditMaps(configData.google_maps_link || '')
+        setEditLogoUrl(configData.logo_url || null)
         setEditApertura(configData.hora_apertura)
         setEditCierre(configData.hora_cierre)
         setEditIntervalo(configData.intervalo_minutos)
@@ -249,7 +251,8 @@ export default function Dashboard() {
         nombre_barberia: editNombre,
         slug: newSlug,
         telefono_barbero: `+54${editPhone}`,
-        google_maps_link: editMaps
+        google_maps_link: editMaps,
+        logo_url: editLogoUrl
       })
       .eq('user_id', user.id)
 
@@ -260,6 +263,33 @@ export default function Dashboard() {
       alert('Perfil actualizado con éxito')
     }
     setSaving(false)
+  }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setSaving(true)
+    try {
+      const fileName = `${user.id}-${Date.now()}.${file.name.split('.').pop()}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from('barberia_logos')
+        .upload(fileName, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('barberia_logos')
+        .getPublicUrl(fileName)
+
+      setEditLogoUrl(publicUrl)
+      alert('📸 Logo cargado con éxito. No olvides guardar los cambios del perfil.')
+    } catch (error: any) {
+      alert(`Error al subir logo: ${error.message}. Asegúrate de que el bucket 'barberia_logos' sea público.`)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleUpdateMasterRoutine = async () => {
@@ -511,15 +541,19 @@ export default function Dashboard() {
       {/* Sidebar Fijo */}
       <aside className="hidden lg:flex w-80 flex-col bg-zinc-900/50 border-r border-zinc-800/50 p-6 backdrop-blur-md sticky top-0 h-screen">
         <div className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-amber-600 rounded-xl shadow-lg shadow-amber-900/20 shrink-0">
-              <Scissors className="w-6 h-6 text-black" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-12 h-12 bg-amber-600 rounded-xl shadow-lg shadow-amber-900/20 shrink-0 flex items-center justify-center overflow-hidden border border-amber-500/20">
+              {config?.logo_url ? (
+                <img src={config.logo_url} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <Scissors className="w-6 h-6 text-black" />
+              )}
             </div>
-            <span className="text-lg font-black tracking-tighter uppercase italic truncate max-w-[140px]">{config?.nombre_barberia || 'BARBERIAPP'}</span>
+            <span className="text-lg font-black tracking-tighter uppercase italic truncate flex-1 min-w-0">{config?.nombre_barberia || 'BARBERIAPP'}</span>
           </div>
           <button 
             onClick={handleShare}
-            className="p-3 bg-zinc-800 hover:bg-zinc-700 text-amber-500 rounded-xl transition-all border border-zinc-700/50"
+            className="p-3 bg-zinc-800 hover:bg-zinc-700 text-amber-500 rounded-xl transition-all border border-zinc-700/50 shrink-0"
             title="Compartir link de reserva"
           >
             <Share2 className="w-4 h-4" />
@@ -1109,43 +1143,94 @@ export default function Dashboard() {
           </div>
         )}
 
-            {activeTab === 'config' && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-4xl">
+        {activeTab === 'config' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl">
             <header className="mb-10 lg:mb-12">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Mi Perfil</h1>
-              <p className="text-zinc-500 text-sm sm:text-base font-medium italic">Configurá la identidad y cuenta de tu negocio</p>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Mi Perfil</h1>
+              <p className="text-zinc-500 font-medium italic">Personalizá tu marca y puntos de contacto</p>
             </header>
 
-            <form onSubmit={handleUpdateConfig} className="space-y-6 sm:space-y-8">
-              {/* Sección Identidad */}
-              <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl">
-                <div className="flex items-center gap-4 text-amber-500">
-                  <div className="p-2.5 sm:p-3 bg-amber-600/10 rounded-xl sm:rounded-2xl"><Store className="w-5 h-5 sm:w-6 sm:h-6" /></div>
-                  <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Identidad del Local</h3>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
-                  <div className="space-y-3">
-                    <label className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Nombre de la Barbería</label>
-                    <input 
-                      required 
-                      value={editNombre} 
-                      onChange={(e) => setEditNombre(e.target.value)} 
-                      placeholder="Ej: Lampa Barbers"
-                      className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-xl sm:rounded-2xl py-4 sm:py-5 px-5 sm:px-6 outline-none text-white font-bold transition-all text-sm sm:text-base" 
-                    />
-                    {editNombre !== config.nombre_barberia && (
-                      <div className="bg-amber-600/5 border border-amber-600/10 p-4 rounded-xl mt-3">
-                        <p className="text-[9px] sm:text-[10px] text-amber-500 font-black uppercase tracking-widest leading-relaxed">
-                          ⚠️ ATENCIÓN: Al cambiar el nombre, tu URL de reserva dinámica cambiará. El link actual dejará de funcionar.
-                        </p>
+            <form onSubmit={handleUpdateConfig} className="space-y-8 sm:space-y-10">
+              {/* Branding y Logo */}
+              <div className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-8 lg:p-12 shadow-2xl relative overflow-hidden">
+                <div className="flex flex-col lg:flex-row gap-12 items-center lg:items-start relative z-10">
+                  {/* Uploader Circular Pro */}
+                  <div className="relative group shrink-0">
+                    <div className="w-32 h-32 lg:w-48 lg:h-48 rounded-full border-4 border-amber-600/20 p-2 relative shadow-[0_0_50px_rgba(217,119,6,0.1)]">
+                      <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden shadow-2xl relative">
+                        {editLogoUrl ? (
+                          <img src={editLogoUrl} alt="Logo Preview" className="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-500" />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2">
+                             <Store className="w-12 lg:w-20 h-12 lg:h-20 text-zinc-800" />
+                             <span className="text-[8px] font-bold text-zinc-700 uppercase tracking-widest">Sin Logo</span>
+                          </div>
+                        )}
+                        <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300 backdrop-blur-sm border-2 border-amber-500/50 border-dashed m-1">
+                          <Camera className="w-8 h-8 text-amber-500 mb-2" />
+                          <span className="text-[10px] font-black uppercase text-amber-500 tracking-tighter">Subir Logo</span>
+                          <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                        </label>
                       </div>
+                    </div>
+                    {editLogoUrl && (
+                      <button 
+                        type="button"
+                        onClick={() => setEditLogoUrl(null)}
+                        className="absolute -top-1 -right-1 bg-red-600 p-2.5 rounded-full shadow-xl hover:scale-110 active:scale-90 transition-all z-20 border-2 border-zinc-900"
+                      >
+                        <Trash2 className="w-4 h-4 text-white" />
+                      </button>
                     )}
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Link de Reserva Dinámico</label>
-                    <div className="bg-zinc-950/30 border border-zinc-800 rounded-xl sm:rounded-2xl py-4 sm:py-5 px-5 sm:px-6 text-zinc-600 font-mono text-[10px] sm:text-xs truncate italic">
-                      barberiapp.com/reserva/{editNombre.toLowerCase().trim().replace(/\s+/g, '-')}
+
+                  <div className="flex-1 space-y-8 w-full">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 ml-1 flex items-center gap-2">
+                        <TypeIcon className="w-3 h-3" /> Nombre de la Barbería
+                      </label>
+                      <input 
+                        required 
+                        value={editNombre} 
+                        onChange={(e) => setEditNombre(e.target.value)} 
+                        className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-6 px-8 outline-none text-white font-black text-2xl lg:text-4xl italic transition-all shadow-inner tracking-tighter placeholder:text-zinc-800" 
+                        placeholder="NOMBRE DE TU NEGOCIO"
+                      />
+                    </div>
+
+                    {/* Link de Reserva Dinámico Pro */}
+                    <div className="bg-emerald-600/5 border border-emerald-600/10 rounded-3xl p-6 lg:p-8 space-y-5 shadow-inner">
+                       <label className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500 flex items-center gap-2">
+                         <Globe className="w-3 h-3" /> Tu Link Profesional de Reservas
+                       </label>
+                       <div className="flex flex-col sm:flex-row gap-4">
+                          <div className="flex-1 bg-zinc-950/80 border border-zinc-800 rounded-xl px-6 py-5 text-emerald-500 font-black text-sm md:text-base truncate shadow-inner tracking-tighter">
+                             {`${typeof window !== 'undefined' ? window.location.origin : ''}/reserva/${config?.slug}`}
+                          </div>
+                          <div className="flex gap-3">
+                             <button 
+                                type="button"
+                                onClick={() => {
+                                   const url = `${window.location.origin}/reserva/${config?.slug}`
+                                   navigator.clipboard.writeText(url)
+                                   setShowShareToast(true)
+                                   setTimeout(() => setShowShareToast(false), 3000)
+                                }}
+                                className="flex-1 sm:flex-none p-5 bg-emerald-600 text-black rounded-xl hover:bg-emerald-500 transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
+                                title="Copiar Link"
+                             >
+                                <Copy className="w-6 h-6" />
+                             </button>
+                             <button 
+                                type="button"
+                                onClick={handleShare}
+                                className="flex-1 sm:flex-none p-5 bg-zinc-800 text-white rounded-xl hover:bg-zinc-700 transition-all active:scale-95 border border-zinc-700/50"
+                                title="Compartir"
+                             >
+                                <Share2 className="w-6 h-6" />
+                             </button>
+                          </div>
+                       </div>
                     </div>
                   </div>
                 </div>
