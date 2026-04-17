@@ -404,6 +404,11 @@ export default function Dashboard() {
         )}
 
         {activeTab === 'config' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-4xl">
+            <header className="mb-12">
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Mi Perfil</h1>
+              <p className="text-zinc-500 font-medium italic">Configurá la identidad de tu negocio</p>
+            </header>
 
             <form onSubmit={handleUpdateConfig} className="space-y-8">
               {/* Sección Identidad */}
