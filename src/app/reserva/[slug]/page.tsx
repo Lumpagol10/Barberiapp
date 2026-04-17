@@ -232,7 +232,7 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
                   />
                 </div>
                 <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider ml-1 mt-1">
-                  Ejs: 2634XXXXXX - 261XXXXXXX
+                  Ej: 2634XXXXXX - 261XXXXXXX
                 </p>
               </div>
             </div>
