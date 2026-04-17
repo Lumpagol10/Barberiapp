@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { Scissors, Lock, Mail, User, ArrowRight } from 'lucide-react'
+import { Scissors, Lock, Mail, User, ArrowRight, Eye, EyeOff, AlertCircle } from 'lucide-react'
 
 export default function AdminAuth() {
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -18,6 +19,10 @@ export default function AdminAuth() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.warn('CRÍTICO: Faltan las llaves de Supabase en las variables de entorno.')
+    }
 
     try {
       if (isLogin) {
@@ -39,7 +44,12 @@ export default function AdminAuth() {
         setIsLogin(true)
       }
     } catch (err: any) {
-      setError(err.message || 'Error en la autenticación')
+      console.error('Detalle error auth:', err)
+      if (err.message === 'Failed to fetch') {
+        setError('Error de conexión: No se pudo contactar con el servidor. Verifica las llaves de Supabase en Vercel.')
+      } else {
+        setError(err.message || 'Error en la autenticación')
+      }
     } finally {
       setLoading(false)
     }
@@ -123,16 +133,28 @@ export default function AdminAuth() {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                 <input
                   required
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 rounded-2xl py-4 pl-12 pr-4 outline-none transition-all placeholder:text-zinc-600 text-white"
+                  className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 rounded-2xl py-4 pl-12 pr-12 outline-none transition-all placeholder:text-zinc-600 text-white"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 
-            {error && <p className="text-red-500 text-sm italic ml-1 animate-pulse">{error}</p>}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-start gap-3 animate-pulse">
+                <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-red-500 text-sm font-medium leading-tight">{error}</p>
+              </div>
+            )}
 
             <button
               disabled={loading}
