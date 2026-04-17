@@ -62,11 +62,21 @@ export default function Dashboard() {
         return
       }
       setUser(user)
-      fetchData(user.id, viewDate)
+      fetchData(user.id)
       fetchFinances(user.id)
     }
     checkUser()
-  }, [viewDate, activeTab, financesDate, financesMonth, historyFilterMode])
+  }, []) // Solo al montar
+
+  // Refrescar Datos al cambiar fecha de turnos
+  useEffect(() => {
+    if (user?.id) fetchData(user.id)
+  }, [viewDate])
+
+  // Refrescar Finanzas al cambiar filtros de finanzas
+  useEffect(() => {
+    if (user?.id) fetchFinances(user.id)
+  }, [financesDate, financesMonth, historyFilterMode])
 
   const fetchFinances = async (userId: string) => {
     const firstDayOfMonth = financesMonth + '-01'
@@ -132,8 +142,9 @@ export default function Dashboard() {
     })
   }
 
-  const fetchData = async (userId: string, dateToFetch?: string) => {
-    setLoading(true)
+  const fetchData = async (userId: string) => {
+    // Solo mostramos loading total si no hay datos previos para evitar flashes
+    if (!config) setLoading(true)
     try {
       const { data: configData } = await supabase
         .from('configuracion_barberia')
@@ -370,6 +381,11 @@ export default function Dashboard() {
     return targetDate.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
   }
 
+  // Componente de Esqueleto Sutil
+  const SkeletonPulse = ({ className }: { className: string }) => (
+    <div className={`bg-zinc-800/50 animate-pulse rounded-2xl ${className}`} />
+  )
+
   const getOrderedSchedule = () => {
     const today = new Date().getDay()
     const ordered = []
@@ -384,16 +400,8 @@ export default function Dashboard() {
     return ordered
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans overflow-x-hidden transition-colors duration-500">
       {/* Sidebar Fijo */}
       <aside className="hidden lg:flex w-80 flex-col bg-zinc-900/50 border-r border-zinc-800/50 p-6 backdrop-blur-md sticky top-0 h-screen">
         <div className="flex items-center justify-between mb-10">
@@ -460,9 +468,25 @@ export default function Dashboard() {
         <div className="p-3 text-zinc-700"><UserIcon className="w-5 h-5" /></div>
       </nav>
 
-      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full max-w-[100vw]">
-        {activeTab === 'agenda' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full max-w-[100vw] relative">
+        {loading && !config ? (
+          <div className="animate-in fade-in duration-500 space-y-12">
+             <header className="flex flex-col md:flex-row justify-between gap-8 mb-12">
+               <div className="space-y-4">
+                 <SkeletonPulse className="h-12 w-64 md:w-96" />
+                 <SkeletonPulse className="h-4 w-48" />
+               </div>
+               <SkeletonPulse className="h-32 w-48" />
+             </header>
+             <div className="space-y-6">
+                <SkeletonPulse className="h-20 w-full" />
+                <SkeletonPulse className="h-96 w-full" />
+             </div>
+          </div>
+        ) : (
+          <>
+            {activeTab === 'agenda' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 lg:mb-16">
               <div className="space-y-1">
                 <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic leading-tight">HOY ES {getFormattedDate()}</h1>
@@ -627,7 +651,7 @@ export default function Dashboard() {
         )}
 
         {activeTab === 'programar' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl">
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl">
             <header className="mb-12">
               <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Programar Agenda</h1>
               <p className="text-zinc-500 font-medium italic">Definí los días y horarios que vas a estar disponible</p>
@@ -748,8 +772,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {activeTab === 'finanzas' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {activeTab === 'finanzas' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <header className="mb-10 lg:mb-12">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Finanzas y Caja</h1>
               <p className="text-zinc-500 text-sm sm:text-base font-medium italic">Control de ingresos y balance de servicios</p>
@@ -914,8 +938,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {activeTab === 'config' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-4xl">
+            {activeTab === 'config' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-4xl">
             <header className="mb-10 lg:mb-12">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Mi Perfil</h1>
               <p className="text-zinc-500 text-sm sm:text-base font-medium italic">Configurá la identidad y cuenta de tu negocio</p>
@@ -1026,6 +1050,8 @@ export default function Dashboard() {
               </div>
             </form>
           </div>
+        )}
+          </>
         )}
       </main>
       {/* Modal de Cobro */}
