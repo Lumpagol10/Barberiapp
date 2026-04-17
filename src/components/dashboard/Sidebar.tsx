@@ -47,7 +47,7 @@ export default function Sidebar({
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-12 h-12 rounded-xl shadow-lg shrink-0 flex items-center justify-center overflow-hidden border border-amber-500/20 bg-zinc-900 relative">
               {config?.logo_url ? (
-                <Image src={config.logo_url} alt="Logo" fill className="object-cover" sizes="48px" />
+                <Image src={config.logo_url} alt="Logo" fill className="object-cover" sizes="48px" unoptimized />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center">
                   <Store className="w-6 h-6 text-zinc-500" />
