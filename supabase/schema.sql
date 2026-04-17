@@ -22,6 +22,7 @@ CREATE TABLE configuracion_barberia (
   hora_apertura TIME NOT NULL DEFAULT '09:00',
   hora_cierre TIME NOT NULL DEFAULT '20:00',
   intervalo_minutos INT NOT NULL DEFAULT 15,
+  google_maps_link TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
