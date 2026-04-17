@@ -26,6 +26,12 @@ export default function Dashboard() {
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
   const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null)
   const [checkoutPrice, setCheckoutPrice] = useState('')
+  const [financesDate, setFinancesDate] = useState(() => {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+  })
+  const [financesMonth, setFinancesMonth] = useState(() => {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit' }).format(new Date())
+  })
   const [financesData, setFinancesData] = useState<any>({
     dailyTotal: 0,
     monthlyTotal: 0,
@@ -57,18 +63,18 @@ export default function Dashboard() {
       fetchFinances(user.id)
     }
     checkUser()
-  }, [viewDate, activeTab])
+  }, [viewDate, activeTab, financesDate, financesMonth])
 
   const fetchFinances = async (userId: string) => {
-    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
-    const firstDayOfMonth = todayStr.substring(0, 8) + '01'
+    const firstDayOfMonth = financesMonth + '-01'
+    const lastDayOfMonth = financesMonth + '-31'
 
     const { data: dailyData } = await supabase
       .from('turnos')
       .select('precio')
       .eq('barbero_id', userId)
       .eq('estado', 'completado')
-      .eq('fecha', todayStr)
+      .eq('fecha', financesDate)
 
     const { data: monthlyData } = await supabase
       .from('turnos')
@@ -76,15 +82,18 @@ export default function Dashboard() {
       .eq('barbero_id', userId)
       .eq('estado', 'completado')
       .gte('fecha', firstDayOfMonth)
+      .lte('fecha', lastDayOfMonth)
 
     const { data: historyData } = await supabase
       .from('turnos')
       .select('*')
       .eq('barbero_id', userId)
       .eq('estado', 'completado')
+      .gte('fecha', firstDayOfMonth)
+      .lte('fecha', lastDayOfMonth)
       .order('fecha', { ascending: false })
       .order('hora', { ascending: false })
-      .limit(10)
+      .limit(50)
 
     const dailyTotal = dailyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
     const monthlyTotal = monthlyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
@@ -632,29 +641,45 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
               {/* Total Diario */}
-              <div className="bg-zinc-900/50 border border-emerald-500/20 p-8 rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-emerald-500 text-[10px] font-black uppercase tracking-widest">Total Diario (Hoy)</p>
-                  <div className="p-3 bg-emerald-600/10 rounded-2xl text-emerald-500 group-hover:scale-110 transition-transform">
+              <div className="bg-zinc-900/50 border border-emerald-500/20 p-6 lg:p-8 rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <p className="text-emerald-500 text-[10px] font-black uppercase tracking-widest mb-1">Recaudación Diaria</p>
+                    <input 
+                      type="date" 
+                      value={financesDate}
+                      onChange={(e) => setFinancesDate(e.target.value)}
+                      className="bg-transparent text-zinc-500 text-xs font-bold outline-none [color-scheme:dark]"
+                    />
+                  </div>
+                  <div className="p-3 bg-emerald-600/10 rounded-2xl text-emerald-500 group-hover:scale-110 transition-transform self-start">
                     <DollarSign className="w-6 h-6" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-6xl font-black text-white tracking-tighter">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-5xl lg:text-6xl font-black text-white tracking-tighter">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
                   <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
 
               {/* Total Mensual */}
-              <div className="bg-zinc-900/50 border border-amber-500/20 p-8 rounded-[2.5rem] shadow-xl shadow-amber-950/10 backdrop-blur-xl group hover:border-amber-500/40 transition-all">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-amber-500 text-[10px] font-black uppercase tracking-widest">Total Mensual</p>
-                  <div className="p-3 bg-amber-600/10 rounded-2xl text-amber-500 group-hover:scale-110 transition-transform">
+              <div className="bg-zinc-900/50 border border-amber-500/20 p-6 lg:p-8 rounded-[2.5rem] shadow-xl shadow-amber-950/10 backdrop-blur-xl group hover:border-amber-500/40 transition-all">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <p className="text-amber-500 text-[10px] font-black uppercase tracking-widest mb-1">Cierre Mensual</p>
+                    <input 
+                      type="month" 
+                      value={financesMonth}
+                      onChange={(e) => setFinancesMonth(e.target.value)}
+                      className="bg-transparent text-zinc-500 text-xs font-bold outline-none [color-scheme:dark]"
+                    />
+                  </div>
+                  <div className="p-3 bg-amber-600/10 rounded-2xl text-amber-500 group-hover:scale-110 transition-transform self-start">
                     <TrendingUp className="w-6 h-6" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-6xl font-black text-white tracking-tighter">${financesData.monthlyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-5xl lg:text-6xl font-black text-white tracking-tighter">${financesData.monthlyTotal.toLocaleString('es-AR')}</span>
                   <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
@@ -662,7 +687,7 @@ export default function Dashboard() {
 
             <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
               <div className="p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-900/20">
-                <h3 className="text-xl font-black uppercase italic tracking-tighter">Últimos Cobros</h3>
+                <h3 className="text-xl font-black uppercase italic tracking-tighter">Historial de Turnos Cobrados</h3>
                 <div className="p-2 bg-emerald-600/10 rounded-lg text-emerald-500">
                   <DollarSign className="w-4 h-4" />
                 </div>
