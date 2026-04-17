@@ -73,13 +73,14 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
         if (!dayShed.activo) {
           setDiaCerrado(true)
         } else {
-          generateSlots(dayShed.h_apertura, dayShed.h_cierre, barberConfig.intervalo_minutos)
+          // Usar los slots manuales (ordenados para que se vean bien)
+          const sortedSlots = (dayShed.slots || []).sort((a: string, b: string) => a.localeCompare(b))
+          setAvailableSlots(sortedSlots)
           fetchBookedTurns(nuevaFecha)
         }
       } else {
-        // Fallback a horario global si no hay registro específico (Legacy)
-        generateSlots(barberConfig.hora_apertura, barberConfig.hora_cierre, barberConfig.intervalo_minutos)
-        fetchBookedTurns(nuevaFecha)
+        // Fallback: Si no hay slots manuales, mostramos vacío o el local cerrado
+        setDiaCerrado(true)
       }
     }
   }
@@ -99,18 +100,6 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
     }
   }
 
-  const generateSlots = (apertura: string, cierre: string, intervalo: number) => {
-    const slots = []
-    let current = new Date(`2024-01-01T${apertura}`)
-    const end = new Date(`2024-01-01T${cierre}`)
-
-    while (current < end) {
-      const timeString = current.toTimeString().substring(0, 5)
-      slots.push(timeString)
-      current.setMinutes(current.getMinutes() + intervalo)
-    }
-    setAvailableSlots(slots)
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

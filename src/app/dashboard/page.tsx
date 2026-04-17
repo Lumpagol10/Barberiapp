@@ -136,19 +136,58 @@ export default function Dashboard() {
             user_id: user.id,
             dia_semana: s.dia_semana,
             activo: s.activo,
-            h_apertura: s.h_apertura,
-            h_cierre: s.h_cierre
+            slots: s.slots || []
           })),
           { onConflict: 'user_id,dia_semana' }
         )
 
       if (error) throw error
-      alert('✅ Agenda actualizada con éxito')
+      alert('✅ Agenda de Slots guardada con éxito')
     } catch (error: any) {
       alert(`Error al guardar agenda: ${error.message}`)
     } finally {
       setSaving(false)
     }
+  }
+
+  const addSlot = (dayIndex: number) => {
+    const newShed = [...weeklySchedule]
+    const daySlots = [...(newShed[dayIndex].slots || [])]
+    
+    // Sugerir última hora + 1 hora, o 09:00 por defecto
+    let nextTime = "09:00"
+    if (daySlots.length > 0) {
+      const last = daySlots[daySlots.length - 1]
+      const [h, m] = last.split(':').map(Number)
+      nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+    }
+    
+    newShed[dayIndex].slots = [...daySlots, nextTime]
+    setWeeklySchedule(newShed)
+  }
+
+  const removeSlot = (dayIndex: number, slotIndex: number) => {
+    const newShed = [...weeklySchedule]
+    newShed[dayIndex].slots = newShed[dayIndex].slots.filter((_: any, i: number) => i !== slotIndex)
+    setWeeklySchedule(newShed)
+  }
+
+  const updateSlot = (dayIndex: number, slotIndex: number, newValue: string) => {
+    const newShed = [...weeklySchedule]
+    newShed[dayIndex].slots[slotIndex] = newValue
+    setWeeklySchedule(newShed)
+  }
+
+  const copyToAll = (dayIndex: number) => {
+    const sourceSlots = [...(weeklySchedule[dayIndex].slots || [])]
+    const sourceActive = weeklySchedule[dayIndex].activo
+    const newShed = weeklySchedule.map(dia => ({
+      ...dia,
+      slots: [...sourceSlots],
+      activo: sourceActive
+    }))
+    setWeeklySchedule(newShed)
+    alert('📋 Horarios copiados a toda la semana')
   }
 
   const handleFinish = async (id: string) => {
@@ -333,60 +372,84 @@ export default function Dashboard() {
 
             <div className="grid gap-6 mb-12">
               {weeklySchedule.map((dia, index) => (
-                <div key={dia.dia_semana} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-8 flex flex-col md:flex-row items-center gap-6 ${dia.activo ? 'border-amber-500/20 shadow-lg' : 'border-white/5 opacity-60'}`}>
-                  <div className="w-full md:w-48">
-                    <h3 className="text-2xl font-black uppercase tracking-tight italic">{diasLetras[dia.dia_semana]}</h3>
-                    <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${dia.activo ? 'text-amber-500' : 'text-zinc-600'}`}>
-                      {dia.activo ? '🟢 Disponible' : '🔴 Cerrado'}
-                    </p>
+                <div key={dia.dia_semana} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-amber-500/20 shadow-lg' : 'border-white/5 opacity-60'}`}>
+                  {/* Header del Día */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-zinc-800/50">
+                    <div>
+                      <h3 className="text-3xl font-black uppercase tracking-tight italic">{diasLetras[dia.dia_semana]}</h3>
+                      <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${dia.activo ? 'text-amber-500' : 'text-zinc-600'}`}>
+                        {dia.activo ? '🟢 Disponible para turnos' : '🔴 Local Cerrado'}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      {dia.activo && (
+                        <button 
+                          onClick={() => copyToAll(index)}
+                          className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-transparent hover:border-zinc-600"
+                        >
+                          Copiar a todos
+                        </button>
+                      )}
+                      
+                      {/* Switch de Activo */}
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          const newShed = [...weeklySchedule]
+                          newShed[index].activo = !newShed[index].activo
+                          setWeeklySchedule(newShed)
+                        }}
+                        className={`relative w-20 h-10 rounded-full transition-all duration-300 shadow-inner shrink-0 ${dia.activo ? 'bg-amber-600' : 'bg-zinc-800'}`}
+                      >
+                        <div className={`absolute top-1 w-8 h-8 bg-white rounded-full transition-all shadow-md ${dia.activo ? 'left-11' : 'left-1'}`} />
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="flex-1 flex flex-col sm:flex-row items-center gap-8 w-full">
-                    {/* Switch de Activo (Grande para Mobile) */}
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        const newShed = [...weeklySchedule]
-                        newShed[index].activo = !newShed[index].activo
-                        setWeeklySchedule(newShed)
-                      }}
-                      className={`relative w-20 h-10 rounded-full transition-all duration-300 shadow-inner shrink-0 ${dia.activo ? 'bg-amber-600' : 'bg-zinc-800'}`}
-                    >
-                      <div className={`absolute top-1 w-8 h-8 bg-white rounded-full transition-all shadow-md ${dia.activo ? 'left-11' : 'left-1'}`} />
-                    </button>
-
-                    {dia.activo && (
-                      <div className="flex flex-1 items-center gap-4 w-full animate-in zoom-in-95 duration-200">
-                        <div className="flex-1 space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Apertura</label>
-                          <input 
-                            type="time" 
-                            value={dia.h_apertura} 
-                            onChange={(e) => {
-                              const newShed = [...weeklySchedule]
-                              newShed[index].h_apertura = e.target.value
-                              setWeeklySchedule(newShed)
-                            }}
-                            className="w-full bg-zinc-950/50 border border-zinc-800 rounded-2xl py-4 px-6 text-xl font-bold [color-scheme:dark]"
-                          />
-                        </div>
-                        <div className="text-zinc-700 font-black pt-6">/</div>
-                        <div className="flex-1 space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Cierre</label>
-                          <input 
-                            type="time" 
-                            value={dia.h_cierre} 
-                            onChange={(e) => {
-                              const newShed = [...weeklySchedule]
-                              newShed[index].h_cierre = e.target.value
-                              setWeeklySchedule(newShed)
-                            }}
-                            className="w-full bg-zinc-950/50 border border-zinc-800 rounded-2xl py-4 px-6 text-xl font-bold [color-scheme:dark]"
-                          />
-                        </div>
+                  {/* Gestión de Slots */}
+                  {dia.activo && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {(dia.slots || []).map((slot: string, slotIdx: number) => (
+                          <div key={slotIdx} className="group relative">
+                            <input 
+                              type="time" 
+                              value={slot} 
+                              onChange={(e) => updateSlot(index, slotIdx, e.target.value)}
+                              className="w-full bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/30 rounded-2xl py-4 px-4 text-xl font-black text-center [color-scheme:dark] transition-all focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none"
+                            />
+                            <button 
+                              onClick={() => removeSlot(index, slotIdx)}
+                              className="absolute -top-2 -right-2 w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        
+                        <button 
+                          onClick={() => addSlot(index)}
+                          className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-800 hover:border-amber-500/40 hover:bg-amber-500/5 rounded-2xl py-4 transition-all text-zinc-600 hover:text-amber-500"
+                        >
+                          <span className="text-2xl font-black">+</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest">Agregar</span>
+                        </button>
                       </div>
-                    )}
-                  </div>
+
+                      {(dia.slots || []).length === 0 && (
+                        <div className="py-12 text-center bg-zinc-950/20 rounded-[2rem] border border-dashed border-zinc-800">
+                          <p className="text-zinc-600 font-bold uppercase text-xs tracking-widest">No hay horarios cargados para este día</p>
+                          <button 
+                            onClick={() => addSlot(index)}
+                            className="mt-4 text-amber-500 font-black uppercase text-[10px] underline tracking-widest"
+                          >
+                            Hacé clic acá para empezar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
