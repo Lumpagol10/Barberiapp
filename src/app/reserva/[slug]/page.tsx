@@ -206,20 +206,20 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
       </header>
 
       <main className="w-full max-w-2xl relative z-10 px-2 sm:px-0">
-        <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-6 md:p-10 rounded-[2.5rem] shadow-2xl">
+        <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-5 md:p-10 rounded-[2.5rem] shadow-2xl overflow-hidden">
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-5 md:gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-400 ml-1">Tu Nombre</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                  <input required value={nombre} onChange={(e) => setNombre(e.target.value)} type="text" placeholder="Juan Pérez" className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 rounded-2xl py-4 pl-12 pr-4 outline-none text-white transition-all" />
+                  <input required value={nombre} onChange={(e) => setNombre(e.target.value)} type="text" placeholder="Juan Pérez" className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 rounded-2xl py-4 pl-12 pr-4 outline-none text-white transition-all text-sm md:text-base" />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-400 ml-1">Tu Teléfono</label>
                 <div className="flex items-center bg-zinc-800/50 border border-zinc-700/50 focus-within:border-amber-500/50 rounded-2xl overflow-hidden transition-all">
-                  <div className="bg-zinc-800 px-5 py-4 border-r border-zinc-700/50 text-zinc-500 font-black text-sm">
+                  <div className="bg-zinc-800 px-4 md:px-5 py-4 border-r border-zinc-700/50 text-zinc-500 font-black text-xs md:text-sm">
                     +54
                   </div>
                   <input 
@@ -228,7 +228,7 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
                     onChange={(e) => setPhoneSuffix(e.target.value.replace(/\D/g, ''))} 
                     type="tel" 
                     placeholder="2634XXXXXX" 
-                    className="flex-1 bg-transparent py-4 px-6 outline-none text-white font-bold placeholder:text-zinc-700" 
+                    className="flex-1 min-w-0 bg-transparent py-4 px-4 md:px-6 outline-none text-white font-bold placeholder:text-zinc-700 text-sm md:text-base" 
                   />
                 </div>
                 <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider ml-1 mt-1">
