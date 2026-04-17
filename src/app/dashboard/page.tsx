@@ -52,6 +52,10 @@ export default function Dashboard() {
   const [editCierre, setEditCierre] = useState('')
   const [editIntervalo, setEditIntervalo] = useState(30)
   
+  // Estados para Excepciones por Fecha
+  const [exceptionDate, setExceptionDate] = useState('')
+  const [exceptionSchedule, setExceptionSchedule] = useState<{activo: boolean, slots: string[]}>({ activo: true, slots: [] })
+  
   const router = useRouter()
 
   useEffect(() => {
@@ -292,6 +296,66 @@ export default function Dashboard() {
     }))
     setWeeklySchedule(newShed)
     alert('📋 Horarios copiados a toda la semana')
+  }
+
+  // Cargar Excepción por Fecha
+  useEffect(() => {
+    if (user?.id && exceptionDate) {
+      const fetchException = async () => {
+        const { data } = await supabase
+          .from('horarios_especificos')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('fecha', exceptionDate)
+          .single()
+
+        if (data) {
+          setExceptionSchedule({ activo: data.activo, slots: data.slots || [] })
+        } else {
+          // Fallback visual: Cargar la rutina de ese día de la semana como base
+          const dayOfWeek = new Date(exceptionDate + 'T12:00:00').getDay()
+          const routine = weeklySchedule.find(s => s.dia_semana === dayOfWeek)
+          setExceptionSchedule({ 
+            activo: routine?.activo ?? true, 
+            slots: routine?.slots ?? [] 
+          })
+        }
+      }
+      fetchException()
+    }
+  }, [exceptionDate, user?.id, weeklySchedule])
+
+  const handleSaveException = async () => {
+    if (!exceptionDate) return
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('horarios_especificos')
+        .upsert({
+          user_id: user.id,
+          fecha: exceptionDate,
+          activo: exceptionSchedule.activo,
+          slots: exceptionSchedule.slots
+        }, { onConflict: 'user_id,fecha' })
+
+      if (error) throw error
+      alert(`✅ Excepción para el ${exceptionDate} guardada`)
+    } catch (error: any) {
+      alert(`Error: ${error.message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const addExceptionSlot = () => {
+    const daySlots = [...(exceptionSchedule.slots || [])]
+    let nextTime = "09:00"
+    if (daySlots.length > 0) {
+      const last = daySlots[daySlots.length - 1]
+      const [h, m] = last.split(':').map(Number)
+      nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+    }
+    setExceptionSchedule({ ...exceptionSchedule, slots: [...daySlots, nextTime] })
   }
 
   const handleFinish = (id: string) => {
@@ -665,6 +729,98 @@ export default function Dashboard() {
                 Recordá cargar al menos un horario en los días disponibles <br className="hidden md:block" /> 
                 para que tus clientes puedan reservar turnos.
               </p>
+            </div>
+
+            {/* SECCIÓN EXCEPCIONES POR FECHA */}
+            <div className="bg-zinc-900/40 border border-amber-500/10 rounded-[2.5rem] p-8 lg:p-12 mb-12 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                <Calendar className="w-32 h-32 text-amber-500" />
+              </div>
+
+              <div className="relative z-10 flex flex-col gap-10">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 text-amber-500">
+                    <Calendar className="w-6 h-6" />
+                    <h2 className="text-2xl font-black uppercase italic tracking-tight">Excepciones por Fecha</h2>
+                  </div>
+                  <p className="text-zinc-500 text-sm font-medium italic">Personalizá un día específico (feriados, eventos o cambios de último momento)</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-10 items-start">
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Elegí la fecha a personalizar</label>
+                      <input 
+                        type="date" 
+                        value={exceptionDate}
+                        onChange={(e) => setExceptionDate(e.target.value)}
+                        className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark] text-xl"
+                      />
+                   </div>
+
+                   {exceptionDate && (
+                     <div className="bg-zinc-950/30 border border-zinc-800 rounded-3xl p-6 lg:p-8 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+                           <div className="space-y-1">
+                              <h4 className="text-xl font-black uppercase italic tracking-tighter">Estado del Día</h4>
+                              <p className={`text-[10px] font-black uppercase tracking-widest ${exceptionSchedule.activo ? 'text-emerald-500' : 'text-red-500'}`}>
+                                {exceptionSchedule.activo ? 'Disponible (Con slots)' : 'Cerrado / Bloqueado'}
+                              </p>
+                           </div>
+                           <button 
+                            onClick={() => setExceptionSchedule({ ...exceptionSchedule, activo: !exceptionSchedule.activo })}
+                            className={`relative w-16 h-8 rounded-full transition-all duration-300 ${exceptionSchedule.activo ? 'bg-emerald-600' : 'bg-red-900/40'}`}
+                          >
+                            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-md ${exceptionSchedule.activo ? 'left-9' : 'left-1'}`} />
+                          </button>
+                        </div>
+
+                        {exceptionSchedule.activo && (
+                          <div className="space-y-6">
+                             <div className="grid grid-cols-2 gap-3">
+                                {exceptionSchedule.slots.map((slot, idx) => (
+                                  <div key={idx} className="group relative">
+                                    <input 
+                                      type="time" 
+                                      value={slot}
+                                      onChange={(e) => {
+                                        const newSlots = [...exceptionSchedule.slots]
+                                        newSlots[idx] = e.target.value
+                                        setExceptionSchedule({ ...exceptionSchedule, slots: newSlots })
+                                      }}
+                                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 px-3 text-lg font-black text-center [color-scheme:dark]"
+                                    />
+                                    <button 
+                                      onClick={() => setExceptionSchedule({ ...exceptionSchedule, slots: exceptionSchedule.slots.filter((_, i) => i !== idx) })}
+                                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center text-[8px] opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >✕</button>
+                                  </div>
+                                ))}
+                                <button 
+                                  onClick={addExceptionSlot}
+                                  className="border-2 border-dashed border-zinc-800 hover:border-amber-500/50 rounded-xl py-3 text-zinc-600 hover:text-amber-500 transition-all font-black"
+                                >+</button>
+                             </div>
+                          </div>
+                        )}
+
+                        <button 
+                          onClick={handleSaveException}
+                          disabled={saving}
+                          className="w-full py-4 bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-800 text-black font-black uppercase tracking-tighter rounded-xl transition-all shadow-xl shadow-amber-900/10 active:scale-95"
+                        >
+                           {saving ? 'GUARDANDO...' : 'GUARDAR EXCEPCIÓN'}
+                        </button>
+                     </div>
+                   )}
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-10 p-6 bg-zinc-900/20 border border-zinc-800 rounded-[2rem] flex items-center gap-4">
+              <div className="p-3 bg-zinc-800 rounded-xl text-zinc-500">
+                <Clock className="w-5 h-5" />
+              </div>
+              <h3 className="text-xl font-black uppercase tracking-tight italic text-zinc-400">Rutina Semanal General</h3>
             </div>
 
             <div className="grid gap-6 mb-12">

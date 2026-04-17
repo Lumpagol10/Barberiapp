@@ -51,7 +51,26 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
       const dateParts = nuevaFecha.split('-').map(Number)
       const dayOfWeek = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getDay()
       
-      // 2. Consultar horario específico para ese día
+      // 2. BUSCAR EXCEPCIÓN ESPECÍFICA PARA ESTA FECHA (PRIORIDAD 1)
+      const { data: specificShed } = await supabase
+        .from('horarios_especificos')
+        .select('*')
+        .eq('user_id', barberConfig.user_id)
+        .eq('fecha', nuevaFecha)
+        .single()
+
+      if (specificShed) {
+        if (!specificShed.activo) {
+          setDiaCerrado(true)
+        } else {
+          const sortedSlots = (specificShed.slots || []).sort((a: string, b: string) => a.localeCompare(b))
+          setAvailableSlots(sortedSlots)
+          fetchBookedTurns(nuevaFecha)
+        }
+        return // EXCEPCIÓN ENCONTRADA, NO SEGUIMOS CON LA RUTINA
+      }
+
+      // 3. SI NO HAY EXCEPCIÓN, BUSCAR RUTINA SEMANAL (FALLBACK)
       const { data: dayShed } = await supabase
         .from('horarios_barberia')
         .select('*')
@@ -63,13 +82,11 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
         if (!dayShed.activo) {
           setDiaCerrado(true)
         } else {
-          // Usar los slots manuales (ordenados para que se vean bien)
           const sortedSlots = (dayShed.slots || []).sort((a: string, b: string) => a.localeCompare(b))
           setAvailableSlots(sortedSlots)
           fetchBookedTurns(nuevaFecha)
         }
       } else {
-        // Fallback: Si no hay slots manuales, mostramos vacío o el local cerrado
         setDiaCerrado(true)
       }
     }
@@ -234,11 +251,12 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
                 </label>
                 
                 {diaCerrado ? (
-                  <div className="bg-amber-900/10 border border-amber-900/20 p-8 rounded-[2rem] text-center space-y-4 animate-in zoom-in-95 duration-300">
-                    <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
-                    <p className="text-amber-500 font-black uppercase tracking-tighter text-base leading-tight">
-                      El local permanece cerrado este día. <br/>Seleccioná otra fecha.
-                    </p>
+                  <div className="bg-red-600/10 border border-red-900/40 p-12 rounded-[2.5rem] text-center animate-in fade-in duration-500">
+                    <div className="w-20 h-20 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-8">
+                      <AlertTriangle className="w-10 h-10 text-red-500" />
+                    </div>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter italic mb-4">Día Cerrado</h3>
+                    <p className="text-zinc-500 font-medium italic max-w-xs mx-auto">El barbero no trabaja este día o se encuentra fuera de servicio. Por favor, seleccioná otra fecha.</p>
                   </div>
                 ) : availableSlots.length === 0 ? (
                   <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[2.5rem] text-center space-y-6 animate-in zoom-in-95 duration-300">
