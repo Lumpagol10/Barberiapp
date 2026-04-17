@@ -170,7 +170,7 @@ export default function Dashboard() {
     try {
       const { data: configData } = await supabase
         .from('configuracion_barberia')
-        .select('id, user_id, nombre_barberia, slug, telefono_barbero, google_maps_link, logo_url')
+        .select('id, user_id, nombre_barberia, slug, telefono_barbero, google_maps_link, logo_url, hora_apertura, hora_cierre, intervalo_minutos')
         .eq('user_id', userId)
         .single()
 
