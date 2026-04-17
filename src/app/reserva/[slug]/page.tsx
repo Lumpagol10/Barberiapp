@@ -41,6 +41,7 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
   // Load Barber Configuration by Slug
   useEffect(() => {
     const fetchBarber = async () => {
+      try {
         const { data, error } = await supabase
           .from('configuracion_barberia')
           .select('id, user_id, slug, nombre_barberia, google_maps_link, telefono_barbero')
@@ -52,6 +53,11 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
         } else {
           setBarberConfig(data)
         }
+      } catch (err) {
+        setErrorStatus('error')
+      } finally {
+        setLoading(false)
+      }
     }
     fetchBarber()
   }, [slug])
