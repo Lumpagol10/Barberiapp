@@ -270,6 +270,7 @@ export default function Dashboard() {
     } else {
       await fetchData(user.id)
       alert('Perfil actualizado con éxito')
+      setActiveTab('agenda') // Volver a la página principal tras guardar
     }
     setSaving(false)
   }
