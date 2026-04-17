@@ -23,7 +23,7 @@ export default function AdminAuth() {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        router.push('/dashboard')
+        router.push('/dashboard/onboarding')
       } else {
         const { error } = await supabase.auth.signUp({
           email,

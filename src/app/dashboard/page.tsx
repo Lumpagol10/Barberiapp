@@ -13,10 +13,8 @@ export default function Dashboard() {
   const [turns, setTurns] = useState<any[]>([])
   const router = useRouter()
 
-  // Onboarding Form States
-  const [nombreBarberia, setNombreBarberia] = useState('')
-  const [slug, setSlug] = useState('')
-  const [phone, setPhone] = useState('')
+  const [turns, setTurns] = useState<any[]>([])
+  const router = useRouter()
 
   useEffect(() => {
     const checkUser = async () => {
@@ -43,7 +41,7 @@ export default function Dashboard() {
 
       if (configData) {
         setConfig(configData)
-        // 2. Cargar Turnos si hay config
+        // 2. Cargar Turnos si hay config (Aislamiento absoluto por barbero_id)
         const { data: turnsData } = await supabase
           .from('turnos')
           .select('*')
@@ -52,6 +50,9 @@ export default function Dashboard() {
           .order('hora', { ascending: true })
         
         setTurns(turnsData || [])
+      } else {
+        // Redirección forzada si no tiene local configurado
+        router.push('/dashboard/onboarding')
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -60,32 +61,14 @@ export default function Dashboard() {
     }
   }
 
-  const handleOnboarding = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('configuracion_barberia')
-        .insert([{
-          user_id: user.id,
-          nombre_barberia: nombreBarberia,
-          slug: slug.toLowerCase().replace(/\s+/g, '-'),
-          telefono_barbero: phone,
-        }])
-        .select()
-        .single()
-
-      if (error) throw error
-      setConfig(data)
-    } catch (error: any) {
-      alert(`Error en el alta: ${error.message}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleFinish = async (id: string) => {
-    const { error } = await supabase.from('turnos').delete().eq('id', id)
+    // Seguridad: Asegurar que solo borre turnos que le pertenecen
+    const { error } = await supabase
+      .from('turnos')
+      .delete()
+      .eq('id', id)
+      .eq('barbero_id', user.id)
+
     if (!error) {
       setTurns(prev => prev.filter(t => t.id !== id))
     }
@@ -96,45 +79,10 @@ export default function Dashboard() {
     router.push('/admin/auth')
   }
 
-  if (loading && !user) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" /></div>
-
-  // PANTALLA DE ONBOARDING
-  if (!loading && !config) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6 text-white font-sans">
-        <div className="max-w-xl w-full">
-          <header className="text-center mb-10">
-            <div className="inline-block p-4 bg-amber-600 rounded-3xl shadow-2xl shadow-amber-900/20 mb-6">
-              <Scissors className="w-10 h-10 text-black" />
-            </div>
-            <h1 className="text-4xl font-black tracking-tight mb-2 uppercase">Bienvenido a Barberiapp</h1>
-            <p className="text-zinc-500 text-lg">Configura tu local para empezar a recibir turnos</p>
-          </header>
-
-          <form onSubmit={handleOnboarding} className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-[2.5rem] space-y-6 backdrop-blur-xl">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-zinc-400 ml-1 flex items-center gap-2 italic uppercase tracking-wider"><Type className="w-4 h-4" /> Nombre del Local</label>
-              <input required value={nombreBarberia} onChange={(e) => setNombreBarberia(e.target.value)} type="text" placeholder="Ej: King's Barber Shop" className="w-full bg-zinc-800/40 border border-zinc-700/50 focus:border-amber-500 rounded-2xl py-4 px-6 outline-none transition-all" />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-zinc-400 ml-1 flex items-center gap-2 italic uppercase tracking-wider"><ExternalLink className="w-4 h-4" /> URL deseada (Slug)</label>
-              <div className="flex items-center gap-2 bg-zinc-800/40 border border-zinc-700/50 rounded-2xl px-6 py-4 focus-within:border-amber-500 transition-all">
-                <span className="text-zinc-500">/reserva/</span>
-                <input required value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} type="text" placeholder="mi-barberia" className="bg-transparent outline-none flex-1" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-zinc-400 ml-1 flex items-center gap-2 italic uppercase tracking-wider"><Phone className="w-4 h-4" /> WhatsApp de Notificación</label>
-              <input required value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="5492634..." className="w-full bg-zinc-800/40 border border-zinc-700/50 focus:border-amber-500 rounded-2xl py-4 px-6 outline-none transition-all" />
-            </div>
-
-            <button type="submit" disabled={loading} className="w-full py-5 bg-amber-600 hover:bg-amber-500 text-black font-black text-xl rounded-2xl transition-all shadow-xl shadow-amber-900/20 active:scale-95 flex items-center justify-center gap-2 uppercase tracking-tighter">
-              {loading ? <div className="w-6 h-6 border-4 border-black/30 border-t-black rounded-full animate-spin" /> : 'CONSTRUIR MI BARBERÍA'}
-            </button>
-          </form>
-        </div>
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
