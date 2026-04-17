@@ -28,7 +28,7 @@ export default function Dashboard() {
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
   const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null)
   const [checkoutPrice, setCheckoutPrice] = useState('')
-  const [showShareToast, setShowShareToast] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [financesDate, setFinancesDate] = useState(() => {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
   })
@@ -517,26 +517,41 @@ export default function Dashboard() {
     }
   }, [config?.nombre_barberia])
 
-  const handleShare = async () => {
+  const handleShare = () => {
+    setShowShareModal(true)
+  }
+
+  const handleShareWhatsApp = () => {
     const shareUrl = `${window.location.origin}/reserva/${config?.slug}`
-    const shareText = `¡Hola! Te dejo el link para que saques tu turno en ${config?.nombre_barberia}: ${shareUrl}`
+    const text = `¡Hola! 💈 Te paso mi nuevo link de reservas online para que elijas tu día y horario en un toque. ¡Nos vemos en la barbería! ✂️ ${shareUrl}`
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank')
+    setShowShareModal(false)
+  }
+
+  const handleCopyLink = () => {
+    const shareUrl = `${window.location.origin}/reserva/${config?.slug}`
+    navigator.clipboard.writeText(shareUrl)
+    alert('✅ Link copiado al portapapeles')
+    setShowShareModal(false)
+  }
+
+  const handleShareNative = async () => {
+    const shareUrl = `${window.location.origin}/reserva/${config?.slug}`
+    const shareText = `¡Hola! 💈 Te paso mi nuevo link de reservas online para que elijas tu día y horario en un toque. ¡Nos vemos en la barbería! ✂️ ${shareUrl}`
 
     if (navigator.share) {
       try {
         await navigator.share({
           title: config?.nombre_barberia,
           text: shareText,
-          // Eliminamos el parámetro 'url' para evitar que se pegue dos veces en WhatsApp/Mobile
         })
       } catch (err) {
         console.log('Error compartiendo:', err)
       }
     } else {
-      // Fallback: Clipboard
-      navigator.clipboard.writeText(shareUrl)
-      setShowShareToast(true)
-      setTimeout(() => setShowShareToast(false), 3000)
+      handleCopyLink()
     }
+    setShowShareModal(false)
   }
 
   const handleLogout = async () => {
@@ -1264,11 +1279,10 @@ export default function Dashboard() {
                              <button 
                                 type="button"
                                 onClick={() => {
-                                   const url = `${window.location.origin}/reserva/${config?.slug}`
-                                   navigator.clipboard.writeText(url)
-                                   setShowShareToast(true)
-                                   setTimeout(() => setShowShareToast(false), 3000)
-                                }}
+                                    const url = `${window.location.origin}/reserva/${config?.slug}`
+                                    navigator.clipboard.writeText(url)
+                                    alert('✅ Link de reserva copiado')
+                                 }}
                                 className="flex-1 sm:flex-none p-5 bg-emerald-600 text-black rounded-xl hover:bg-emerald-500 transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
                                 title="Copiar Link"
                              >
@@ -1416,15 +1430,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Toast de Compartir */}
-      {showShareToast && (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[200] animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="bg-emerald-600 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-tighter shadow-2xl flex items-center gap-3">
-            <CheckCircle className="w-6 h-6" />
-            ¡Link de reserva copiado para enviar!
-          </div>
-        </div>
-      )}
+
         {/* Modal del Cropper Pro */}
         {showCropper && tempImage && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
@@ -1486,6 +1492,56 @@ export default function Dashboard() {
                     ) : (
                       <>Confirmar Recorte</>
                     )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Modal de Compartir Premium */}
+        {showShareModal && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-zinc-900/90 border border-white/10 w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-2xl">
+              <div className="p-8 pb-4 flex justify-between items-center">
+                <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">Compartir Agenda</h2>
+                <button onClick={() => setShowShareModal(false)} className="p-2 hover:bg-zinc-800 rounded-full text-zinc-500 transition-all"><LogOut className="w-5 h-5 rotate-180" /></button>
+              </div>
+
+              <div className="p-8 pt-4 space-y-4">
+                <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-6 italic leading-relaxed text-center">Elegí el medio para invitar a tus clientes</p>
+                
+                <button 
+                  onClick={handleShareWhatsApp}
+                  className="w-full flex items-center gap-4 p-5 rounded-3xl bg-[#25D366]/10 border border-[#25D366]/20 hover:bg-[#25D366]/20 transition-all group text-left"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center shadow-lg shadow-[#25D366]/20 group-hover:scale-110 transition-transform">
+                    <MessageCircle className="w-6 h-6 text-white Fill-white" />
+                  </div>
+                  <div>
+                    <span className="block text-white font-bold uppercase tracking-tight text-sm">WhatsApp</span>
+                    <span className="block text-[#25D366] text-[10px] font-bold uppercase tracking-widest opacity-80">Enviar mensaje pro</span>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={handleCopyLink}
+                  className="w-full flex items-center gap-4 p-5 rounded-3xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all group text-left"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-900/20 group-hover:scale-110 transition-transform">
+                    <Copy className="w-6 h-6 text-black" />
+                  </div>
+                  <div>
+                    <span className="block text-white font-bold uppercase tracking-tight text-sm">Copiar Link</span>
+                    <span className="block text-amber-500 text-[10px] font-bold uppercase tracking-widest opacity-80">Link de reserva online</span>
+                  </div>
+                </button>
+
+                <div className="pt-6 flex flex-col items-center gap-4 border-t border-white/5">
+                  <button 
+                    onClick={handleShareNative}
+                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:text-white transition-all"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" /> Otras opciones del sistema
                   </button>
                 </div>
               </div>
