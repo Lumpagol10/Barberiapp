@@ -1,44 +1,46 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { Scissors, Globe, Phone, Type, ArrowRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { User } from '@supabase/supabase-js'
 
 export default function Onboarding() {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [nombreBarberia, setNombreBarberia] = useState('')
   const [slug, setSlug] = useState('')
   const [phoneSuffix, setPhoneSuffix] = useState('')
   const [googleMaps, setGoogleMaps] = useState('')
   const router = useRouter()
 
-  useEffect(() => {
-    const checkStatus = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/admin/auth')
-        return
-      }
-      
-      const { data: config } = await supabase
-        .from('configuracion_barberia')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
-
-      if (config) {
-        router.push('/dashboard')
-      } else {
-        setUser(user)
-        setChecking(false)
-      }
+  const checkStatus = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      router.push('/admin/auth')
+      return
     }
+    
+    const { data: config } = await supabase
+      .from('configuracion_barberia')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (config) {
+      router.push('/dashboard')
+    } else {
+      setUser(user)
+      setChecking(false)
+    }
+  }, [router])
+
+  useEffect(() => {
     checkStatus()
-  }, [])
+  }, [checkStatus])
 
   const handleNameChange = (val: string) => {
     setNombreBarberia(val)
@@ -70,7 +72,8 @@ export default function Onboarding() {
 
       if (error) throw error
       router.push('/dashboard')
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const error = err as { message?: string }
       toast.error(`Error al guardar configuración: ${error.message}`)
     } finally {
       setLoading(false)

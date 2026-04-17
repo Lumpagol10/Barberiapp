@@ -1,17 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Scissors, Calendar as CalendarIcon, Clock, User, Phone, CheckCircle2, AlertTriangle, ArrowLeft, Globe, MessageCircle, Store } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, User, Phone, CheckCircle2, AlertTriangle, Globe, MessageCircle, Store } from 'lucide-react'
 import { toast } from 'sonner'
-import Link from 'next/link'
+import Image from 'next/image'
+import { ConfiguracionBarberia } from '@/types/dashboard'
 
 interface BookingClientProps {
-  slug: string
-  initialBarberConfig: any
+  initialBarberConfig: ConfiguracionBarberia
 }
 
-export default function BookingClient({ slug, initialBarberConfig }: BookingClientProps) {
+export default function BookingClient({ initialBarberConfig }: BookingClientProps) {
   // App States
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -24,7 +24,7 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
   const [horaSeleccionada, setHoraSeleccionada] = useState('')
   
   // Barber/Tenant States
-  const [barberConfig] = useState<any>(initialBarberConfig)
+  const [barberConfig] = useState<ConfiguracionBarberia>(initialBarberConfig)
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
   const [diaCerrado, setDiaCerrado] = useState(false)
@@ -51,8 +51,6 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
     
     if (barberConfig) {
       // 1. Calcular día de la semana (0: Domingo, 1: Lunes...)
-      const dateParts = nuevaFecha.split('-').map(Number)
-      const dayOfWeek = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getDay()
       
       // 2. BUSCAR PLANIFICACIÓN ESPECÍFICA PARA ESTA FECHA (STRICT MODE)
       const { data: specificShed } = await supabase
@@ -140,7 +138,7 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
       } else {
         setSubmitted(true)
       }
-    } catch (err: any) {
+    } catch {
       toast.error('Ocurrió un error al procesar tu reserva.')
     } finally {
       setLoading(false)
@@ -192,9 +190,9 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
       <header className="mb-10 text-center relative z-10 px-4">
         <div className="flex items-center justify-center mb-6">
           <div className="w-24 h-24 md:w-32 md:h-32 bg-zinc-900 rounded-full border-4 border-amber-600/20 p-2 shadow-2xl overflow-hidden flex items-center justify-center relative group">
-            <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden">
+            <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden relative">
               {barberConfig.logo_url ? (
-                <img src={barberConfig.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                <Image src={barberConfig.logo_url} alt="Logo" fill className="object-cover" sizes="(max-width: 768px) 96px, 128px" />
               ) : (
                 <Store className="w-10 h-10 md:w-14 md:h-14 text-zinc-800" />
               )}

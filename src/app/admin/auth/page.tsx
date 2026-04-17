@@ -57,12 +57,13 @@ export default function AdminAuth() {
         toast.success('Registro exitoso. Revisa tu email para confirmar.')
         setIsLogin(true)
       }
-    } catch (err: any) {
-      console.error('Detalle error auth:', err)
-      if (err.message === 'Failed to fetch') {
+    } catch (err: unknown) {
+      const error = err as { message?: string }
+      console.error('Detalle error auth:', error)
+      if (error.message === 'Failed to fetch') {
         setError('Error de conexión: No se pudo contactar con el servidor. Verifica las llaves de Supabase en Vercel.')
       } else {
-        setError(err.message || 'Error en la autenticación')
+        setError(error.message || 'Error en la autenticación')
       }
     } finally {
       setLoading(false)
