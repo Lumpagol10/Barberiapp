@@ -5,6 +5,8 @@ import { CheckCircle, LogOut, Scissors, Users, Calendar, TrendingUp, Settings, E
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Cropper, { Area } from 'react-easy-crop'
+import { getCroppedImg } from '@/lib/imageUtils'
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'agenda' | 'config' | 'programar' | 'finanzas'>('agenda')
@@ -58,6 +60,13 @@ export default function Dashboard() {
   // Estados para Excepciones por Fecha
   const [exceptionDate, setExceptionDate] = useState('')
   const [exceptionSchedule, setExceptionSchedule] = useState<{activo: boolean, slots: string[]}>({ activo: true, slots: [] })
+
+  // Estados para el Cropper de Logo
+  const [showCropper, setShowCropper] = useState(false)
+  const [tempImage, setTempImage] = useState<string | null>(null)
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
   
   const router = useRouter()
 
@@ -269,13 +278,30 @@ export default function Dashboard() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    const reader = new FileReader()
+    reader.addEventListener('load', () => {
+      setTempImage(reader.result as string)
+      setShowCropper(true)
+    })
+    reader.readAsDataURL(file)
+  }
+
+  const onCropComplete = (croppedArea: Area, croppedAreaPixels: Area) => {
+    setCroppedAreaPixels(croppedAreaPixels)
+  }
+
+  const handleSaveCrop = async () => {
+    if (!tempImage || !croppedAreaPixels) return
     setSaving(true)
     try {
-      const fileName = `${user.id}-${Date.now()}.${file.name.split('.').pop()}`
+      const croppedBlob = await getCroppedImg(tempImage, croppedAreaPixels)
+      if (!croppedBlob) throw new Error('Error al procesar el recorte')
+
+      const fileName = `${user.id}-${Date.now()}.jpg`
       
       const { error: uploadError } = await supabase.storage
         .from('barberia_logos')
-        .upload(fileName, file)
+        .upload(fileName, croppedBlob)
 
       if (uploadError) throw uploadError
 
@@ -283,10 +309,23 @@ export default function Dashboard() {
         .from('barberia_logos')
         .getPublicUrl(fileName)
 
+      // Guardar en la base de datos inmediatamente para evitar pérdidas
+      const { error: dbError } = await supabase
+        .from('configuracion_barberia')
+        .update({ logo_url: publicUrl })
+        .eq('user_id', user.id)
+
+      if (dbError) throw dbError
+
       setEditLogoUrl(publicUrl)
-      alert('📸 Logo cargado con éxito. No olvides guardar los cambios del perfil.')
+      // Actualizar config local para que el sidebar se vea al toque
+      setConfig((prev: any) => prev ? { ...prev, logo_url: publicUrl } : prev)
+      
+      setShowCropper(false)
+      setTempImage(null)
+      alert('📸 Logo guardado con éxito. Ya puedes seguir navegando.')
     } catch (error: any) {
-      alert(`Error al subir logo: ${error.message}. Asegúrate de que el bucket 'barberia_logos' sea público.`)
+      alert(`Error al subir logo: ${error.message}`)
     } finally {
       setSaving(false)
     }
@@ -542,11 +581,13 @@ export default function Dashboard() {
       <aside className="hidden lg:flex w-80 flex-col bg-zinc-900/50 border-r border-zinc-800/50 p-6 backdrop-blur-md sticky top-0 h-screen">
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-12 h-12 bg-amber-600 rounded-xl shadow-lg shadow-amber-900/20 shrink-0 flex items-center justify-center overflow-hidden border border-amber-500/20">
+            <div className="w-12 h-12 rounded-xl shadow-lg shrink-0 flex items-center justify-center overflow-hidden border border-amber-500/20 bg-zinc-900">
               {config?.logo_url ? (
                 <img src={config.logo_url} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                <Scissors className="w-6 h-6 text-black" />
+                <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center">
+                  <Store className="w-6 h-6 text-zinc-500" />
+                </div>
               )}
             </div>
             <span className="text-lg font-black tracking-tighter uppercase italic truncate flex-1 min-w-0">{config?.nombre_barberia || 'BARBERIAPP'}</span>
@@ -628,16 +669,27 @@ export default function Dashboard() {
             {activeTab === 'agenda' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 lg:mb-16">
-              <div className="space-y-1">
-                <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic leading-tight">HOY ES {getFormattedDate()}</h1>
-                <div className="flex items-center gap-4">
-                  <p className="text-zinc-500 text-xs sm:text-base font-medium italic">Gestión operativa para <span className="text-amber-500 font-bold">{config?.nombre_barberia}</span></p>
-                  <button 
-                    onClick={handleShare}
-                    className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest transition-all"
-                  >
-                    <Share2 className="w-3.5 h-3.5" /> Compartir Link
-                  </button>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl border-2 border-amber-500/20 p-1.5 shadow-2xl shrink-0 flex items-center justify-center overflow-hidden bg-zinc-900/50 backdrop-blur-sm">
+                   {config?.logo_url ? (
+                      <img src={config.logo_url} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
+                   ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center rounded-2xl">
+                         <Store className="w-10 h-10 text-zinc-600" />
+                      </div>
+                   )}
+                </div>
+                <div className="space-y-1">
+                  <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic leading-tight">HOY ES {getFormattedDate()}</h1>
+                  <div className="flex items-center gap-4">
+                    <p className="text-zinc-500 text-xs sm:text-base font-medium italic">Gestión operativa para <span className="text-amber-500 font-bold">{config?.nombre_barberia}</span></p>
+                    <button 
+                      onClick={handleShare}
+                      className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest transition-all"
+                    >
+                      <Share2 className="w-3.5 h-3.5" /> Compartir Link
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1372,7 +1424,73 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+        {/* Modal del Cropper Pro */}
+        {showCropper && tempImage && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+            <div className="bg-zinc-900 border border-white/10 w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-[80vh]">
+              <div className="p-8 border-b border-white/5 flex items-center justify-between bg-zinc-900/50 backdrop-blur-md">
+                <div>
+                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Ajustar Logo</h2>
+                  <p className="text-zinc-500 text-xs font-medium italic">Centrá y hacé zoom para el encuadre perfecto</p>
+                </div>
+                <button onClick={() => setShowCropper(false)} className="p-3 hover:bg-zinc-800 rounded-full transition-all text-zinc-500"><LogOut className="w-5 h-5 rotate-180" /></button>
+              </div>
+
+              <div className="flex-1 relative bg-black/50">
+                <Cropper
+                  image={tempImage}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  cropShape="round"
+                  showGrid={false}
+                  onCropChange={setCrop}
+                  onCropComplete={onCropComplete}
+                  onZoomChange={setZoom}
+                />
+              </div>
+
+              <div className="p-8 space-y-8 bg-zinc-900">
+                <div className="space-y-4">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500 italic">
+                    <span>Nivel de Zoom</span>
+                    <span className="text-amber-500">{Math.round(zoom * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.1}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => setZoom(Number(e.target.value))}
+                    className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setShowCropper(false)}
+                    className="flex-1 py-5 rounded-2xl bg-zinc-800 text-zinc-400 font-black uppercase tracking-widest text-xs hover:bg-zinc-700 transition-all border border-white/5"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveCrop}
+                    disabled={saving}
+                    className="flex-[2] py-5 rounded-2xl bg-amber-600 text-black font-black uppercase tracking-widest text-xs hover:bg-amber-500 transition-all shadow-lg shadow-amber-900/20 flex items-center justify-center gap-2"
+                  >
+                    {saving ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>Confirmar Recorte</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   )
 }
-
