@@ -96,24 +96,45 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
 
     setLoading(true)
     
-    const { error } = await supabase
-      .from('turnos')
-      .insert([
-        { 
-          barbero_id: barberConfig.user_id,
-          cliente_nombre: nombre, 
-          cliente_telefono: `+54${phoneSuffix}`, 
-          fecha: fecha, 
-          hora: horaSeleccionada 
-        }
-      ])
+    // VALIDACIÓN DE ÚLTIMO SEGUNDO: Verificar si el turno se ocupó justo ahora
+    try {
+      const { data: existing } = await supabase
+        .from('turnos')
+        .select('id')
+        .eq('barbero_id', barberConfig.user_id)
+        .eq('fecha', fecha)
+        .eq('hora', horaSeleccionada)
+        .maybeSingle()
 
-    if (error) {
-      toast.error(`Error: ${error.message}`)
+      if (existing) {
+        toast.error('¡Ups! Alguien acaba de reservar este turno. Por favor elegí otro.')
+        await fetchBookedTurns(fecha) // Refrescar lista de ocupados
+        setHoraSeleccionada('') // Deseleccionar
+        setLoading(false)
+        return
+      }
+
+      const { error } = await supabase
+        .from('turnos')
+        .insert([
+          { 
+            barbero_id: barberConfig.user_id,
+            cliente_nombre: nombre, 
+            cliente_telefono: `+54${phoneSuffix}`, 
+            fecha: fecha, 
+            hora: horaSeleccionada 
+          }
+        ])
+
+      if (error) {
+        toast.error(`Error: ${error.message}`)
+      } else {
+        setSubmitted(true)
+      }
+    } catch (err: any) {
+      toast.error('Ocurrió un error al procesar tu reserva.')
+    } finally {
       setLoading(false)
-    } else {
-      setLoading(false)
-      setSubmitted(true)
     }
   }
 
@@ -281,15 +302,22 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar border-t border-zinc-800/30 pt-4">
-                    {availableSlots.map((slot) => {
-                      const isBooked = bookedSlots.includes(slot)
-                      const isSelected = horaSeleccionada === slot
-                      return (
-                        <button key={slot} type="button" disabled={isBooked} onClick={() => setHoraSeleccionada(slot)} className={`py-4 rounded-xl text-center text-xs md:text-sm font-bold transition-all border ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}`}>
-                          {slot}
-                        </button>
-                      )
-                    })}
+                    {availableSlots
+                      .filter(slot => !bookedSlots.includes(slot))
+                      .map((slot) => {
+                        const isSelected = horaSeleccionada === slot
+                        return (
+                          <button 
+                            key={slot} 
+                            type="button" 
+                            onClick={() => setHoraSeleccionada(slot)} 
+                            className={`py-4 rounded-xl text-center text-xs md:text-sm font-bold transition-all border ${isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}`}
+                          >
+                            {slot}
+                          </button>
+                        )
+                      })
+                    }
                   </div>
                 )}
               </div>
