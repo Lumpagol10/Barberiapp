@@ -423,13 +423,13 @@ export default function Dashboard() {
         <button onClick={handleLogout} className="p-4 text-red-500/50"><LogOut className="w-6 h-6" /></button>
       </nav>
 
-      <main className="flex-1 p-6 lg:p-12">
+      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full max-w-[100vw]">
         {activeTab === 'agenda' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 lg:mb-16">
               <div className="space-y-1">
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">HOY ES {getFormattedDate()}</h1>
-                <p className="text-zinc-500 font-medium italic">Gestión operativa para <span className="text-amber-500 font-bold">{config?.nombre_barberia}</span></p>
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic leading-tight">HOY ES {getFormattedDate()}</h1>
+                <p className="text-zinc-500 text-xs sm:text-base font-medium italic">Gestión operativa para <span className="text-amber-500 font-bold">{config?.nombre_barberia}</span></p>
               </div>
 
               <div className="bg-zinc-900/80 border border-zinc-800 p-6 rounded-[2rem] min-w-[140px] shadow-xl">
@@ -660,17 +660,17 @@ export default function Dashboard() {
 
         {activeTab === 'finanzas' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="mb-12">
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Finanzas y Caja</h1>
-              <p className="text-zinc-500 font-medium italic">Control de ingresos y balance de servicios</p>
+            <header className="mb-10 lg:mb-12">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Finanzas y Caja</h1>
+              <p className="text-zinc-500 text-sm sm:text-base font-medium italic">Control de ingresos y balance de servicios</p>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {/* Total Diario */}
-              <div className="bg-zinc-900/50 border border-emerald-500/20 p-6 lg:p-8 rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                  <div>
-                    <label className={`text-[10px] font-black uppercase tracking-widest mb-1 block transition-colors ${historyFilterMode === 'day' ? 'text-emerald-500' : 'text-zinc-600'}`}>
+              <div className="bg-zinc-900/50 border border-emerald-500/20 p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
+                <div className="flex flex-row items-start justify-between gap-4 mb-6">
+                  <div className="flex-1">
+                    <label className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2 block transition-colors ${historyFilterMode === 'day' ? 'text-emerald-500' : 'text-zinc-600'}`}>
                       Monto Diario {historyFilterMode === 'day' && '• ACTIVO'}
                     </label>
                     <input 
@@ -680,27 +680,27 @@ export default function Dashboard() {
                         setFinancesDate(e.target.value)
                         setHistoryFilterMode('day')
                       }}
-                      className="bg-transparent text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
+                      className="bg-zinc-950/50 sm:bg-transparent border border-zinc-800 sm:border-none rounded-lg px-3 py-2 sm:p-0 w-full sm:w-auto text-zinc-400 sm:text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
                     />
                   </div>
                   <div 
                     onClick={() => setHistoryFilterMode('day')}
-                    className={`p-3 rounded-2xl transition-all cursor-pointer ${historyFilterMode === 'day' ? 'bg-emerald-600 text-black shadow-lg shadow-emerald-900/40' : 'bg-emerald-600/10 text-emerald-500 group-hover:scale-110'}`}
+                    className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl transition-all cursor-pointer ${historyFilterMode === 'day' ? 'bg-emerald-600 text-black shadow-lg shadow-emerald-900/40' : 'bg-emerald-600/10 text-emerald-500 group-hover:scale-110'}`}
                   >
-                    <DollarSign className="w-6 h-6" />
+                    <DollarSign className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
-                  <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
+                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-zinc-500 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
 
               {/* Total Mensual */}
-              <div className="bg-zinc-900/50 border border-amber-500/20 p-6 lg:p-8 rounded-[2.5rem] shadow-xl shadow-amber-950/10 backdrop-blur-xl group hover:border-amber-500/40 transition-all">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                  <div>
-                    <label className={`text-[10px] font-black uppercase tracking-widest mb-1 block transition-colors ${historyFilterMode === 'month' ? 'text-amber-500' : 'text-zinc-600'}`}>
+              <div className="bg-zinc-900/50 border border-amber-500/20 p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-amber-950/10 backdrop-blur-xl group hover:border-amber-500/40 transition-all">
+                <div className="flex flex-row items-start justify-between gap-4 mb-6">
+                  <div className="flex-1">
+                    <label className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2 block transition-colors ${historyFilterMode === 'month' ? 'text-amber-500' : 'text-zinc-600'}`}>
                       Cierre Mensual {historyFilterMode === 'month' && '• ACTIVO'}
                     </label>
                     <input 
@@ -710,43 +710,43 @@ export default function Dashboard() {
                         setFinancesMonth(e.target.value)
                         setHistoryFilterMode('month')
                       }}
-                      className="bg-transparent text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
+                      className="bg-zinc-950/50 sm:bg-transparent border border-zinc-800 sm:border-none rounded-lg px-3 py-2 sm:p-0 w-full sm:w-auto text-zinc-400 sm:text-zinc-500 text-xs font-bold outline-none [color-scheme:dark] cursor-pointer"
                     />
                   </div>
                   <div 
                     onClick={() => setHistoryFilterMode('month')}
-                    className={`p-3 rounded-2xl transition-all cursor-pointer ${historyFilterMode === 'month' ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/40' : 'bg-amber-600/10 text-amber-500 group-hover:scale-110'}`}
+                    className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl transition-all cursor-pointer ${historyFilterMode === 'month' ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/40' : 'bg-amber-600/10 text-amber-500 group-hover:scale-110'}`}
                   >
-                    <TrendingUp className="w-6 h-6" />
+                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter">${financesData.monthlyTotal.toLocaleString('es-AR')}</span>
-                  <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
+                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.monthlyTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-zinc-500 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
 
               {/* Total Anual */}
-              <div className="bg-zinc-900/50 border border-blue-500/20 p-6 lg:p-8 rounded-[2.5rem] shadow-xl shadow-blue-950/10 backdrop-blur-xl group hover:border-blue-500/40 transition-all">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                  <div>
-                    <p className="text-blue-500 text-[10px] font-black uppercase tracking-widest mb-1">Balance Anual</p>
-                    <span className="text-zinc-600 text-xs font-bold uppercase tracking-widest">Año {new Date().getFullYear()}</span>
+              <div className="bg-zinc-900/50 border border-blue-500/20 p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-blue-950/10 backdrop-blur-xl group hover:border-blue-500/40 transition-all">
+                <div className="flex flex-row items-start justify-between gap-4 mb-6">
+                  <div className="flex-1">
+                    <p className="text-blue-500 text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-2">Balance Anual</p>
+                    <span className="text-zinc-600 text-xs font-bold uppercase tracking-widest block py-2 sm:py-0">Año {new Date().getFullYear()}</span>
                   </div>
-                  <div className="p-3 bg-blue-600/10 rounded-2xl text-blue-500 group-hover:scale-110 transition-transform self-start">
-                    <Scissors className="w-6 h-6 rotate-90" />
+                  <div className="p-2.5 sm:p-3 bg-blue-600/10 rounded-xl sm:rounded-2xl text-blue-500 group-hover:scale-110 transition-transform">
+                    <Scissors className="w-5 h-5 sm:w-6 sm:h-6 rotate-90" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter">${financesData.annualTotal.toLocaleString('es-AR')}</span>
-                  <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest italic">ARS</span>
+                  <span className="text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.annualTotal.toLocaleString('es-AR')}</span>
+                  <span className="text-zinc-500 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest italic">ARS</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-zinc-900/30 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
-              <div className="p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-900/20">
-                <h3 className="text-xl font-black uppercase italic tracking-tighter">Cronograma de Ingresos</h3>
+            <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
+              <div className="p-6 sm:p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-900/20">
+                <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Cronograma de Ingresos</h3>
                 <div className="p-2 bg-emerald-600/10 rounded-lg text-emerald-500">
                   <DollarSign className="w-4 h-4" />
                 </div>
