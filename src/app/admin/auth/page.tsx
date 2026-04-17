@@ -9,11 +9,24 @@ export default function AdminAuth() {
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showDebug, setShowDebug] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  const getDebugInfo = () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'FALTANTE'
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'FALTANTE'
+    return {
+      hasUrl: url !== 'FALTANTE',
+      hasKey: key !== 'FALTANTE',
+      urlStart: url.substring(0, 15),
+      keyStart: key.substring(0, 8),
+      isHttps: url.startsWith('https://')
+    }
+  }
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -150,9 +163,48 @@ export default function AdminAuth() {
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-start gap-3 animate-pulse">
-                <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                <p className="text-red-500 text-sm font-medium leading-tight">{error}</p>
+              <div className="space-y-4">
+                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-start gap-3 animate-pulse">
+                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <p className="text-red-500 text-sm font-medium leading-tight">{error}</p>
+                    <button 
+                      type="button"
+                      onClick={() => setShowDebug(!showDebug)}
+                      className="text-[10px] text-amber-500 font-bold uppercase tracking-widest hover:underline"
+                    >
+                      {showDebug ? 'Ocultar Diagnóstico' : 'Ver Diagnóstico del Sistema'}
+                    </button>
+                  </div>
+                </div>
+
+                {showDebug && (
+                  <div className="bg-zinc-800/50 p-6 rounded-2xl border border-zinc-700/30 font-mono text-[10px] space-y-3 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
+                      <span className="text-zinc-500 uppercase">Estado Conexión</span>
+                      <span className={getDebugInfo().hasUrl ? 'text-green-500' : 'text-red-500'}>
+                        {getDebugInfo().hasUrl ? 'DETECTADO' : 'CUIDADO: FALTANTE'}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-zinc-500 uppercase">URL (Inicio):</p>
+                      <p className="text-zinc-300 break-all">{getDebugInfo().urlStart}...</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-zinc-500 uppercase">KEY (Inicio):</p>
+                      <p className="text-zinc-300 break-all">{getDebugInfo().keyStart}...</p>
+                    </div>
+                    <div className="flex justify-between items-center text-zinc-500">
+                      <span>Protocolo Seguro (HTTPS)</span>
+                      <span className={getDebugInfo().isHttps ? 'text-green-500' : 'text-red-500'}>
+                        {getDebugInfo().isHttps ? 'SI' : 'NO'}
+                      </span>
+                    </div>
+                    <p className="text-zinc-700 italic border-t border-zinc-800 pt-2">
+                      Si algo dice FALTANTE, verifica Vercel y haz un Redeploy.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
