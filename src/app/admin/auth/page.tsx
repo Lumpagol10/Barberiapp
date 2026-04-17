@@ -83,7 +83,7 @@ export default function AdminAuth() {
         <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl mb-2">
           BARBERI<span className="text-amber-500">APP</span>
         </h1>
-        <p className="text-zinc-500 font-medium tracking-widest uppercase text-xs">Admin Portal</p>
+        <p className="text-zinc-500 font-medium tracking-widest uppercase text-xs">Panel Administrativo</p>
       </header>
 
       <div className="w-full max-w-md relative z-10">

@@ -182,7 +182,7 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
           {barberConfig.nombre_barberia}
         </h1>
         <div className="flex flex-col items-center gap-4">
-          <p className="text-zinc-500 tracking-widest text-sm font-medium">RESERVAS ONLINE | POWERED BY BARBERIAPP</p>
+          <p className="text-zinc-500 tracking-widest text-sm font-medium">RESERVAS ONLINE | POTENCIADO POR BARBERIAPP</p>
           
           {barberConfig.google_maps_link && (
             <a 

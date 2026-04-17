@@ -135,7 +135,7 @@ export default function Dashboard() {
             <h3 className="text-xl font-black uppercase italic tracking-tighter">Próximos Turnos</h3>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Live Updates</span>
+              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">ACTUALIZADO</span>
             </div>
           </div>
 

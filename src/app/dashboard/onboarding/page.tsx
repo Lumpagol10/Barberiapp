@@ -172,7 +172,7 @@ export default function Onboarding() {
 
         <footer className="mt-12 text-center">
           <p className="text-zinc-600 text-sm font-medium uppercase tracking-[0.2em]">
-            Powered by <span className="text-zinc-500 font-bold">Franmark Digital</span>
+            Potenciado por <span className="text-zinc-500 font-bold">Franmark Digital</span>
           </p>
         </footer>
       </div>
