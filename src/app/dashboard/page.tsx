@@ -229,12 +229,12 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans overflow-x-hidden">
       {/* Sidebar Fijo */}
-      <aside className="hidden lg:flex w-72 flex-col bg-zinc-900/50 border-r border-zinc-800/50 p-6 backdrop-blur-md sticky top-0 h-screen">
-        <div className="flex items-center gap-3 mb-12">
-          <div className="p-2.5 bg-amber-600 rounded-xl shadow-lg shadow-amber-900/20">
+      <aside className="hidden lg:flex w-80 flex-col bg-zinc-900/50 border-r border-zinc-800/50 p-6 backdrop-blur-md sticky top-0 h-screen">
+        <div className="flex items-center gap-3 mb-10">
+          <div className="p-2.5 bg-amber-600 rounded-xl shadow-lg shadow-amber-900/20 shrink-0">
             <Scissors className="w-6 h-6 text-black" />
           </div>
-          <span className="text-xl font-black tracking-tighter uppercase italic truncate">{config?.nombre_barberia || 'BARBERIAPP'}</span>
+          <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic">{config?.nombre_barberia || 'BARBERIAPP'}</span>
         </div>
         
         <nav className="space-y-2 flex-1">
