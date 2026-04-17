@@ -55,7 +55,7 @@ export default function Onboarding() {
 
   const handleOnboarding = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!nombreBarberia || !slug) return
+    if (!nombreBarberia || !slug || !user) return
 
     setLoading(true)
     try {
