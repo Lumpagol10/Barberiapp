@@ -170,6 +170,11 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Optimizaciones de Red para Google Maps */}
+      <link rel="preconnect" href="https://maps.google.com" />
+      <link rel="preconnect" href="https://maps.gstatic.com" />
+      <link rel="preconnect" href="https://www.google.com" />
+      
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-900/20 rounded-full blur-[120px]" />
       
       <header className="mb-10 text-center relative z-10">
@@ -189,7 +194,7 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
               href={barberConfig.google_maps_link} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="mt-2 flex items-center gap-2 px-6 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-400 hover:text-amber-500 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-xl"
+              className="mt-2 flex items-center gap-2 px-6 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-400 hover:text-amber-500 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-200 shadow-xl active:scale-95"
             >
               <Globe className="w-4 h-4" />
               CÓMO LLEGAR
