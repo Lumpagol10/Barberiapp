@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { Scissors, Globe, Phone, Type, ArrowRight, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function Onboarding() {
   const [loading, setLoading] = useState(false)
@@ -70,7 +71,7 @@ export default function Onboarding() {
       if (error) throw error
       router.push('/dashboard')
     } catch (error: any) {
-      alert(`Error al guardar configuración: ${error.message}`)
+      toast.error(`Error al guardar configuración: ${error.message}`)
     } finally {
       setLoading(false)
     }

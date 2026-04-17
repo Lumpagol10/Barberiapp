@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, LogOut, Scissors, Users, Calendar, TrendingUp, Settings, ExternalLink, Phone, Clock, Type as TypeIcon, MessageCircle, DollarSign, Share2, Store, Loader2, User as UserIcon, Camera, Trash2, Globe, Copy } from 'lucide-react'
+import { CheckCircle, LogOut, Scissors, Users, Calendar, TrendingUp, Settings, ExternalLink, Phone, Clock, Type as TypeIcon, MessageCircle, DollarSign, Share2, Store, Loader2, User as UserIcon, Camera, Trash2, Globe, Copy, X, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Cropper, { Area } from 'react-easy-crop'
 import { getCroppedImg } from '@/lib/imageUtils'
+import { toast } from 'sonner'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'agenda' | 'config' | 'programar' | 'finanzas'>('agenda')
@@ -15,6 +17,14 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [config, setConfig] = useState<any>(null)
   const [turns, setTurns] = useState<any[]>([])
+  
+  // Estados de Modales y Feedback (Consolidados)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [showCropper, setShowCropper] = useState(false)
+  const [showMasterRoutine, setShowMasterRoutine] = useState(false)
+
   const [viewDate, setViewDate] = useState(() => {
     return new Intl.DateTimeFormat('en-CA', {
       timeZone: 'America/Argentina/Buenos_Aires',
@@ -25,10 +35,8 @@ export default function Dashboard() {
   })
   
   // Estados para Finanzas
-  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
   const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null)
   const [checkoutPrice, setCheckoutPrice] = useState('')
-  const [showShareModal, setShowShareModal] = useState(false)
   const [financesDate, setFinancesDate] = useState(() => {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
   })
@@ -44,9 +52,8 @@ export default function Dashboard() {
   })
   
   // Estados para Agenda Inteligente
-  const [masterRoutine, setMasterRoutine] = useState<any[]>([]) // La plantilla base (L-D)
-  const [planningSchedule, setPlanningSchedule] = useState<any[]>([]) // Los 7-14 días concretos
-  const [showMasterRoutine, setShowMasterRoutine] = useState(false)
+  const [masterRoutine, setMasterRoutine] = useState<any[]>([])
+  const [planningSchedule, setPlanningSchedule] = useState<any[]>([])
   
   // States for Editing Config
   const [editNombre, setEditNombre] = useState('')
@@ -62,7 +69,6 @@ export default function Dashboard() {
   const [exceptionSchedule, setExceptionSchedule] = useState<{activo: boolean, slots: string[]}>({ activo: true, slots: [] })
 
   // Estados para el Cropper de Logo
-  const [showCropper, setShowCropper] = useState(false)
   const [tempImage, setTempImage] = useState<string | null>(null)
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -266,10 +272,10 @@ export default function Dashboard() {
       .eq('user_id', user.id)
 
     if (error) {
-      alert(`Error al actualizar: ${error.message}`)
+      toast.error(`Error al actualizar: ${error.message}`)
     } else {
       await fetchData(user.id)
-      alert('Perfil actualizado con éxito')
+      toast.success('Perfil actualizado con éxito')
       setActiveTab('agenda') // Volver a la página principal tras guardar
     }
     setSaving(false)
@@ -292,17 +298,18 @@ export default function Dashboard() {
   }
 
   const handleSaveCrop = async () => {
-    if (!tempImage || !croppedAreaPixels) return
+    if (!croppedAreaPixels || !tempImage) return
     setSaving(true)
     try {
-      const croppedBlob = await getCroppedImg(tempImage, croppedAreaPixels)
-      if (!croppedBlob) throw new Error('Error al procesar el recorte')
-
-      const fileName = `${user.id}-${Date.now()}.jpg`
+      const croppedImage = await getCroppedImg(tempImage, croppedAreaPixels)
+      if (!croppedImage) throw new Error('Error al procesar el recorte')
+      
+      const fileExt = 'jpg'
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`
       
       const { error: uploadError } = await supabase.storage
         .from('barberia_logos')
-        .upload(fileName, croppedBlob)
+        .upload(fileName, croppedImage)
 
       if (uploadError) throw uploadError
 
@@ -310,7 +317,6 @@ export default function Dashboard() {
         .from('barberia_logos')
         .getPublicUrl(fileName)
 
-      // Guardar en la base de datos inmediatamente para evitar pérdidas
       const { error: dbError } = await supabase
         .from('configuracion_barberia')
         .update({ logo_url: publicUrl })
@@ -318,15 +324,12 @@ export default function Dashboard() {
 
       if (dbError) throw dbError
 
-      setEditLogoUrl(publicUrl)
-      // Actualizar config local para que el sidebar se vea al toque
-      setConfig((prev: any) => prev ? { ...prev, logo_url: publicUrl } : prev)
-      
+      await fetchData(user.id)
       setShowCropper(false)
       setTempImage(null)
-      alert('📸 Logo guardado con éxito. Ya puedes seguir navegando.')
+      toast.success('📸 Logo guardado con éxito')
     } catch (error: any) {
-      alert(`Error al subir logo: ${error.message}`)
+      toast.error(`Error al subir logo: ${error.message}`)
     } finally {
       setSaving(false)
     }
@@ -348,11 +351,11 @@ export default function Dashboard() {
         )
 
       if (error) throw error
-      alert('✅ Rutina Maestra actualizada')
+      toast.success('✅ Rutina Maestra actualizada')
       setShowMasterRoutine(false)
       fetchData(user.id) // Refrescar planning con la nueva rutina
     } catch (error: any) {
-      alert(`Error: ${error.message}`)
+      toast.error(`Error: ${error.message}`)
     } finally {
       setSaving(false)
     }
@@ -375,10 +378,10 @@ export default function Dashboard() {
         )
 
       if (error) throw error
-      alert('✅ Agenda Semanal confirmada y publicada')
+      toast.success('✅ Agenda Semanal confirmada')
       fetchData(user.id)
     } catch (error: any) {
-      alert(`Error al guardar agenda: ${error.message}`)
+      toast.error(`Error al guardar agenda: ${error.message}`)
     } finally {
       setSaving(false)
     }
@@ -461,9 +464,9 @@ export default function Dashboard() {
         }, { onConflict: 'user_id,fecha' })
 
       if (error) throw error
-      alert(`✅ Excepción para el ${exceptionDate} guardada`)
+      toast.success(`✅ Excepción para el ${exceptionDate} guardada`)
     } catch (error: any) {
-      alert(`Error: ${error.message}`)
+      toast.error(`Error: ${error.message}`)
     } finally {
       setSaving(false)
     }
@@ -505,8 +508,9 @@ export default function Dashboard() {
       setTurns(prev => prev.filter(t => t.id !== selectedTurnId))
       setShowCheckoutModal(false)
       fetchFinances(user.id)
+      toast.success('✅ Turno cobrado con éxito')
     } else {
-      alert(`Error al cobrar: ${error.message}`)
+      toast.error(`Error al cobrar: ${error.message}`)
     }
     setSaving(false)
   }
@@ -557,6 +561,7 @@ export default function Dashboard() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/admin/auth')
+    toast.success('Sesión cerrada correctamente')
   }
 
   const diasLetras = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -608,6 +613,13 @@ export default function Dashboard() {
             </div>
             <span className="text-lg font-black tracking-tighter uppercase italic truncate flex-1 min-w-0">{config?.nombre_barberia || 'BARBERIAPP'}</span>
           </div>
+          <button 
+            onClick={() => setShowLogoutModal(true)}
+            className="p-3 bg-zinc-800 hover:bg-red-900/20 text-red-500 rounded-xl transition-all border border-zinc-700/50 shrink-0 group"
+            title="Cerrar Sesión"
+          >
+            <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          </button>
           <button 
             onClick={handleShare}
             className="p-3 bg-zinc-800 hover:bg-zinc-700 text-amber-500 rounded-xl transition-all border border-zinc-700/50 shrink-0"
@@ -662,7 +674,15 @@ export default function Dashboard() {
         <button onClick={handleShare} className="p-3 text-amber-500 bg-amber-600/10 rounded-full"><Share2 className="w-5 h-5" /></button>
         <button onClick={() => setActiveTab('config')} className={`p-3 rounded-full transition-all ${activeTab === 'config' ? 'bg-amber-600 text-black' : 'text-zinc-500'}`}><Settings className="w-5 h-5" /></button>
         <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
-        <div className="p-3 text-zinc-700"><UserIcon className="w-5 h-5" /></div>
+        <button 
+          onClick={() => setShowLogoutModal(true)}
+          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all text-zinc-600 hover:text-red-500"
+        >
+          <div className="p-2 rounded-xl bg-zinc-900 border border-zinc-800">
+            <LogOut className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest">Salir</span>
+        </button>
       </nav>
 
       <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full max-w-[100vw] relative">
@@ -1281,7 +1301,7 @@ export default function Dashboard() {
                                 onClick={() => {
                                     const url = `${window.location.origin}/reserva/${config?.slug}`
                                     navigator.clipboard.writeText(url)
-                                    alert('✅ Link de reserva copiado')
+                                    toast.success('✅ Link de reserva copiado')
                                  }}
                                 className="flex-1 sm:flex-none p-5 bg-emerald-600 text-black rounded-xl hover:bg-emerald-500 transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
                                 title="Copiar Link"
@@ -1352,7 +1372,7 @@ export default function Dashboard() {
                   </div>
                   <button 
                     type="button"
-                    onClick={handleLogout}
+                    onClick={() => setShowLogoutModal(true)}
                     className="w-full bg-red-950/10 border border-red-900/20 hover:bg-red-900/20 text-red-500 font-black py-5 px-6 rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-3 uppercase text-xs sm:text-sm tracking-widest italic"
                   >
                     <LogOut className="w-5 h-5" /> Cerrar Sesión Segura

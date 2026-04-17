@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { Scissors, Lock, Mail, User, ArrowRight, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function AdminAuth() {
   const [isLogin, setIsLogin] = useState(true)
@@ -53,7 +54,7 @@ export default function AdminAuth() {
           },
         })
         if (error) throw error
-        alert('Registro exitoso. Revisa tu email para confirmar o inicia sesión.')
+        toast.success('Registro exitoso. Revisa tu email para confirmar.')
         setIsLogin(true)
       }
     } catch (err: any) {

@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "La plataforma de gestión para barberías profesionales.",
 };
 
+import { Toaster } from 'sonner'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,23 @@ export default function RootLayout({
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-black">
+        <Toaster 
+          position="top-center" 
+          toastOptions={{
+            style: {
+              background: '#18181b', // zinc-900
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: '#fff',
+              borderRadius: '1.5rem',
+              backdropFilter: 'blur(8px)',
+            },
+            className: 'font-sans'
+          }}
+          richColors
+        />
+        {children}
+      </body>
     </html>
   );
 }

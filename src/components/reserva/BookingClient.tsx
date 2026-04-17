@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Scissors, Calendar as CalendarIcon, Clock, User, Phone, CheckCircle2, AlertTriangle, ArrowLeft, Globe, MessageCircle, Store } from 'lucide-react'
+import { toast } from 'sonner'
 import Link from 'next/link'
 
 interface BookingClientProps {
@@ -108,7 +109,7 @@ export default function BookingClient({ slug, initialBarberConfig }: BookingClie
       ])
 
     if (error) {
-      alert(`Error: ${error.message}`)
+      toast.error(`Error: ${error.message}`)
       setLoading(false)
     } else {
       setLoading(false)
