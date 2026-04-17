@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [showShareModal, setShowShareModal] = useState(false)
   const [showCropper, setShowCropper] = useState(false)
   const [showMasterRoutine, setShowMasterRoutine] = useState(false)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   const [viewDate, setViewDate] = useState(() => {
     return new Intl.DateTimeFormat('en-CA', {
@@ -598,10 +599,18 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans overflow-x-hidden transition-colors duration-500">
-      {/* Sidebar Fijo */}
-      <aside className="hidden lg:flex w-80 flex-col bg-zinc-900/50 border-r border-zinc-800/50 p-6 backdrop-blur-md sticky top-0 h-screen">
+      {/* Overlay para cerrar Sidebar en Mobile */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden animate-in fade-in duration-300"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - Ahora Drawer en Mobile */}
+      <aside className={`fixed inset-y-0 left-0 w-80 flex flex-col bg-zinc-950 lg:bg-zinc-900/50 border-r border-zinc-800/50 p-6 backdrop-blur-md z-[70] transition-transform duration-300 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="w-12 h-12 rounded-xl shadow-lg shrink-0 flex items-center justify-center overflow-hidden border border-amber-500/20 bg-zinc-900">
               {(editLogoUrl || config?.logo_url) ? (
                 <img src={editLogoUrl || config?.logo_url || ""} alt="Logo" className="w-full h-full object-cover" />
@@ -611,59 +620,65 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            <span className="text-lg font-black tracking-tighter uppercase italic truncate flex-1 min-w-0">{config?.nombre_barberia || 'BARBERIAPP'}</span>
+            <span className="text-lg font-black tracking-tighter uppercase italic truncate min-w-0 text-white">{config?.nombre_barberia || 'BARBERIAPP'}</span>
           </div>
-          <button 
-            onClick={() => setShowLogoutModal(true)}
-            className="p-3 bg-zinc-800 hover:bg-red-900/20 text-red-500 rounded-xl transition-all border border-zinc-700/50 shrink-0 group"
-            title="Cerrar Sesión"
-          >
-            <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform" />
-          </button>
-          <button 
-            onClick={handleShare}
-            className="p-3 bg-zinc-800 hover:bg-zinc-700 text-amber-500 rounded-xl transition-all border border-zinc-700/50 shrink-0"
-            title="Compartir link de reserva"
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
+          
+          <div className="flex items-center gap-2 lg:hidden">
+            <button 
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="p-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded-xl"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
         
-        <nav className="space-y-2 flex-1">
+        <nav className="space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-2">
           <button 
-            onClick={() => setActiveTab('agenda')}
+            onClick={() => { setActiveTab('agenda'); setIsMobileSidebarOpen(false); }}
             className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all border uppercase text-sm tracking-wider ${activeTab === 'agenda' ? 'bg-amber-600/10 text-amber-500 border-amber-500/10' : 'text-zinc-400 border-transparent hover:bg-zinc-800/50 hover:text-white'}`}
           >
             <Calendar className="w-5 h-5" /> Turnos Hoy
           </button>
           
           <button 
-            onClick={() => setActiveTab('programar')}
+            onClick={() => { setActiveTab('programar'); setIsMobileSidebarOpen(false); }}
             className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all border uppercase text-sm tracking-wider ${activeTab === 'programar' ? 'bg-amber-600/10 text-amber-500 border-amber-500/10' : 'text-zinc-400 border-transparent hover:bg-zinc-800/50 hover:text-white'}`}
           >
             <Clock className="w-5 h-5" /> Programar Agenda
           </button>
-
+          
           <button 
-            onClick={() => setActiveTab('finanzas')}
+            onClick={() => { setActiveTab('finanzas'); setIsMobileSidebarOpen(false); }}
             className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all border uppercase text-sm tracking-wider ${activeTab === 'finanzas' ? 'bg-emerald-600/10 text-emerald-500 border-emerald-500/10' : 'text-zinc-400 border-transparent hover:bg-zinc-800/50 hover:text-white'}`}
           >
             <DollarSign className="w-5 h-5" /> Finanzas
           </button>
 
-
-          
           <button 
-            onClick={() => setActiveTab('config')}
+            onClick={() => { setActiveTab('config'); setIsMobileSidebarOpen(false); }}
             className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all border uppercase text-sm tracking-wider ${activeTab === 'config' ? 'bg-amber-600/10 text-amber-500 border-amber-500/10' : 'text-zinc-400 border-transparent hover:bg-zinc-800/50 hover:text-white'}`}
           >
             <Settings className="w-5 h-5" /> Mi Perfil
           </button>
         </nav>
 
-        <div className="flex items-center gap-3 px-4 py-3 text-zinc-700 font-bold uppercase text-[10px] tracking-widest mt-auto border-t border-zinc-800/30 pt-6">
-          <UserIcon className="w-4 h-4" />
-          <span className="truncate max-w-[150px]">{user?.email}</span>
+        {/* Footer Sidebar: User & Logout */}
+        <div className="mt-auto pt-6 border-t border-zinc-800/50 space-y-4">
+          <div className="flex flex-col gap-1 px-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600">Cuenta Activa</span>
+            <div className="flex items-center gap-3 text-zinc-400">
+              <UserIcon className="w-4 h-4 shrink-0 text-amber-500/50" />
+              <span className="text-xs font-bold truncate">{user?.email}</span>
+            </div>
+          </div>
+
+          <button 
+            onClick={() => setShowLogoutModal(true)}
+            className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-black text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 transition-all uppercase text-xs tracking-[0.2em]"
+          >
+            <LogOut className="w-5 h-5" /> Cerrar Sesión
+          </button>
         </div>
       </aside>
 
@@ -673,16 +688,6 @@ export default function Dashboard() {
         <button onClick={() => setActiveTab('finanzas')} className={`p-3 rounded-full transition-all ${activeTab === 'finanzas' ? 'bg-emerald-600 text-black' : 'text-zinc-500'}`}><DollarSign className="w-5 h-5" /></button>
         <button onClick={handleShare} className="p-3 text-amber-500 bg-amber-600/10 rounded-full"><Share2 className="w-5 h-5" /></button>
         <button onClick={() => setActiveTab('config')} className={`p-3 rounded-full transition-all ${activeTab === 'config' ? 'bg-amber-600 text-black' : 'text-zinc-500'}`}><Settings className="w-5 h-5" /></button>
-        <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
-        <button 
-          onClick={() => setShowLogoutModal(true)}
-          className="flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all text-zinc-600 hover:text-red-500"
-        >
-          <div className="p-2 rounded-xl bg-zinc-900 border border-zinc-800">
-            <LogOut className="w-5 h-5" />
-          </div>
-          <span className="text-[10px] font-bold uppercase tracking-widest">Salir</span>
-        </button>
       </nav>
 
       <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full max-w-[100vw] relative">
@@ -705,8 +710,8 @@ export default function Dashboard() {
             {activeTab === 'agenda' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 lg:mb-16">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl border-2 border-amber-500/20 p-1.5 shadow-2xl shrink-0 flex items-center justify-center overflow-hidden bg-zinc-900/50 backdrop-blur-sm">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 md:w-24 md:h-24 rounded-3xl border-2 border-amber-500/20 p-1.5 shadow-2xl shrink-0 flex items-center justify-center overflow-hidden bg-zinc-900/50 backdrop-blur-sm">
                    {(editLogoUrl || config?.logo_url) ? (
                       <img src={editLogoUrl || config?.logo_url || ""} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
                    ) : (
@@ -715,10 +720,19 @@ export default function Dashboard() {
                       </div>
                    )}
                 </div>
+                
+                {/* Menú Hamburguesa (Solo Mobile) */}
+                <button 
+                  onClick={() => setIsMobileSidebarOpen(true)}
+                  className="lg:hidden p-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-amber-500 shadow-xl active:scale-95 transition-all"
+                >
+                  <Scissors className="w-6 h-6 rotate-90" />
+                </button>
+
                 <div className="space-y-1">
                   <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic leading-tight">HOY ES {getFormattedDate()}</h1>
-                  <div className="flex items-center gap-4">
-                    <p className="text-zinc-500 text-xs sm:text-base font-medium italic">Gestión operativa para <span className="text-amber-500 font-bold">{config?.nombre_barberia}</span></p>
+                  <div className="hidden md:flex items-center gap-4">
+                    <p className="text-zinc-500 text-xs sm:text-base font-medium italic">Gestión operativa para <span className="text-amber-500 font-bold truncate max-w-[200px] inline-block align-bottom">{config?.nombre_barberia}</span></p>
                     <button 
                       onClick={handleShare}
                       className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest transition-all"
@@ -881,9 +895,17 @@ export default function Dashboard() {
         {activeTab === 'programar' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl">
             <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Agenda Semanal</h1>
-                <p className="text-zinc-500 font-medium italic">Confirmá los días que vas a trabajar esta semana</p>
+              <div className="flex items-center gap-6">
+                <button 
+                  onClick={() => setIsMobileSidebarOpen(true)}
+                  className="lg:hidden p-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-amber-500 shadow-xl"
+                >
+                  <Scissors className="w-6 h-6 rotate-90" />
+                </button>
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Agenda Semanal</h1>
+                  <p className="text-zinc-500 font-medium italic hidden md:block">Confirmá los días que vas a trabajar esta semana</p>
+                </div>
               </div>
               <button 
                 onClick={() => setShowMasterRoutine(!showMasterRoutine)}
@@ -1067,9 +1089,19 @@ export default function Dashboard() {
 
         {activeTab === 'finanzas' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <header className="mb-10 lg:mb-12">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Finanzas y Caja</h1>
-              <p className="text-zinc-500 text-sm sm:text-base font-medium italic">Control de ingresos y balance de servicios</p>
+            <header className="mb-10 lg:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="flex items-center gap-6">
+                <button 
+                  onClick={() => setIsMobileSidebarOpen(true)}
+                  className="lg:hidden p-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-emerald-500 shadow-xl"
+                >
+                  <DollarSign className="w-6 h-6" />
+                </button>
+                <div>
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Finanzas y Caja</h1>
+                  <p className="text-zinc-500 text-sm sm:text-base font-medium italic hidden md:block">Control de ingresos y balance de servicios</p>
+                </div>
+              </div>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-10 lg:mb-12">
@@ -1233,9 +1265,19 @@ export default function Dashboard() {
 
         {activeTab === 'config' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl">
-            <header className="mb-10 lg:mb-12">
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Mi Perfil</h1>
-              <p className="text-zinc-500 font-medium italic">Personalizá tu marca y puntos de contacto</p>
+            <header className="mb-10 lg:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="flex items-center gap-6">
+                <button 
+                  onClick={() => setIsMobileSidebarOpen(true)}
+                  className="lg:hidden p-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-amber-500 shadow-xl"
+                >
+                  <Settings className="w-6 h-6" />
+                </button>
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Mi Perfil</h1>
+                  <p className="text-zinc-500 font-medium italic hidden md:block">Personalizá tu marca y puntos de contacto</p>
+                </div>
+              </div>
             </header>
 
             <form onSubmit={handleUpdateConfig} className="space-y-8 sm:space-y-10">
