@@ -1,10 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim()
 const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim()
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('⚠️ Configuración de Supabase incompleta. Verifica las variables de entorno.')
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Cliente de Navegador (Client Side) único para todo el proyecto
+// Optimizado para Next.js 16/SSR
+export const supabase = createBrowserClient(
+  supabaseUrl,
+  supabaseAnonKey
+)

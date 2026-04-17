@@ -1,60 +1,80 @@
-import { createServerClient, type CookieOptions } from '@supabase/auth-helpers-nextjs'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(req: NextRequest) {
-  let res = NextResponse.next({
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
     request: {
-      headers: req.headers,
+      headers: request.headers,
     },
   })
 
+  // 1. Inicializar cliente SSR de servidor
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return req.cookies.get(name)?.value
+          return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          req.cookies.set({ name, value, ...options })
-          res = NextResponse.next({
-            request: { headers: req.headers },
+          request.cookies.set({
+            name,
+            value,
+            ...options,
           })
-          res.cookies.set({ name, value, ...options })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
         },
         remove(name: string, options: CookieOptions) {
-          req.cookies.set({ name, value: '', ...options })
-          res = NextResponse.next({
-            request: { headers: req.headers },
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
           })
-          res.cookies.set({ name, value: '', ...options })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
         },
       },
     }
   )
 
+  // 2. Obtener sesión (Maneja la sincronización de cookies automáticamente)
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
-  const url = req.nextUrl.clone()
+  const url = request.nextUrl.clone()
 
-  // 1. Proteger /dashboard y subrutas
+  // 3. Protección de rutas Dashboard
   if (url.pathname.startsWith('/dashboard')) {
     if (!session) {
-      return NextResponse.redirect(new URL('/admin/auth', req.url))
+      return NextResponse.redirect(new URL('/admin/auth', request.url))
     }
-    // NOTA SAAS: Eliminamos el bloqueo de 'authorized' manual para permitir Onboarding inmediato.
   }
 
-  // 2. Redirección inteligente desde la Home si ya está logueado
+  // 4. Redirección inteligente de Home logueada
   if (url.pathname === '/' && session) {
-    return NextResponse.redirect(new URL('/dashboard', req.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  return res
+  return response
 }
 
 export const config = {
