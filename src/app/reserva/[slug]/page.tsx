@@ -29,7 +29,7 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
   // Load Barber Configuration by Slug
   useEffect(() => {
     const fetchBarber = async () => {
-      try {
+        console.log('🔍 Intentando cargar barbería con slug:', slug)
         const { data, error } = await supabase
           .from('configuracion_barberia')
           .select('*')
@@ -37,8 +37,10 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
           .single()
 
         if (error || !data) {
+          console.error('❌ Error de Supabase (Reserva):', error)
           setErrorStatus('not_found')
         } else {
+          console.log('✅ Barbería cargada:', data.nombre_barberia)
           setBarberConfig(data)
         }
       } catch (err) {
