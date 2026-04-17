@@ -231,7 +231,7 @@ export default function Dashboard() {
       </nav>
 
       <main className="flex-1 p-6 lg:p-12">
-        {activeTab === 'agenda' ? (
+        {activeTab === 'agenda' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
               <div className="space-y-1">
@@ -403,7 +403,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {activeTab === 'config' ? (
+        {activeTab === 'config' && (
 
             <form onSubmit={handleUpdateConfig} className="space-y-8">
               {/* Sección Identidad */}
