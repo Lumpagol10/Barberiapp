@@ -26,28 +26,32 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
   const [diaCerrado, setDiaCerrado] = useState(false)
 
+  const getFormattedDate = (dateStr: string) => {
+    if (!dateStr) return ''
+    const dateParts = dateStr.split('-').map(Number)
+    const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
+    return new Intl.DateTimeFormat('es-AR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'America/Argentina/Buenos_Aires'
+    }).format(date).toUpperCase()
+  }
+
   // Load Barber Configuration by Slug
   useEffect(() => {
     const fetchBarber = async () => {
-        console.log('🔍 Intentando cargar barbería con slug:', slug)
         const { data, error } = await supabase
           .from('configuracion_barberia')
-          .select('*')
+          .select('id, user_id, slug, nombre_barberia, google_maps_link, telefono_barbero')
           .eq('slug', slug)
           .single()
 
         if (error || !data) {
-          console.error('❌ Error de Supabase (Reserva):', error)
           setErrorStatus('not_found')
         } else {
-          console.log('✅ Barbería cargada:', data.nombre_barberia)
           setBarberConfig(data)
         }
-      } catch (err) {
-        setErrorStatus('error')
-      } finally {
-        setLoading(false)
-      }
     }
     fetchBarber()
   }, [slug])
@@ -263,8 +267,8 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
 
             {showSlots && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <label className="text-sm font-medium text-zinc-400 ml-1 flex items-center gap-2">
-                  <Clock className="w-4 h-4" /> Horarios Disponibles
+                <label className="text-sm font-black uppercase tracking-widest text-amber-500/80 ml-1 flex items-center gap-2 italic">
+                  <Clock className="w-4 h-4" /> TURNOS DISPONIBLES PARA EL {getFormattedDate(fecha)}
                 </label>
                 
                 {diaCerrado ? (

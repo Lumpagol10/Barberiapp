@@ -207,7 +207,14 @@ export default function Dashboard() {
     router.push('/admin/auth')
   }
 
-  const diasLetras = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+  const getFormattedDate = () => {
+    return new Intl.DateTimeFormat('es-AR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'America/Argentina/Buenos_Aires'
+    }).format(new Date()).toUpperCase()
+  }
 
   if (loading) {
     return (
@@ -274,7 +281,7 @@ export default function Dashboard() {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
               <div className="space-y-1">
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Mi Agenda</h1>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">HOY ES {getFormattedDate()}</h1>
                 <p className="text-zinc-500 font-medium italic">Gestión operativa para <span className="text-amber-500 font-bold">{config?.nombre_barberia}</span></p>
               </div>
 
