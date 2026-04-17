@@ -32,13 +32,19 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-black">
         <Toaster 
           position="top-center" 
+          duration={1500}
           toastOptions={{
             style: {
-              background: '#18181b', // zinc-900
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'rgba(24, 24, 27, 0.8)', // zinc-900 con 80% opacidad
+              border: '1px solid rgba(255, 255, 255, 0.08)',
               color: '#fff',
-              borderRadius: '1.5rem',
-              backdropFilter: 'blur(8px)',
+              borderRadius: '1.25rem',
+              backdropFilter: 'blur(12px)',
+              padding: '10px 16px',
+              fontSize: '13px',
+              fontWeight: '600',
+              width: 'auto',
+              maxWidth: 'fit-content',
             },
             className: 'font-sans'
           }}
