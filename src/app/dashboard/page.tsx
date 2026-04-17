@@ -379,6 +379,16 @@ export default function Dashboard() {
               <p className="text-zinc-500 font-medium italic">Definí los días y horarios que vas a estar disponible</p>
             </header>
 
+            <div className="mb-10 p-6 bg-amber-600/10 border border-amber-600/20 rounded-[2rem] flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-700">
+              <div className="p-3 bg-amber-600 rounded-xl text-black shadow-lg shadow-amber-900/40">
+                <Clock className="w-5 h-5" />
+              </div>
+              <p className="text-amber-500 text-sm font-black uppercase tracking-tighter leading-tight italic">
+                Recordá cargar al menos un horario en los días disponibles <br className="hidden md:block" /> 
+                para que tus clientes puedan reservar turnos.
+              </p>
+            </div>
+
             <div className="grid gap-6 mb-12">
               {weeklySchedule.map((dia, index) => (
                 <div key={dia.dia_semana} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-amber-500/20 shadow-lg' : 'border-white/5 opacity-60'}`}>

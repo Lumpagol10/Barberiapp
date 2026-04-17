@@ -284,21 +284,40 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
                       El local permanece cerrado este día. <br/>Seleccioná otra fecha.
                     </p>
                   </div>
+                ) : availableSlots.length === 0 ? (
+                  <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[2.5rem] text-center space-y-6 animate-in zoom-in-95 duration-300">
+                    <div className="p-4 bg-zinc-800 rounded-2xl w-fit mx-auto shadow-xl">
+                      <MessageCircle className="w-8 h-8 text-amber-500" />
+                    </div>
+                    <div className="space-y-2 px-2">
+                      <p className="text-white font-black uppercase tracking-tighter text-xl italic leading-none">
+                        Agenda en preparación
+                      </p>
+                      <p className="text-zinc-500 text-xs md:text-sm font-medium leading-relaxed italic">
+                        El barbero aún no ha programado los turnos para este día. <br className="hidden sm:block" />
+                        Seleccioná otra fecha o consultá disponibilidad por WhatsApp.
+                      </p>
+                    </div>
+                    <a 
+                      href={`https://wa.me/${barberConfig.telefono_barbero?.replace('+', '')}?text=Hola!%20Vi%20que%20no%20hay%20turnos%20cargados%20para%20el%20día%20${getFormattedDate(fecha)},%20¿tenés%20disponibilidad?`}
+                      target="_blank"
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-black font-black rounded-2xl transition-all shadow-xl shadow-emerald-900/20 active:scale-95 uppercase text-[10px] md:text-xs tracking-widest"
+                    >
+                      <MessageCircle className="w-5 h-5 transition-transform group-hover:scale-110" />
+                      CONSULTAR POR WHATSAPP
+                    </a>
+                  </div>
                 ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                    {availableSlots.length > 0 ? (
-                      availableSlots.map((slot) => {
-                        const isBooked = bookedSlots.includes(slot)
-                        const isSelected = horaSeleccionada === slot
-                        return (
-                          <button key={slot} type="button" disabled={isBooked} onClick={() => setHoraSeleccionada(slot)} className={`py-3 rounded-xl text-center text-sm font-bold transition-all border ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}`}>
-                            {slot}
-                          </button>
-                        )
-                      })
-                    ) : (
-                      <div className="col-span-full py-4 text-center text-zinc-600 italic">Cargando disponibilidad...</div>
-                    )}
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar border-t border-zinc-800/30 pt-4">
+                    {availableSlots.map((slot) => {
+                      const isBooked = bookedSlots.includes(slot)
+                      const isSelected = horaSeleccionada === slot
+                      return (
+                        <button key={slot} type="button" disabled={isBooked} onClick={() => setHoraSeleccionada(slot)} className={`py-4 rounded-xl text-center text-xs md:text-sm font-bold transition-all border ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}`}>
+                          {slot}
+                        </button>
+                      )
+                    })}
                   </div>
                 )}
               </div>
