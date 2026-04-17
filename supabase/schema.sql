@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   email TEXT,
   full_name TEXT,
   role TEXT DEFAULT 'owner',
-  authorized BOOLEAN DEFAULT TRUE -- En modo Self-service, permitimos acceso por defecto
+  authorized BOOLEAN DEFAULT FALSE -- Aprobación manual requerida en modo SaaS Seguro
 );
 
 -- 3. Configuración por Barbero (Tenants)

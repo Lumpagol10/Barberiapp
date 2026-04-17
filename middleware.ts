@@ -55,17 +55,34 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // 2. Obtener sesión (Maneja la sincronización de cookies automáticamente)
+  // 2. Obtener sesión
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
   const url = request.nextUrl.clone()
 
-  // 3. Protección de rutas Dashboard
+  // Evitar bucles en la página de espera
+  if (url.pathname === '/espera') {
+    if (!session) return NextResponse.redirect(new URL('/admin/auth', request.url))
+    return response
+  }
+
+  // 3. Protección de rutas Dashboard y Verificación de Aprobación
   if (url.pathname.startsWith('/dashboard')) {
     if (!session) {
       return NextResponse.redirect(new URL('/admin/auth', request.url))
+    }
+
+    // VERIFICACIÓN DE SEGURIDAD FRANMARK DIGITAL
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('authorized')
+      .eq('id', session.user.id)
+      .single()
+
+    if (profile && !profile.authorized) {
+      return NextResponse.redirect(new URL('/espera', request.url))
     }
   }
 
@@ -78,5 +95,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/dashboard', '/'],
+  matcher: ['/dashboard/:path*', '/dashboard', '/', '/espera'],
 }
