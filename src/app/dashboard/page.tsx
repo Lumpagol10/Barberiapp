@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle, LogOut, Scissors, Users, Calendar, TrendingUp, Settings, ExternalLink, Phone, Clock, Type, MessageCircle, DollarSign } from 'lucide-react'
+import { CheckCircle, LogOut, Scissors, Users, Calendar, TrendingUp, Settings, ExternalLink, Phone, Clock, Type as TypeIcon, MessageCircle, DollarSign, Share2, Store, Loader2, User as UserIcon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -445,7 +445,7 @@ export default function Dashboard() {
         </nav>
 
         <div className="flex items-center gap-3 px-4 py-3 text-zinc-700 font-bold uppercase text-[10px] tracking-widest mt-auto border-t border-zinc-800/30 pt-6">
-          <User className="w-4 h-4" />
+          <UserIcon className="w-4 h-4" />
           <span className="truncate max-w-[150px]">{user?.email}</span>
         </div>
       </aside>
@@ -457,7 +457,7 @@ export default function Dashboard() {
         <button onClick={handleShare} className="p-3 text-amber-500 bg-amber-600/10 rounded-full"><Share2 className="w-5 h-5" /></button>
         <button onClick={() => setActiveTab('config')} className={`p-3 rounded-full transition-all ${activeTab === 'config' ? 'bg-amber-600 text-black' : 'text-zinc-500'}`}><Settings className="w-5 h-5" /></button>
         <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
-        <div className="p-3 text-zinc-700"><User className="w-5 h-5" /></div>
+        <div className="p-3 text-zinc-700"><UserIcon className="w-5 h-5" /></div>
       </nav>
 
       <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full max-w-[100vw]">
@@ -992,7 +992,7 @@ export default function Dashboard() {
               {/* Sección Cuenta y Seguridad */}
               <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl">
                 <div className="flex items-center gap-4 text-zinc-400">
-                  <div className="p-2.5 sm:p-3 bg-zinc-800 rounded-xl sm:rounded-2xl"><User className="w-5 h-5 sm:w-6 sm:h-6" /></div>
+                  <div className="p-2.5 sm:p-3 bg-zinc-800 rounded-xl sm:rounded-2xl"><UserIcon className="w-5 h-5 sm:w-6 sm:h-6" /></div>
                   <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Cuenta y Seguridad</h3>
                 </div>
 
@@ -1094,6 +1094,3 @@ export default function Dashboard() {
   )
 }
 
-function Loader2({ className }: { className?: string }) {
-  return <TrendingUp className={className} /> // Placeholder for Loader
-}
