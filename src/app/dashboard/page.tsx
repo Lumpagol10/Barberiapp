@@ -526,7 +526,7 @@ export default function Dashboard() {
         await navigator.share({
           title: config?.nombre_barberia,
           text: shareText,
-          url: shareUrl,
+          // Eliminamos el parámetro 'url' para evitar que se pegue dos veces en WhatsApp/Mobile
         })
       } catch (err) {
         console.log('Error compartiendo:', err)
