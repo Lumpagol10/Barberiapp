@@ -16,7 +16,7 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
   
   // Form States
   const [nombre, setNombre] = useState('')
-  const [telefono, setTelefono] = useState('')
+  const [phoneSuffix, setPhoneSuffix] = useState('')
   const [fecha, setFecha] = useState('')
   const [horaSeleccionada, setHoraSeleccionada] = useState('')
   
@@ -99,7 +99,7 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
         { 
           barbero_id: barberConfig.user_id,
           cliente_nombre: nombre, 
-          cliente_telefono: telefono, 
+          cliente_telefono: `+54${phoneSuffix}`, 
           fecha: fecha, 
           hora: horaSeleccionada 
         }
@@ -216,10 +216,22 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-400 ml-1">Tu Teléfono</label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                  <input required value={telefono} onChange={(e) => setTelefono(e.target.value)} type="tel" placeholder="+54 11 ..." className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 rounded-2xl py-4 pl-12 pr-4 outline-none text-white transition-all" />
+                <div className="flex items-center bg-zinc-800/50 border border-zinc-700/50 focus-within:border-amber-500/50 rounded-2xl overflow-hidden transition-all">
+                  <div className="bg-zinc-800 px-5 py-4 border-r border-zinc-700/50 text-zinc-500 font-black text-sm">
+                    +54
+                  </div>
+                  <input 
+                    required 
+                    value={phoneSuffix} 
+                    onChange={(e) => setPhoneSuffix(e.target.value.replace(/\D/g, ''))} 
+                    type="tel" 
+                    placeholder="2634XXXXXX" 
+                    className="flex-1 bg-transparent py-4 px-6 outline-none text-white font-bold placeholder:text-zinc-700" 
+                  />
                 </div>
+                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider ml-1 mt-1">
+                  Ejs: 2634XXXXXX - 261XXXXXXX
+                </p>
               </div>
             </div>
 
