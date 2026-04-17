@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
   const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null)
   const [checkoutPrice, setCheckoutPrice] = useState('')
+  const [showShareToast, setShowShareToast] = useState(false)
   const [financesDate, setFinancesDate] = useState(() => {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
   })
@@ -319,6 +320,28 @@ export default function Dashboard() {
     }
   }, [config?.nombre_barberia])
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/reserva/${config?.slug}`
+    const shareText = `¡Hola! Te dejo el link para que saques tu turno en ${config?.nombre_barberia}: ${shareUrl}`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: config?.nombre_barberia,
+          text: shareText,
+          url: shareUrl,
+        })
+      } catch (err) {
+        console.log('Error compartiendo:', err)
+      }
+    } else {
+      // Fallback: Clipboard
+      navigator.clipboard.writeText(shareUrl)
+      setShowShareToast(true)
+      setTimeout(() => setShowShareToast(false), 3000)
+    }
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/admin/auth')
@@ -373,11 +396,20 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans overflow-x-hidden">
       {/* Sidebar Fijo */}
       <aside className="hidden lg:flex w-80 flex-col bg-zinc-900/50 border-r border-zinc-800/50 p-6 backdrop-blur-md sticky top-0 h-screen">
-        <div className="flex items-center gap-3 mb-10">
-          <div className="p-2.5 bg-amber-600 rounded-xl shadow-lg shadow-amber-900/20 shrink-0">
-            <Scissors className="w-6 h-6 text-black" />
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-amber-600 rounded-xl shadow-lg shadow-amber-900/20 shrink-0">
+              <Scissors className="w-6 h-6 text-black" />
+            </div>
+            <span className="text-lg font-black tracking-tighter uppercase italic truncate max-w-[140px]">{config?.nombre_barberia || 'BARBERIAPP'}</span>
           </div>
-          <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic">{config?.nombre_barberia || 'BARBERIAPP'}</span>
+          <button 
+            onClick={handleShare}
+            className="p-3 bg-zinc-800 hover:bg-zinc-700 text-amber-500 rounded-xl transition-all border border-zinc-700/50"
+            title="Compartir link de reserva"
+          >
+            <Share2 className="w-4 h-4" />
+          </button>
         </div>
         
         <nav className="space-y-2 flex-1">
@@ -402,9 +434,7 @@ export default function Dashboard() {
             <DollarSign className="w-5 h-5" /> Finanzas
           </button>
 
-          <Link href={`/reserva/${config?.slug}`} target="_blank" className="w-full flex items-center gap-4 px-4 py-4 text-zinc-400 hover:bg-zinc-800/50 hover:text-white rounded-2xl transition-all uppercase text-sm font-bold tracking-wider">
-            <ExternalLink className="w-5 h-5" /> Ver Mi Web
-          </Link>
+
           
           <button 
             onClick={() => setActiveTab('config')}
@@ -424,7 +454,7 @@ export default function Dashboard() {
       <nav className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-zinc-900/80 backdrop-blur-2xl border border-white/10 px-3 py-2 rounded-full flex items-center gap-1 z-50 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
         <button onClick={() => setActiveTab('agenda')} className={`p-3 rounded-full transition-all ${activeTab === 'agenda' ? 'bg-amber-600 text-black' : 'text-zinc-500'}`}><Calendar className="w-5 h-5" /></button>
         <button onClick={() => setActiveTab('finanzas')} className={`p-3 rounded-full transition-all ${activeTab === 'finanzas' ? 'bg-emerald-600 text-black' : 'text-zinc-500'}`}><DollarSign className="w-5 h-5" /></button>
-        <Link href={`/reserva/${config?.slug}`} target="_blank" className="p-3 text-zinc-500"><ExternalLink className="w-5 h-5" /></Link>
+        <button onClick={handleShare} className="p-3 text-amber-500 bg-amber-600/10 rounded-full"><Share2 className="w-5 h-5" /></button>
         <button onClick={() => setActiveTab('config')} className={`p-3 rounded-full transition-all ${activeTab === 'config' ? 'bg-amber-600 text-black' : 'text-zinc-500'}`}><Settings className="w-5 h-5" /></button>
         <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
         <div className="p-3 text-zinc-700"><User className="w-5 h-5" /></div>
@@ -436,7 +466,15 @@ export default function Dashboard() {
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 lg:mb-16">
               <div className="space-y-1">
                 <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic leading-tight">HOY ES {getFormattedDate()}</h1>
-                <p className="text-zinc-500 text-xs sm:text-base font-medium italic">Gestión operativa para <span className="text-amber-500 font-bold">{config?.nombre_barberia}</span></p>
+                <div className="flex items-center gap-4">
+                  <p className="text-zinc-500 text-xs sm:text-base font-medium italic">Gestión operativa para <span className="text-amber-500 font-bold">{config?.nombre_barberia}</span></p>
+                  <button 
+                    onClick={handleShare}
+                    className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest transition-all"
+                  >
+                    <Share2 className="w-3.5 h-3.5" /> Compartir Link
+                  </button>
+                </div>
               </div>
 
               <div className="bg-zinc-900/80 border border-zinc-800 p-6 rounded-[2rem] min-w-[140px] shadow-xl">
@@ -1039,6 +1077,16 @@ export default function Dashboard() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast de Compartir */}
+      {showShareToast && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[200] animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="bg-emerald-600 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-tighter shadow-2xl flex items-center gap-3">
+            <CheckCircle className="w-6 h-6" />
+            ¡Link de reserva copiado para enviar!
           </div>
         </div>
       )}
