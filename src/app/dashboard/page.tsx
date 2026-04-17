@@ -218,6 +218,32 @@ export default function Dashboard() {
     }).format(new Date()).toUpperCase()
   }
 
+  const getShedDate = (diaSemana: number) => {
+    const today = new Date()
+    const currentDay = today.getDay()
+    // Distancia al día objetivo (0-6 días adelante)
+    let diff = diaSemana - currentDay
+    if (diff < 0) diff += 7
+    
+    const targetDate = new Date(today)
+    targetDate.setDate(today.getDate() + diff)
+    return targetDate.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
+  }
+
+  const getOrderedSchedule = () => {
+    const today = new Date().getDay()
+    const ordered = []
+    for (let i = 0; i < 7; i++) {
+      const dayIndex = (today + i) % 7
+      // Buscamos el día en la lista original y guardamos su índice real
+      const originalIdx = weeklySchedule.findIndex(s => s.dia_semana === dayIndex)
+      if (originalIdx !== -1) {
+        ordered.push({ ...weeklySchedule[originalIdx], originalIdx })
+      }
+    }
+    return ordered
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
@@ -390,12 +416,21 @@ export default function Dashboard() {
             </div>
 
             <div className="grid gap-6 mb-12">
-              {weeklySchedule.map((dia, index) => (
+              {getOrderedSchedule().map((dia) => (
                 <div key={dia.dia_semana} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-amber-500/20 shadow-lg' : 'border-white/5 opacity-60'}`}>
                   {/* Header del Día */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-zinc-800/50">
                     <div>
-                      <h3 className="text-3xl font-black uppercase tracking-tight italic">{diasLetras[dia.dia_semana]}</h3>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-3xl font-black uppercase tracking-tight italic">
+                          {diasLetras[dia.dia_semana]} {getShedDate(dia.dia_semana)}
+                        </h3>
+                        {dia.dia_semana === new Date().getDay() && (
+                          <span className="px-3 py-1 bg-amber-600 text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-amber-900/40 animate-pulse">
+                            HOY
+                          </span>
+                        )}
+                      </div>
                       <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${dia.activo ? 'text-amber-500' : 'text-zinc-600'}`}>
                         {dia.activo ? '🟢 Disponible para turnos' : '🔴 Local Cerrado'}
                       </p>
@@ -404,7 +439,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-4">
                       {dia.activo && (
                         <button 
-                          onClick={() => copyToAll(index)}
+                          onClick={() => copyToAll(dia.originalIdx)}
                           className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-transparent hover:border-zinc-600"
                         >
                           Copiar a todos
@@ -416,7 +451,7 @@ export default function Dashboard() {
                         type="button"
                         onClick={() => {
                           const newShed = [...weeklySchedule]
-                          newShed[index].activo = !newShed[index].activo
+                          newShed[dia.originalIdx].activo = !newShed[dia.originalIdx].activo
                           setWeeklySchedule(newShed)
                         }}
                         className={`relative w-20 h-10 rounded-full transition-all duration-300 shadow-inner shrink-0 ${dia.activo ? 'bg-amber-600' : 'bg-zinc-800'}`}
@@ -435,11 +470,11 @@ export default function Dashboard() {
                             <input 
                               type="time" 
                               value={slot} 
-                              onChange={(e) => updateSlot(index, slotIdx, e.target.value)}
+                              onChange={(e) => updateSlot(dia.originalIdx, slotIdx, e.target.value)}
                               className="w-full bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/30 rounded-2xl py-4 px-4 text-xl font-black text-center [color-scheme:dark] transition-all focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none"
                             />
                             <button 
-                              onClick={() => removeSlot(index, slotIdx)}
+                              onClick={() => removeSlot(dia.originalIdx, slotIdx)}
                               className="absolute -top-2 -right-2 w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
                             >
                               ✕
@@ -448,7 +483,7 @@ export default function Dashboard() {
                         ))}
                         
                         <button 
-                          onClick={() => addSlot(index)}
+                          onClick={() => addSlot(dia.originalIdx)}
                           className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-800 hover:border-amber-500/40 hover:bg-amber-500/5 rounded-2xl py-4 transition-all text-zinc-600 hover:text-amber-500"
                         >
                           <span className="text-2xl font-black">+</span>
@@ -460,7 +495,7 @@ export default function Dashboard() {
                         <div className="py-12 text-center bg-zinc-950/20 rounded-[2rem] border border-dashed border-zinc-800">
                           <p className="text-zinc-600 font-bold uppercase text-xs tracking-widest">No hay horarios cargados para este día</p>
                           <button 
-                            onClick={() => addSlot(index)}
+                            onClick={() => addSlot(dia.originalIdx)}
                             className="mt-4 text-amber-500 font-black uppercase text-[10px] underline tracking-widest"
                           >
                             Hacé clic acá para empezar
