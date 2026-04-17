@@ -7,12 +7,15 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<'agenda' | 'config'>('agenda')
+  const [activeTab, setActiveTab] = useState<'agenda' | 'config' | 'programar'>('agenda')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [config, setConfig] = useState<any>(null)
   const [turns, setTurns] = useState<any[]>([])
+  
+  // Estados para Agenda Flexible (0-6)
+  const [weeklySchedule, setWeeklySchedule] = useState<any[]>([])
   
   // States for Editing Config
   const [editNombre, setEditNombre] = useState('')
@@ -48,13 +51,32 @@ export default function Dashboard() {
 
       if (configData) {
         setConfig(configData)
-        // Llenar campos de edición
         setEditNombre(configData.nombre_barberia)
         setEditPhone(configData.telefono_barbero.replace('+54', ''))
         setEditMaps(configData.google_maps_link || '')
         setEditApertura(configData.hora_apertura)
         setEditCierre(configData.hora_cierre)
         setEditIntervalo(configData.intervalo_minutos)
+
+        // Cargar Horarios Flexibles
+        const { data: scheduleData } = await supabase
+          .from('horarios_barberia')
+          .select('*')
+          .eq('user_id', userId)
+          .order('dia_semana', { ascending: true })
+
+        if (scheduleData && scheduleData.length > 0) {
+          setWeeklySchedule(scheduleData)
+        } else {
+          // Migración automática: Crear base L-S activa, D inactiva
+          const initial = [0,1,2,3,4,5,6].map(dia => ({
+            dia_semana: dia,
+            activo: dia !== 0,
+            h_apertura: configData.hora_apertura,
+            h_cierre: configData.hora_cierre
+          }))
+          setWeeklySchedule(initial)
+        }
 
         const { data: turnsData } = await supabase
           .from('turnos')
@@ -104,6 +126,31 @@ export default function Dashboard() {
     setSaving(false)
   }
 
+  const handleUpdateSchedule = async () => {
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('horarios_barberia')
+        .upsert(
+          weeklySchedule.map(s => ({
+            user_id: user.id,
+            dia_semana: s.dia_semana,
+            activo: s.activo,
+            h_apertura: s.h_apertura,
+            h_cierre: s.h_cierre
+          })),
+          { onConflict: 'user_id,dia_semana' }
+        )
+
+      if (error) throw error
+      alert('✅ Agenda actualizada con éxito')
+    } catch (error: any) {
+      alert(`Error al guardar agenda: ${error.message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleFinish = async (id: string) => {
     const { error } = await supabase
       .from('turnos')
@@ -120,6 +167,8 @@ export default function Dashboard() {
     await supabase.auth.signOut()
     router.push('/admin/auth')
   }
+
+  const diasLetras = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
   if (loading) {
     return (
@@ -147,14 +196,23 @@ export default function Dashboard() {
           >
             <Calendar className="w-5 h-5" /> Turnos Hoy
           </button>
+          
+          <button 
+            onClick={() => setActiveTab('programar')}
+            className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all border uppercase text-sm tracking-wider ${activeTab === 'programar' ? 'bg-amber-600/10 text-amber-500 border-amber-500/10' : 'text-zinc-400 border-transparent hover:bg-zinc-800/50 hover:text-white'}`}
+          >
+            <Clock className="w-5 h-5" /> Programar Agenda
+          </button>
+
           <Link href={`/reserva/${config?.slug}`} target="_blank" className="w-full flex items-center gap-4 px-4 py-4 text-zinc-400 hover:bg-zinc-800/50 hover:text-white rounded-2xl transition-all uppercase text-sm font-bold tracking-wider">
             <ExternalLink className="w-5 h-5" /> Ver Mi Web
           </Link>
+          
           <button 
             onClick={() => setActiveTab('config')}
             className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all border uppercase text-sm tracking-wider ${activeTab === 'config' ? 'bg-amber-600/10 text-amber-500 border-amber-500/10' : 'text-zinc-400 border-transparent hover:bg-zinc-800/50 hover:text-white'}`}
           >
-            <Settings className="w-5 h-5" /> Configuración
+            <Settings className="w-5 h-5" /> Mi Perfil
           </button>
         </nav>
 
@@ -264,12 +322,88 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-4xl">
+        )}
+
+        {activeTab === 'programar' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl">
             <header className="mb-12">
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Configuración</h1>
-              <p className="text-zinc-500 font-medium italic">Personalizá tu local y horarios de atención</p>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-2 italic">Programar Agenda</h1>
+              <p className="text-zinc-500 font-medium italic">Definí los días y horarios que vas a estar disponible</p>
             </header>
+
+            <div className="grid gap-6 mb-12">
+              {weeklySchedule.map((dia, index) => (
+                <div key={dia.dia_semana} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-8 flex flex-col md:flex-row items-center gap-6 ${dia.activo ? 'border-amber-500/20 shadow-lg' : 'border-white/5 opacity-60'}`}>
+                  <div className="w-full md:w-48">
+                    <h3 className="text-2xl font-black uppercase tracking-tight italic">{diasLetras[dia.dia_semana]}</h3>
+                    <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${dia.activo ? 'text-amber-500' : 'text-zinc-600'}`}>
+                      {dia.activo ? '🟢 Disponible' : '🔴 Cerrado'}
+                    </p>
+                  </div>
+
+                  <div className="flex-1 flex flex-col sm:flex-row items-center gap-8 w-full">
+                    {/* Switch de Activo (Grande para Mobile) */}
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const newShed = [...weeklySchedule]
+                        newShed[index].activo = !newShed[index].activo
+                        setWeeklySchedule(newShed)
+                      }}
+                      className={`relative w-20 h-10 rounded-full transition-all duration-300 shadow-inner shrink-0 ${dia.activo ? 'bg-amber-600' : 'bg-zinc-800'}`}
+                    >
+                      <div className={`absolute top-1 w-8 h-8 bg-white rounded-full transition-all shadow-md ${dia.activo ? 'left-11' : 'left-1'}`} />
+                    </button>
+
+                    {dia.activo && (
+                      <div className="flex flex-1 items-center gap-4 w-full animate-in zoom-in-95 duration-200">
+                        <div className="flex-1 space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Apertura</label>
+                          <input 
+                            type="time" 
+                            value={dia.h_apertura} 
+                            onChange={(e) => {
+                              const newShed = [...weeklySchedule]
+                              newShed[index].h_apertura = e.target.value
+                              setWeeklySchedule(newShed)
+                            }}
+                            className="w-full bg-zinc-950/50 border border-zinc-800 rounded-2xl py-4 px-6 text-xl font-bold [color-scheme:dark]"
+                          />
+                        </div>
+                        <div className="text-zinc-700 font-black pt-6">/</div>
+                        <div className="flex-1 space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-2">Cierre</label>
+                          <input 
+                            type="time" 
+                            value={dia.h_cierre} 
+                            onChange={(e) => {
+                              const newShed = [...weeklySchedule]
+                              newShed[index].h_cierre = e.target.value
+                              setWeeklySchedule(newShed)
+                            }}
+                            className="w-full bg-zinc-950/50 border border-zinc-800 rounded-2xl py-4 px-6 text-xl font-bold [color-scheme:dark]"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end sticky bottom-6 z-50">
+              <button 
+                onClick={handleUpdateSchedule}
+                disabled={saving}
+                className="w-full md:w-auto px-16 py-6 bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-800 text-black font-black text-xl rounded-2xl transition-all shadow-2xl shadow-amber-900/40 active:scale-95 flex items-center justify-center gap-4 uppercase tracking-tighter"
+              >
+                {saving ? 'GUARDANDO...' : '✅ GUARDAR AGENDA FLEXIBLE'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'config' ? (
 
             <form onSubmit={handleUpdateConfig} className="space-y-8">
               {/* Sección Identidad */}

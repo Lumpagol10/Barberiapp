@@ -24,6 +24,7 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
   const [barberConfig, setBarberConfig] = useState<any>(null)
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
+  const [diaCerrado, setDiaCerrado] = useState(false)
 
   // Load Barber Configuration by Slug
   useEffect(() => {
@@ -49,13 +50,37 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
     fetchBarber()
   }, [slug])
 
-  const handleDateChange = (nuevaFecha: string) => {
+  const handleDateChange = async (nuevaFecha: string) => {
     setFecha(nuevaFecha)
     setShowSlots(true)
+    setAvailableSlots([]) // Limpiar mientras carga
+    setDiaCerrado(false)
     
     if (barberConfig) {
-      generateSlots(barberConfig.hora_apertura, barberConfig.hora_cierre, barberConfig.intervalo_minutos)
-      fetchBookedTurns(nuevaFecha)
+      // 1. Calcular día de la semana (0: Domingo, 1: Lunes...)
+      const dateParts = nuevaFecha.split('-').map(Number)
+      const dayOfWeek = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getDay()
+      
+      // 2. Consultar horario específico para ese día
+      const { data: dayShed } = await supabase
+        .from('horarios_barberia')
+        .select('*')
+        .eq('user_id', barberConfig.user_id)
+        .eq('dia_semana', dayOfWeek)
+        .single()
+
+      if (dayShed) {
+        if (!dayShed.activo) {
+          setDiaCerrado(true)
+        } else {
+          generateSlots(dayShed.h_apertura, dayShed.h_cierre, barberConfig.intervalo_minutos)
+          fetchBookedTurns(nuevaFecha)
+        }
+      } else {
+        // Fallback a horario global si no hay registro específico (Legacy)
+        generateSlots(barberConfig.hora_apertura, barberConfig.hora_cierre, barberConfig.intervalo_minutos)
+        fetchBookedTurns(nuevaFecha)
+      }
     }
   }
 
@@ -246,21 +271,35 @@ export default function BookingPage({ params }: { params: Promise<{ slug: string
             </div>
 
             {showSlots && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <label className="text-sm font-medium text-zinc-400 ml-1 flex items-center gap-2">
                   <Clock className="w-4 h-4" /> Horarios Disponibles
                 </label>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {availableSlots.map((slot) => {
-                    const isBooked = bookedSlots.includes(slot)
-                    const isSelected = horaSeleccionada === slot
-                    return (
-                      <button key={slot} type="button" disabled={isBooked} onClick={() => setHoraSeleccionada(slot)} className={`py-3 rounded-xl text-center text-sm font-bold transition-all border ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}`}>
-                        {slot}
-                      </button>
-                    )
-                  })}
-                </div>
+                
+                {diaCerrado ? (
+                  <div className="bg-amber-900/10 border border-amber-900/20 p-8 rounded-[2rem] text-center space-y-4 animate-in zoom-in-95 duration-300">
+                    <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
+                    <p className="text-amber-500 font-black uppercase tracking-tighter text-base leading-tight">
+                      El local permanece cerrado este día. <br/>Seleccioná otra fecha.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {availableSlots.length > 0 ? (
+                      availableSlots.map((slot) => {
+                        const isBooked = bookedSlots.includes(slot)
+                        const isSelected = horaSeleccionada === slot
+                        return (
+                          <button key={slot} type="button" disabled={isBooked} onClick={() => setHoraSeleccionada(slot)} className={`py-3 rounded-xl text-center text-sm font-bold transition-all border ${isBooked ? 'bg-zinc-800/20 border-zinc-800/50 text-zinc-700 cursor-not-allowed line-through' : isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}`}>
+                            {slot}
+                          </button>
+                        )
+                      })
+                    ) : (
+                      <div className="col-span-full py-4 text-center text-zinc-600 italic">Cargando disponibilidad...</div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
