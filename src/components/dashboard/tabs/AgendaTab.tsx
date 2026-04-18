@@ -56,8 +56,8 @@ export default function AgendaTab({
         statsLabel="Pendientes Hoy"
       />
 
-      <div className="overflow-hidden">
-        <div className="pb-6 sm:pb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+      <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
+        <div className="p-6 sm:p-8 border-b border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-zinc-900/20">
           <div className="w-full sm:w-auto">
             <h3 className="text-xl font-black uppercase italic tracking-tighter">
               {isToday ? 'Próximos Turnos' : `Turnos del ${new Date(viewDate + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}`}
