@@ -55,6 +55,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
     }
   }, [fecha, barberConfig?.user_id])
   const [diaCerrado, setDiaCerrado] = useState(false)
+  const [isFetchingAvailability, setIsFetchingAvailability] = useState(false)
   
   // Validaciones Derivadas
   const isValidPhone = /^(261\d{7}|2634\d{6})$/.test(phoneSuffix)
@@ -74,34 +75,44 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
   const handleDateChange = async (nuevaFecha: string) => {
     setFecha(nuevaFecha)
     setShowSlots(true)
+    setHoraSeleccionada('') // RESETEAR HORARIO AL CAMBIAR FECHA
+    
+    // VALIDACIÓN DE FECHA COMPLETA (Bloquea race conditions por escritura parcial)
+    if (nuevaFecha.length < 10) return
+
+    setIsFetchingAvailability(true)
     setAvailableSlots([]) // Limpiar mientras carga
     setBookedSlots([]) // Limpiar ocupados
-    setHoraSeleccionada('') // RESETEAR HORARIO AL CAMBIAR FECHA
     setDiaCerrado(false)
     
-    if (barberConfig) {
-      // 1. Calcular día de la semana (0: Domingo, 1: Lunes...)
-      
-      // 2. BUSCAR PLANIFICACIÓN ESPECÍFICA PARA ESTA FECHA (STRICT MODE)
-      const { data: specificShed } = await supabase
-        .from('horarios_especificos')
-        .select('*')
-        .eq('user_id', barberConfig.user_id)
-        .eq('fecha', nuevaFecha)
-        .single()
+    try {
+      if (barberConfig) {
+        // 2. BUSCAR PLANIFICACIÓN ESPECÍFICA PARA ESTA FECHA (STRICT MODE)
+        const { data: specificShed } = await supabase
+          .from('horarios_especificos')
+          .select('*')
+          .eq('user_id', barberConfig.user_id)
+          .eq('fecha', nuevaFecha)
+          .single()
 
-      if (specificShed) {
-        if (!specificShed.activo) {
-          setDiaCerrado(true)
+        if (specificShed) {
+          if (!specificShed.activo) {
+            setDiaCerrado(true)
+          } else {
+            const sortedSlots = (specificShed.slots || []).sort((a: string, b: string) => a.localeCompare(b))
+            setAvailableSlots(sortedSlots)
+            // CARGA DE TURNOS BLOQUEANTE (Evita queSlots aparezcan y desaparezcan)
+            await fetchBookedTurns(nuevaFecha)
+          }
         } else {
-          const sortedSlots = (specificShed.slots || []).sort((a: string, b: string) => a.localeCompare(b))
-          setAvailableSlots(sortedSlots)
-          fetchBookedTurns(nuevaFecha)
+          // SI NO HAY PLANIFICACIÓN ESPECÍFICA, EL DÍA ESTÁ CERRADO (CONTROL TOTAL)
+          setDiaCerrado(true)
         }
-      } else {
-        // SI NO HAY PLANIFICACIÓN ESPECÍFICA, EL DÍA ESTÁ CERRADO (CONTROL TOTAL)
-        setDiaCerrado(true)
       }
+    } catch (error) {
+      console.error('Error fetching availability:', error)
+    } finally {
+      setIsFetchingAvailability(false)
     }
   }
 
@@ -324,7 +335,16 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   <Clock className="w-3 h-3" /> Seleccioná el Horario
                 </label>
                 
-                {diaCerrado ? (
+                {isFetchingAvailability ? (
+                  <div className="py-20 text-center animate-in fade-in zoom-in-95 duration-700">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
+                      <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] animate-pulse">
+                        Consultando disponibilidad...
+                      </p>
+                    </div>
+                  </div>
+                ) : diaCerrado ? (
                   <div className="bg-red-600/10 border border-red-900/40 p-12 rounded-[2.5rem] text-center animate-in fade-in duration-500">
                     <div className="w-20 h-20 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-8">
                       <AlertTriangle className="w-10 h-10 text-red-500" />
@@ -337,7 +357,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     <div className="flex flex-col items-center gap-4">
                       <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
                       <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] animate-pulse">
-                        Consultando disponibilidad...
+                        No hay turnos para esta fecha
                       </p>
                     </div>
                   </div>
