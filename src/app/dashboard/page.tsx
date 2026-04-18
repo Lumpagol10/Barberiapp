@@ -285,7 +285,8 @@ export default function Dashboard() {
           table: 'turnos',
           filter: `barbero_id=eq.${user.id}`
         },
-        () => {
+        (payload) => {
+          console.log('Realtime payload:', payload)
           // Si algo cambia en los turnos del barbero, refrescamos la lista del día seleccionado y finanzas
           fetchTurnsForDate(user.id, viewDate)
           fetchFinances(user.id)

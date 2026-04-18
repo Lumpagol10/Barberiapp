@@ -163,6 +163,8 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
       if (error) {
         toast.error(`Error: ${error.message}`)
       } else {
+        // OPTIMISTIC UPDATE: Bloqueamos el horario localmente antes de mostrar el éxito
+        setBookedSlots(prev => [...prev, horaSeleccionada.substring(0, 5)])
         setSubmitted(true)
       }
     } catch {
