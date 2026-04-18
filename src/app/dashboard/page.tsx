@@ -12,7 +12,8 @@ import {
   HorarioRutina, 
   HorarioEspecifico, 
   FinanzasData, 
-  DashboardTab 
+  DashboardTab,
+  Cliente
 } from '@/types/dashboard'
 import { User } from '@supabase/supabase-js'
 import { Scissors } from 'lucide-react'
@@ -22,6 +23,7 @@ import Sidebar from '@/components/dashboard/Sidebar'
 import AgendaTab from '@/components/dashboard/tabs/AgendaTab'
 import ProgramarTab from '@/components/dashboard/tabs/ProgramarTab'
 import FinanzasTab from '@/components/dashboard/tabs/FinanzasTab'
+import ClientesTab from '@/components/dashboard/tabs/ClientesTab'
 import ConfigTab from '@/components/dashboard/tabs/ConfigTab'
 
 // Modals
@@ -40,6 +42,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [config, setConfig] = useState<ConfiguracionBarberia | null>(null)
   const [turns, setTurns] = useState<Turno[]>([])
+  const [clients, setClients] = useState<Cliente[]>([])
   
   // Modal states
   const [showLogoutModal, setShowLogoutModal] = useState(false)
@@ -165,6 +168,21 @@ export default function Dashboard() {
     })
   }, [financesDate, financesMonth, historyFilterMode])
 
+  const fetchClients = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id_barbero', userId)
+        .order('nombre', { ascending: true })
+      
+      if (error) throw error
+      setClients((data as Cliente[]) || [])
+    } catch (error) {
+      console.error('Error fetching clients:', error)
+    }
+  }, [])
+
   const fetchTurnsForDate = useCallback(async (userId: string, targetDate: string) => {
     setFetchingTurns(true)
     try {
@@ -235,7 +253,7 @@ export default function Dashboard() {
       setTimeout(() => setLoading(false), 300)
       window.scrollTo(0, 0)
     }
-  }, [router, fetchFinances, fetchTurnsForDate, viewDate])
+  }, [router, config])
 
   // Efecto para cambios de fecha (optimizado: solo carga turnos)
   useEffect(() => {
@@ -249,8 +267,9 @@ export default function Dashboard() {
     if (user?.id) {
       fetchData(user.id)
       fetchFinances(user.id)
+      fetchClients(user.id)
     }
-  }, [user?.id, fetchData, fetchFinances])
+  }, [user?.id, fetchData, fetchFinances, fetchClients])
 
   const handleUpdateConfig = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -305,8 +324,6 @@ export default function Dashboard() {
     }
   }
 
-  /* handleUpdateMasterRoutine eliminada por pedido usuario */
-
   const handleUpdatePlanning = async () => {
     if (!user) return
     setSaving(true)
@@ -326,12 +343,52 @@ export default function Dashboard() {
     }
   }
 
+  const handleRegisterClient = async (nombre: string, telefono: string) => {
+    if (!user) return
+    try {
+      const { error } = await supabase.from('clientes').insert([{
+        id_barbero: user.id,
+        nombre: nombre.toUpperCase(),
+        telefono
+      }])
+      if (error) throw error
+      toast.success('👤 Cliente registrado con éxito')
+      fetchClients(user.id)
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`)
+    }
+  }
+
+  const updateClientStats = async (nombre: string, telefono: string) => {
+    if (!user || telefono === 'MANUAL') return
+    try {
+      const { data: existing } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id_barbero', user.id)
+        .eq('telefono', telefono)
+        .single()
+      
+      if (existing) {
+        await supabase.from('clientes').update({
+          total_cortes: (existing.total_cortes || 0) + 1,
+          ultima_visita: new Date().toISOString()
+        }).eq('id', existing.id)
+        fetchClients(user.id)
+      }
+    } catch (e) { console.error('Error updating client stats:', e) }
+  }
+
   const confirmCheckout = async (omitValue: boolean = false) => {
     if (!selectedTurnId || !user) return
     setSaving(true)
     const finalPrice = omitValue ? 0 : Number(checkoutPrice)
     const { error } = await supabase.from('turnos').update({ estado: 'completado', precio: finalPrice }).eq('id', selectedTurnId).eq('barbero_id', user.id)
     if (!error) {
+      const finishedTurn = turns.find(t => t.id === selectedTurnId)
+      if (finishedTurn) {
+        await updateClientStats(finishedTurn.cliente_nombre, finishedTurn.cliente_telefono)
+      }
       setTurns(prev => prev.filter(t => t.id !== selectedTurnId))
       setShowCheckoutModal(false)
       fetchFinances(user.id)
@@ -366,6 +423,8 @@ export default function Dashboard() {
 
       if (error) throw error
       
+      await updateClientStats(data.nombre, 'MANUAL')
+
       toast.success('✅ Turno manual registrado')
       setShowManualModal(false)
       
@@ -461,6 +520,8 @@ export default function Dashboard() {
               onOpenSidebar={() => setIsMobileSidebarOpen(true)}
               onAddManualTurn={() => setShowManualModal(true)}
               fetchingTurns={fetchingTurns}
+              registeredClientsPhones={new Set(clients.map(c => c.telefono))}
+              onRegisterClient={handleRegisterClient}
             />
           )}
           {activeTab === 'programar' && (
@@ -502,6 +563,13 @@ export default function Dashboard() {
               financesMonth={financesMonth} setFinancesMonth={setFinancesMonth}
               historyFilterMode={historyFilterMode} setHistoryFilterMode={setHistoryFilterMode}
               config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+            />
+          )}
+          {activeTab === 'clientes' && (
+            <ClientesTab 
+              clientes={clients}
+              config={config}
+              onOpenSidebar={() => setIsMobileSidebarOpen(true)}
             />
           )}
           {activeTab === 'config' && (

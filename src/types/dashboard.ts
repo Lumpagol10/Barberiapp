@@ -52,4 +52,14 @@ export interface FinanzasData {
   history: Turno[];
 }
 
-export type DashboardTab = 'agenda' | 'programar' | 'finanzas' | 'config';
+export interface Cliente {
+  id: string;
+  nombre: string;
+  telefono: string;
+  total_cortes: number;
+  ultima_visita: string | null;
+  id_barbero: string;
+  created_at?: string;
+}
+
+export type DashboardTab = 'agenda' | 'programar' | 'finanzas' | 'clientes' | 'config';

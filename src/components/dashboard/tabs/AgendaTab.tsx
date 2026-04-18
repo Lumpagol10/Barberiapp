@@ -14,6 +14,8 @@ interface AgendaTabProps {
   onOpenSidebar: () => void
   onAddManualTurn: () => void
   fetchingTurns?: boolean
+  registeredClientsPhones?: Set<string>
+  onRegisterClient?: (nombre: string, telefono: string) => void
 }
 
 export default function AgendaTab({
@@ -25,7 +27,9 @@ export default function AgendaTab({
   onShare,
   onOpenSidebar,
   onAddManualTurn,
-  fetchingTurns = false
+  fetchingTurns = false,
+  registeredClientsPhones = new Set(),
+  onRegisterClient
 }: AgendaTabProps) {
   
   const isToday = viewDate === new Intl.DateTimeFormat('en-CA', { 
@@ -109,9 +113,20 @@ export default function AgendaTab({
                 <div key={turn.id} className="p-6 space-y-4 active:bg-white/[0.02] transition-colors">
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-black text-lg text-zinc-100 uppercase tracking-tight">{turn.cliente_nombre}</div>
+                      <div className="font-black text-lg text-zinc-100 uppercase tracking-tight flex items-center gap-2">
+                        {turn.cliente_nombre}
+                        {!registeredClientsPhones.has(turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
+                          <button 
+                            onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
+                            className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black active:scale-90 transition-transform shadow-lg shadow-emerald-900/40"
+                            title="Registrar Cliente"
+                          >
+                            <Plus className="w-3 h-3 stroke-[4]" />
+                          </button>
+                        )}
+                      </div>
                       <div className="text-[10px] text-zinc-500 font-bold flex items-center gap-2 mt-1 uppercase">
-                        <Phone className="w-3 h-3" /> {turn.cliente_telefono}
+                        <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
                       </div>
                       {turn.es_manual && (
                         <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-600/10 text-orange-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
@@ -167,7 +182,18 @@ export default function AgendaTab({
                     <td className="px-8 py-8">
                       <div className="flex items-center gap-4">
                         <div>
-                          <div className="font-black text-lg text-zinc-100 uppercase tracking-tight mb-1">{turn.cliente_nombre}</div>
+                          <div className="font-black text-lg text-zinc-100 uppercase tracking-tight mb-1 flex items-center gap-2">
+                            {turn.cliente_nombre}
+                            {!registeredClientsPhones.has(turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
+                              <button 
+                                onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
+                                className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black hover:scale-110 active:scale-90 transition-all shadow-lg shadow-emerald-900/40"
+                                title="Registrar como Cliente"
+                              >
+                                <Plus className="w-3 h-3 stroke-[4]" />
+                              </button>
+                            )}
+                          </div>
                           <div className="text-xs text-zinc-500 font-bold flex items-center gap-2">
                             <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
                           </div>

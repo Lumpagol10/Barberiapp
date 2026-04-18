@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, DollarSign, Settings, Clock, LogOut, User as UserIcon, Store, X, Scissors } from 'lucide-react'
+import { Calendar, DollarSign, Settings, Clock, LogOut, User as UserIcon, Store, X, Scissors, Users } from 'lucide-react'
 import { DashboardTab, ConfiguracionBarberia } from '@/types/dashboard'
 import Image from 'next/image'
 
@@ -28,6 +28,7 @@ export default function Sidebar({
     { id: 'agenda' as DashboardTab, label: 'Turnos Hoy', icon: Calendar },
     { id: 'programar' as DashboardTab, label: 'Programar Agenda', icon: Clock },
     { id: 'finanzas' as DashboardTab, label: 'Finanzas', icon: DollarSign, color: 'emerald' },
+    { id: 'clientes' as DashboardTab, label: 'Clientes', icon: Users },
     { id: 'config' as DashboardTab, label: 'Mi Perfil', icon: Settings },
   ]
 
