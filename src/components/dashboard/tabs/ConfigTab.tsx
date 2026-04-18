@@ -60,33 +60,48 @@ export default function ConfigTab({
         <div className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-8 lg:p-12 shadow-2xl relative overflow-hidden">
           <div className="flex flex-col lg:flex-row gap-12 items-center lg:items-start relative z-10">
             {/* Uploader Circular Pro */}
-            <div className="relative group shrink-0">
+            <div className="relative shrink-0">
               <div className="w-32 h-32 lg:w-48 lg:h-48 rounded-full border-4 border-amber-600/20 p-2 relative shadow-[0_0_50px_rgba(217,119,6,0.1)]">
-                <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden shadow-2xl relative">
+                <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden shadow-2xl relative group">
                   {editLogoUrl ? (
-                    <Image src={editLogoUrl} alt="Logo Preview" fill className="object-cover scale-105 group-hover:scale-110 transition-transform duration-500" sizes="(max-width: 1024px) 128px, 192px" />
+                    <img 
+                      src={editLogoUrl} 
+                      alt="Logo Preview" 
+                      className="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-500" 
+                    />
                   ) : (
                     <div className="flex flex-col items-center gap-2">
                        <Store className="w-12 lg:w-20 h-12 lg:h-20 text-zinc-800" />
                        <span className="text-[8px] font-bold text-zinc-700 uppercase tracking-widest">Sin Logo</span>
                     </div>
                   )}
+                  
+                  {/* Overlay de Subida */}
                   <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300 backdrop-blur-sm border-2 border-amber-500/50 border-dashed m-1">
                     <Camera className="w-8 h-8 text-amber-500 mb-2" />
                     <span className="text-[10px] font-black uppercase text-amber-500 tracking-tighter">Subir Logo</span>
                     <input type="file" accept="image/*" onChange={onLogoUpload} className="hidden" />
                   </label>
                 </div>
+
+                {/* BOTONES DE CONTROL FLOTANTES */}
+                <div className="absolute -top-2 -left-2 z-20">
+                  <label className="bg-orange-500 p-3 rounded-full shadow-2xl shadow-orange-900/40 cursor-pointer hover:scale-110 active:scale-95 transition-all flex items-center justify-center border-2 border-zinc-900">
+                    <Camera className="w-4 h-4 text-white" />
+                    <input type="file" accept="image/*" onChange={onLogoUpload} className="hidden" />
+                  </label>
+                </div>
+
+                {editLogoUrl && (
+                  <button 
+                    type="button"
+                    onClick={() => setEditLogoUrl(null)}
+                    className="absolute -top-2 -right-2 bg-red-600 p-3 rounded-full shadow-2xl shadow-red-900/40 hover:scale-110 active:scale-95 transition-all z-20 border-2 border-zinc-900 flex items-center justify-center"
+                  >
+                    <Trash2 className="w-4 h-4 text-white" />
+                  </button>
+                )}
               </div>
-              {editLogoUrl && (
-                <button 
-                  type="button"
-                  onClick={() => setEditLogoUrl(null)}
-                  className="absolute -top-1 -right-1 bg-red-600 p-2.5 rounded-full shadow-xl hover:scale-110 active:scale-90 transition-all z-20 border-2 border-zinc-900"
-                >
-                  <Trash2 className="w-4 h-4 text-white" />
-                </button>
-              )}
             </div>
 
             <div className="flex-1 space-y-8 w-full">
