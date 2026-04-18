@@ -116,8 +116,8 @@ export default function FinanzasTab({
         </div>
       </div>
 
-      <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
-        <div className="p-6 sm:p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-900/20">
+      <div className="overflow-hidden">
+        <div className="pb-6 sm:pb-8 flex justify-between items-center">
           <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Cronograma de Ingresos</h3>
           <div className="p-2 bg-emerald-600/10 rounded-lg text-emerald-500">
             <DollarSign className="w-4 h-4" />

@@ -113,6 +113,19 @@ export default function Dashboard() {
       setActiveTab(savedTab as DashboardTab)
     }
 
+    // Restaurar Configuración (Instant Look)
+    const cachedConfig = localStorage.getItem('barberia_config_cache')
+    if (cachedConfig) {
+      try {
+        const parsed = JSON.parse(cachedConfig)
+        setConfig(parsed)
+        setEditNombre(parsed.nombre_barberia)
+        setEditPhone(parsed.telefono_barbero.replace('+54', ''))
+        setEditMaps(parsed.google_maps_link || '')
+        setEditLogoUrl(parsed.logo_url || null)
+      } catch (e) { console.error('Cache parse error:', e) }
+    }
+
     // Fix Scroll Glitch
     window.history.scrollRestoration = 'manual'
     window.scrollTo(0, 0)
@@ -172,37 +185,34 @@ export default function Dashboard() {
   const fetchData = useCallback(async (userId: string) => {
     if (!config) setLoading(true)
     try {
-      // 1. Configuración básica
-      const { data: configData } = await supabase
-        .from('configuracion_barberia')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
+      // 1. Preparar fechas para planificación
+      const today = new Date()
+      const next7Days: string[] = []
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today); d.setDate(today.getDate() + i)
+        next7Days.push(d.toLocaleDateString('en-CA'))
+      }
+
+      // 2. Disparar consultas en paralelo
+      const [configRes, scheduleRes, exceptionsRes] = await Promise.all([
+        supabase.from('configuracion_barberia').select('*').eq('user_id', userId).single(),
+        supabase.from('horarios_barberia').select('*').eq('user_id', userId).order('dia_semana', { ascending: true }),
+        supabase.from('horarios_especificos').select('*').eq('user_id', userId).in('fecha', next7Days)
+      ])
+
+      const configData = configRes.data
+      const scheduleData = scheduleRes.data
+      const exceptionsData = exceptionsRes.data
 
       if (configData) {
         setConfig(configData)
+        localStorage.setItem('barberia_config_cache', JSON.stringify(configData))
         setEditNombre(configData.nombre_barberia)
         setEditPhone(configData.telefono_barbero.replace('+54', ''))
         setEditMaps(configData.google_maps_link || '')
         setEditLogoUrl(configData.logo_url || null)
 
-        // 2. Horarios base (solo para planificación, ya no se editan aquí como rutina maestra activa)
-        const { data: scheduleData } = await supabase
-          .from('horarios_barberia')
-          .select('*')
-          .eq('user_id', userId)
-          .order('dia_semana', { ascending: true })
-
-        // 3. Planificación de los próximos 7 días
-        const today = new Date()
-        const next7Days: string[] = []
-        for (let i = 0; i < 7; i++) {
-          const d = new Date(today)
-          d.setDate(today.getDate() + i)
-          next7Days.push(d.toLocaleDateString('en-CA'))
-        }
-
-        const { data: exceptionsData } = await supabase.from('horarios_especificos').select('*').eq('user_id', userId).in('fecha', next7Days)
+        // Procesar planificación semanal
         const finalPlanning: HorarioEspecifico[] = next7Days.map(fechaStr => {
            const specific = exceptionsData?.find(e => e.fecha === fechaStr)
            if (specific) return { ...specific, isNew: false }
