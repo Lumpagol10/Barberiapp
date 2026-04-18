@@ -242,9 +242,9 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
       
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-900/10 rounded-full blur-[120px]" />
       
-      <header className="mb-2 text-center relative z-10 px-4 pt-0">
-        <div className="flex items-center justify-center mb-2">
-          <div className="w-10 h-10 md:w-16 md:h-16 bg-zinc-900 rounded-full border border-amber-600/20 p-1 shadow-2xl overflow-hidden flex items-center justify-center relative group">
+      <header className="mb-2 md:mb-8 text-center relative z-10 px-4 pt-0">
+        <div className="flex items-center justify-center mb-2 md:mb-4">
+          <div className="w-14 h-14 md:w-28 md:h-28 bg-zinc-900 rounded-full border border-amber-600/20 p-1 shadow-2xl overflow-hidden flex items-center justify-center relative group">
             <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden relative">
               {barberConfig.logo_url ? (
                 <img 
@@ -253,12 +253,12 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   className="w-full h-full object-cover rounded-full" 
                 />
               ) : (
-                <Store className="w-5 h-5 md:w-8 md:h-8 text-zinc-800" />
+                <Store className="w-6 h-6 md:w-12 md:h-12 text-zinc-800" />
               )}
             </div>
           </div>
         </div>
-        <h1 className="text-base md:text-2xl font-black tracking-tighter uppercase mb-1 break-words px-2">
+        <h1 className="text-xl md:text-5xl font-black tracking-tighter uppercase mb-1 break-words px-2">
           {barberConfig.nombre_barberia}
         </h1>
         <div className="flex flex-col items-center gap-1">
