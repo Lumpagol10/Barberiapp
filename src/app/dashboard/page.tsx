@@ -89,6 +89,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     const checkUser = async () => {
+      // Prioridad máxima: Restaurar estado de pestaña antes que cualquier otra cosa
+      const savedTab = localStorage.getItem('activeDashboardTab')
+      if (savedTab) {
+        setActiveTab(savedTab as DashboardTab)
+      }
+
       try {
         setCheckingAuth(true)
         const { data: { user: authUser } } = await supabase.auth.getUser()
@@ -107,12 +113,6 @@ export default function Dashboard() {
     }
     checkUser()
     
-    // Restaurar pestaña desde localStorage
-    const savedTab = localStorage.getItem('activeDashboardTab')
-    if (savedTab) {
-      setActiveTab(savedTab as DashboardTab)
-    }
-
     // Restaurar Configuración (Instant Look)
     const cachedConfig = localStorage.getItem('barberia_config_cache')
     if (cachedConfig) {
@@ -385,6 +385,29 @@ export default function Dashboard() {
       />
 
       <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-screen max-w-full overflow-x-hidden">
+        {/* BRANDING INDEPENDIENTE (GLOBAL) */}
+        {config && (
+          <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full mb-10 animate-in fade-in duration-700">
+            <div className="w-14 h-14 md:w-20 md:h-20 shrink-0 flex items-center justify-center overflow-hidden relative">
+              {config.logo_url ? (
+                <img 
+                  src={config.logo_url} 
+                  alt="Logo" 
+                  className="w-full h-full object-cover rounded-xl"
+                  loading="eager"
+                />
+              ) : (
+                <div className="w-full h-full bg-zinc-950 border border-zinc-900 flex items-center justify-center rounded-xl">
+                  <Scissors className="w-5 h-5 text-zinc-800" />
+                </div>
+              )}
+            </div>
+            <span className="text-xl md:text-3xl font-black tracking-tighter uppercase italic text-white truncate max-w-[60vw]">
+              {config.nombre_barberia}
+            </span>
+          </div>
+        )}
+
         <>
           {activeTab === 'agenda' && (
             <AgendaTab 

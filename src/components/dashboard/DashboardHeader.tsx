@@ -33,28 +33,6 @@ export default function DashboardHeader({
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8 mb-6 md:mb-12 lg:mb-16 w-full max-w-full overflow-x-hidden">
       {/* Contenedor Principal Adaptativo */}
       <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
-        
-        {/* FILA 1: MARCA (Logo + Nombre) - OCULTO EN DESKTOP por redundancia con Sidebar */}
-        <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full md:w-auto mb-4">
-          <div className="w-14 h-14 md:w-20 md:h-20 shrink-0 flex items-center justify-center overflow-hidden relative">
-            {config.logo_url ? (
-              <img 
-                src={config.logo_url} 
-                alt="Logo" 
-                className="w-full h-full object-cover rounded-xl"
-                loading="eager"
-              />
-            ) : (
-              <div className="w-full h-full bg-zinc-950 border border-zinc-900 flex items-center justify-center rounded-xl">
-                <Store className="w-5 h-5 text-zinc-800" />
-              </div>
-            )}
-          </div>
-          <span className="text-xl md:text-3xl font-bold tracking-tighter uppercase italic text-white truncate max-w-[55vw] md:max-w-none">
-            {config.nombre_barberia}
-          </span>
-        </div>
-
         {/* FILA 2: FECHA Y SUBTITULO */}
         <div className="flex flex-col items-center md:items-start space-y-0.5 w-full md:w-auto">
           {/* Título de Fecha - Más compacto en mobile */}
