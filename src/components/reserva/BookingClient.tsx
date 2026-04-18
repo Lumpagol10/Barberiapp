@@ -55,6 +55,9 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
     }
   }, [fecha, barberConfig?.user_id])
   const [diaCerrado, setDiaCerrado] = useState(false)
+  
+  // Validaciones Derivadas
+  const isValidPhone = /^(261\d{7}|2634\d{6})$/.test(phoneSuffix)
 
   const getFormattedDate = (dateStr: string) => {
     if (!dateStr) return ''
@@ -289,7 +292,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     onChange={(e) => setPhoneSuffix(e.target.value.replace(/\D/g, ''))} 
                     type="tel" 
                     placeholder="2634XXXXXX" 
-                    className="flex-1 min-w-0 bg-transparent py-4 px-4 md:px-6 outline-none text-white font-bold placeholder:text-zinc-700 text-sm md:text-base" 
+                    className={`flex-1 min-w-0 bg-transparent py-4 px-4 md:px-6 outline-none text-white font-bold placeholder:text-zinc-700 text-sm md:text-base border-l ${phoneSuffix.length > 0 && !isValidPhone ? 'border-amber-500/30 text-amber-200' : 'border-zinc-700/50'}`}
                   />
                 </div>
                 <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider ml-1 mt-1">
@@ -330,27 +333,13 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     <p className="text-zinc-500 font-medium italic max-w-xs mx-auto">El barbero aún no ha confirmado su disponibilidad para este día. Por favor, intentá con otra fecha o consultale por WhatsApp.</p>
                   </div>
                 ) : availableSlots.length === 0 ? (
-                  <div className="bg-zinc-900/40 border border-zinc-800 p-8 rounded-[2.5rem] text-center space-y-6 animate-in zoom-in-95 duration-300">
-                    <div className="p-4 bg-zinc-800 rounded-2xl w-fit mx-auto shadow-xl">
-                      <MessageCircle className="w-8 h-8 text-amber-500" />
-                    </div>
-                    <div className="space-y-2 px-2">
-                      <p className="text-white font-black uppercase tracking-tighter text-xl italic leading-none">
-                        Agenda en preparación
-                      </p>
-                      <p className="text-zinc-500 text-xs md:text-sm font-medium leading-relaxed italic">
-                        El barbero aún no ha programado los turnos para este día. <br className="hidden sm:block" />
-                        Seleccioná otra fecha o consultá disponibilidad por WhatsApp.
+                  <div className="py-20 text-center animate-in fade-in zoom-in-95 duration-700">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
+                      <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] animate-pulse">
+                        Consultando disponibilidad...
                       </p>
                     </div>
-                    <a 
-                      href={`https://wa.me/${barberConfig.telefono_barbero?.replace('+', '')}?text=Hola!%20Vi%20que%20no%20hay%20turnos%20cargados%20para%20el%20día%20${getFormattedDate(fecha)},%20¿tenés%20disponibilidad?`}
-                      target="_blank"
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-black font-black rounded-2xl transition-all shadow-xl shadow-emerald-900/20 active:scale-95 uppercase text-[10px] md:text-xs tracking-widest"
-                    >
-                      <MessageCircle className="w-5 h-5 transition-transform group-hover:scale-110" />
-                      CONSULTAR POR WHATSAPP
-                    </a>
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar border-t border-zinc-800/30 pt-4">
@@ -375,7 +364,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
               </div>
             )}
 
-            <button disabled={loading || !horaSeleccionada} type="submit" className="w-full py-5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-black text-lg rounded-2xl transition-all shadow-xl shadow-amber-900/20 disabled:opacity-50 flex items-center justify-center gap-2">
+            <button disabled={loading || !horaSeleccionada || !isValidPhone} type="submit" className="w-full py-5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-black text-lg rounded-2xl transition-all shadow-xl shadow-amber-900/20 disabled:opacity-30 disabled:grayscale flex items-center justify-center gap-2">
               {loading ? <div className="w-6 h-6 border-4 border-black/30 border-t-black rounded-full animate-spin" /> : 'CONFIRMAR RESERVA'}
             </button>
           </form>
