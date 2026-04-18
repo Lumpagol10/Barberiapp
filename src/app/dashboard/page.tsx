@@ -533,36 +533,41 @@ export default function Dashboard() {
                   const dayObj = new Date(planningSchedule[idx].fecha + 'T12:00:00')
                   const routine = (scheduleData || []).find(r => r.dia_semana === dayObj.getDay())
                   if (routine) {
-                    const newSched = [...planningSchedule]; newSched[idx].slots = [...(routine.slots || [])]; newSched[idx].activo = true; setPlanningSchedule(newSched)
-                    toast.success('✅ Rutilla cargada')
+                    setPlanningSchedule(prev => prev.map((dia, i) => {
+                      if (i !== idx) return dia
+                      return { ...dia, slots: [...(routine.slots || [])], activo: true }
+                    }))
+                    toast.success('✅ Rutina cargada')
                   } else {
                     toast.error('❌ No hay plantilla para este día')
                   }
               }}
               addPlanningSlot={(idx) => {
-                const newSched = [...planningSchedule];
-                const daySlots = [...(newSched[idx].slots || [])];
-                let nextTime = "09:00";
-                if (daySlots.length > 0) {
-                  const last = daySlots[daySlots.length - 1];
-                  const [h, m] = last.split(':').map(Number);
-                  nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-                }
-                newSched[idx] = { ...newSched[idx], slots: [...daySlots, nextTime].sort() };
-                setPlanningSchedule(newSched);
+                setPlanningSchedule(prev => prev.map((dia, i) => {
+                  if (i !== idx) return dia;
+                  const daySlots = [...(dia.slots || [])];
+                  let nextTime = "09:00";
+                  if (daySlots.length > 0) {
+                    const last = daySlots[daySlots.length - 1];
+                    const [h, m] = last.split(':').map(Number);
+                    nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                  }
+                  return { ...dia, slots: [...daySlots, nextTime].sort(), activo: true };
+                }));
               }}
               removePlanningSlot={(dayIdx, slotIdx) => {
-                const newSched = [...planningSchedule];
-                const newSlots = newSched[dayIdx].slots.filter((_, i) => i !== slotIdx);
-                newSched[dayIdx] = { ...newSched[dayIdx], slots: newSlots };
-                setPlanningSchedule(newSched);
+                setPlanningSchedule(prev => prev.map((dia, i) => {
+                  if (i !== dayIdx) return dia;
+                  return { ...dia, slots: dia.slots.filter((_, si) => si !== slotIdx) };
+                }));
               }}
               updatePlanningSlot={(dayIdx, slotIdx, newValue) => {
-                const newSched = [...planningSchedule];
-                const newSlots = [...newSched[dayIdx].slots];
-                newSlots[slotIdx] = newValue;
-                newSched[dayIdx] = { ...newSched[dayIdx], slots: newSlots.sort() };
-                setPlanningSchedule(newSched);
+                setPlanningSchedule(prev => prev.map((dia, i) => {
+                  if (i !== dayIdx) return dia;
+                  const newSlots = [...dia.slots];
+                  newSlots[slotIdx] = newValue;
+                  return { ...dia, slots: newSlots.sort() };
+                }));
               }}
               saving={saving} config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
             />

@@ -259,7 +259,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-400 ml-1">Fecha</label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <input 
                   type="date" 
                   required 
@@ -267,9 +267,9 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   onChange={(e) => handleDateChange(e.target.value)}
                   min={new Date().toLocaleDateString('en-CA')}
                   max={new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')}
-                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 pr-12 outline-none text-white font-bold transition-all [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden" 
+                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark] relative [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10" 
                 />
-                <CalendarIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-500 pointer-events-none" />
+                <CalendarIcon className="absolute right-4 w-5 h-5 text-amber-500 z-0" />
               </div>
             </div>
 
