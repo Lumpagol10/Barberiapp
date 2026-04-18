@@ -253,7 +253,7 @@ export default function Dashboard() {
       setTimeout(() => setLoading(false), 300)
       window.scrollTo(0, 0)
     }
-  }, [router, config])
+  }, [router])
 
   // Efecto para cambios de fecha (optimizado: solo carga turnos)
   useEffect(() => {
@@ -480,7 +480,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#050505] text-zinc-100 flex lg:pb-0 pb-12 font-sans max-w-full overflow-x-hidden">
+    <div className="min-h-[100dvh] lg:h-screen lg:overflow-hidden bg-[#050505] text-zinc-100 flex lg:pb-0 pb-12 font-sans max-w-full overflow-x-hidden overflow-y-auto lg:overflow-y-visible">
       <Sidebar 
         activeTab={activeTab} setActiveTab={setActiveTab} 
         isMobileSidebarOpen={isMobileSidebarOpen} setIsMobileSidebarOpen={setIsMobileSidebarOpen}

@@ -269,7 +269,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   max={new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')}
                   className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark] relative [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10" 
                 />
-                <CalendarIcon className="absolute right-4 w-5 h-5 text-amber-500 z-0" />
+                <CalendarIcon className="absolute right-3 w-5 h-5 text-amber-500 z-0" />
               </div>
             </div>
 
