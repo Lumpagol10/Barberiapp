@@ -16,6 +16,7 @@ interface ProgramarTabProps {
   saving: boolean
   config: ConfiguracionBarberia | null
   onOpenSidebar: () => void
+  upcomingTurns?: any[]
 }
 
 export default function ProgramarTab({
@@ -28,7 +29,8 @@ export default function ProgramarTab({
   updatePlanningSlot,
   saving,
   config,
-  onOpenSidebar
+  onOpenSidebar,
+  upcomingTurns = []
 }: ProgramarTabProps) {
   const [showMasterRoutine, setShowMasterRoutine] = useState(false)
   const diasLetras = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -117,23 +119,38 @@ export default function ProgramarTab({
               {dia.activo && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {(dia.slots || []).map((slot, slotIdx) => (
-                      <div key={slotIdx} className="group relative">
-                        <input 
-                          type="time" 
-                          value={slot} 
-                          onChange={(e) => updatePlanningSlot(idx, slotIdx, e.target.value)}
-                          className="w-full bg-zinc-950/50 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl py-4 px-2 text-sm font-black text-center [color-scheme:dark] transition-all focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
-                        />
-                        <button 
-                          type="button"
-                          onClick={() => removePlanningSlot(idx, slotIdx)}
-                          className="absolute -top-2 -right-2 w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
+                    {(dia.slots || []).map((slot, slotIdx) => {
+                      const isOccupied = upcomingTurns.some(t => t.fecha === dia.fecha && t.hora.startsWith(slot))
+                      
+                      return (
+                        <div key={slotIdx} className="group relative">
+                          <input 
+                            type="time" 
+                            value={slot} 
+                            disabled={isOccupied}
+                            onChange={(e) => updatePlanningSlot(idx, slotIdx, e.target.value)}
+                            className={`w-full bg-zinc-950/50 border rounded-2xl py-4 px-2 text-sm font-black text-center [color-scheme:dark] transition-all focus:ring-2 outline-none
+                              ${isOccupied 
+                                ? 'line-through opacity-40 border-red-500/20 text-red-500/50 cursor-not-allowed' 
+                                : 'border-zinc-800 hover:border-emerald-500/30 focus:ring-emerald-500/20 focus:border-emerald-500 text-white'
+                              }`}
+                          />
+                          {!isOccupied ? (
+                            <button 
+                              type="button"
+                              onClick={() => removePlanningSlot(idx, slotIdx)}
+                              className="absolute -top-2 -right-2 w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
+                            >
+                              ✕
+                            </button>
+                          ) : (
+                            <div className="absolute -top-1.5 -right-1.5 px-2 py-0.5 bg-red-600 text-white text-[7px] font-black uppercase rounded-full shadow-lg">
+                              Ocupado
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                     
                     <button 
                       type="button"

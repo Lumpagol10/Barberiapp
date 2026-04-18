@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [config, setConfig] = useState<ConfiguracionBarberia | null>(null)
   const [turns, setTurns] = useState<Turno[]>([])
+  const [allUpcomingTurns, setAllUpcomingTurns] = useState<Turno[]>([])
   const [clients, setClients] = useState<Cliente[]>([])
   
   // Modal states
@@ -214,15 +215,17 @@ export default function Dashboard() {
       }
 
       // 2. Disparar consultas en paralelo
-      const [configRes, scheduleRes, exceptionsRes] = await Promise.all([
+      const [configRes, scheduleRes, exceptionsRes, upcomingTurnsRes] = await Promise.all([
         supabase.from('configuracion_barberia').select('*').eq('user_id', userId).single(),
         supabase.from('horarios_barberia').select('*').eq('user_id', userId).order('dia_semana', { ascending: true }),
-        supabase.from('horarios_especificos').select('*').eq('user_id', userId).in('fecha', next7Days)
+        supabase.from('horarios_especificos').select('*').eq('user_id', userId).in('fecha', next7Days),
+        supabase.from('turnos').select('*').eq('barbero_id', userId).in('fecha', next7Days).eq('estado', 'pendiente')
       ])
 
       const configData = configRes.data
       const scheduleData = scheduleRes.data
       const exceptionsData = exceptionsRes.data
+      const upcomingTurnsData = upcomingTurnsRes.data
 
       if (configData) {
         setConfig(configData)
@@ -241,6 +244,7 @@ export default function Dashboard() {
            return { fecha: fechaStr, user_id: userId, activo: false, slots: routine?.slots || [], isNew: true }
         })
         setPlanningSchedule(finalPlanning)
+        setAllUpcomingTurns((upcomingTurnsData as Turno[]) || [])
       } else {
         router.push('/dashboard/onboarding')
       }
@@ -550,6 +554,7 @@ export default function Dashboard() {
               fetchingTurns={fetchingTurns}
               registeredClientsPhones={new Set(clients.map(c => c.telefono))}
               onRegisterClient={handleRegisterClient}
+              planningSchedule={planningSchedule}
             />
           )}
           {activeTab === 'programar' && (
@@ -598,6 +603,7 @@ export default function Dashboard() {
                 }));
               }}
               saving={saving} config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+              upcomingTurns={allUpcomingTurns}
             />
           )}
           {activeTab === 'finanzas' && (

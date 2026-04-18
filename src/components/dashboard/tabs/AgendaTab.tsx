@@ -16,6 +16,7 @@ interface AgendaTabProps {
   fetchingTurns?: boolean
   registeredClientsPhones?: Set<string>
   onRegisterClient?: (nombre: string, telefono: string) => void
+  planningSchedule?: HorarioEspecifico[]
 }
 
 export default function AgendaTab({
@@ -29,7 +30,8 @@ export default function AgendaTab({
   onAddManualTurn,
   fetchingTurns = false,
   registeredClientsPhones = new Set(),
-  onRegisterClient
+  onRegisterClient,
+  planningSchedule = []
 }: AgendaTabProps) {
   
   const isToday = viewDate === new Intl.DateTimeFormat('en-CA', { 
@@ -43,6 +45,17 @@ export default function AgendaTab({
     month: 'long',
     timeZone: 'America/Argentina/Buenos_Aires'
   }).format(new Date()).toUpperCase()
+
+  const dayPlanning = planningSchedule.find(p => p.fecha === viewDate)
+  const allSlots = dayPlanning?.slots || []
+
+  // Create unified timeline
+  const timeline = allSlots.map(slot => ({
+    slot,
+    turn: turns.find(t => t.hora.startsWith(slot))
+  }))
+
+  const hasContent = timeline.length > 0
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -107,60 +120,69 @@ export default function AgendaTab({
 
         {/* Vista Mobile: Cards */}
         <div className={`block md:hidden transition-opacity duration-300 ${fetchingTurns ? 'opacity-50' : 'opacity-100'}`}>
-          {turns.length > 0 ? (
+          {hasContent ? (
             <div className="divide-y divide-zinc-800/30">
-              {turns.map((turn) => (
-                <div key={turn.id} className="p-6 space-y-4 active:bg-white/[0.02] transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-black text-lg text-zinc-100 uppercase tracking-tight flex items-center gap-2">
-                        {turn.cliente_nombre}
-                        {!registeredClientsPhones.has(turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
-                          <button 
-                            onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
-                            className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black active:scale-90 transition-transform shadow-lg shadow-emerald-900/40"
-                            title="Registrar Cliente"
-                          >
-                            <Plus className="w-3 h-3 stroke-[4]" />
-                          </button>
+              {timeline.map(({ slot, turn }) => (
+                turn ? (
+                  <div key={turn.id} className="p-6 space-y-4 active:bg-white/[0.02] transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-black text-lg text-zinc-100 uppercase tracking-tight flex items-center gap-2">
+                          {turn.cliente_nombre}
+                          {!registeredClientsPhones.has(turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
+                            <button 
+                              onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
+                              className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black active:scale-90 transition-transform shadow-lg shadow-emerald-900/40"
+                              title="Registrar Cliente"
+                            >
+                              <Plus className="w-3 h-3 stroke-[4]" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-zinc-500 font-bold flex items-center gap-2 mt-1 uppercase">
+                          <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
+                        </div>
+                        {turn.es_manual && (
+                          <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-600/10 text-orange-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
+                            <Scissors className="w-2.5 h-2.5" /> MANUAL
+                          </div>
                         )}
                       </div>
-                      <div className="text-[10px] text-zinc-500 font-bold flex items-center gap-2 mt-1 uppercase">
-                        <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
+                      <a 
+                        href={`https://wa.me/${turn.cliente_telefono.replace('+', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-3 bg-emerald-600 text-black rounded-full shadow-lg"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                      </a>
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="px-3 py-1.5 bg-amber-600/10 text-amber-500 rounded-lg font-mono font-black text-xs border border-amber-600/10 uppercase">
+                        {turn.hora.substring(0, 5)}hs
                       </div>
-                      {turn.es_manual && (
-                        <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-600/10 text-orange-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
-                          <Scissors className="w-2.5 h-2.5" /> MANUAL
-                        </div>
-                      )}
+                      <button
+                        onClick={() => onFinishTurn(turn.id)}
+                        className="px-5 py-2.5 bg-emerald-600 text-black rounded-xl font-black text-[10px] uppercase tracking-tighter"
+                      >
+                        FINALIZAR
+                      </button>
                     </div>
-                    <a 
-                      href={`https://wa.me/${turn.cliente_telefono.replace('+', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3 bg-emerald-600 text-black rounded-full shadow-lg"
-                    >
-                      <MessageCircle className="w-5 h-5" />
-                    </a>
                   </div>
-                  <div className="flex items-center justify-between pt-2">
-                    <div className="px-3 py-1.5 bg-amber-600/10 text-amber-500 rounded-lg font-mono font-black text-xs border border-amber-600/10 uppercase">
-                      {turn.hora.substring(0, 5)}hs
+                ) : (
+                  <div key={slot} className="px-6 py-4 flex items-center justify-between bg-zinc-950/20">
+                    <div className="font-mono text-zinc-700 font-black text-[10px] uppercase">{slot}hs</div>
+                    <div className="px-3 py-1 border border-zinc-800/50 rounded-lg text-[9px] font-black text-zinc-700 uppercase tracking-widest">
+                      Disponible
                     </div>
-                    <button
-                      onClick={() => onFinishTurn(turn.id)}
-                      className="px-5 py-2.5 bg-emerald-600 text-black rounded-xl font-black text-[10px] uppercase tracking-tighter"
-                    >
-                      FINALIZAR
-                    </button>
                   </div>
-                </div>
+                )
               ))}
             </div>
           ) : (
             <div className="py-20 text-center px-8">
-              <div className="text-zinc-700 text-3xl font-black uppercase opacity-20 mb-2 italic">Sin Turnos</div>
-              <p className="text-zinc-600 text-xs font-medium italic uppercase tracking-widest">Día despejado</p>
+              <div className="text-zinc-700 text-3xl font-black uppercase opacity-20 mb-2 italic">Sin Agenda</div>
+              <p className="text-zinc-600 text-xs font-medium italic uppercase tracking-widest">No hay horarios programados</p>
             </div>
           )}
         </div>
@@ -176,65 +198,84 @@ export default function AgendaTab({
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/20">
-              {turns.length > 0 ? (
-                turns.map((turn) => (
-                  <tr key={turn.id} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-8 py-8">
-                      <div className="flex items-center gap-4">
-                        <div>
-                          <div className="font-black text-lg text-zinc-100 uppercase tracking-tight mb-1 flex items-center gap-2">
-                            {turn.cliente_nombre}
-                            {!registeredClientsPhones.has(turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
-                              <button 
-                                onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
-                                className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black hover:scale-110 active:scale-90 transition-all shadow-lg shadow-emerald-900/40"
-                                title="Registrar como Cliente"
-                              >
-                                <Plus className="w-3 h-3 stroke-[4]" />
-                              </button>
+              {hasContent ? (
+                timeline.map(({ slot, turn }) => (
+                  turn ? (
+                    <tr key={turn.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-8 py-8">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <div className="font-black text-lg text-zinc-100 uppercase tracking-tight mb-1 flex items-center gap-2">
+                              {turn.cliente_nombre}
+                              {!registeredClientsPhones.has(turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
+                                <button 
+                                  onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
+                                  className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black hover:scale-110 active:scale-90 transition-all shadow-lg shadow-emerald-900/40"
+                                  title="Registrar como Cliente"
+                                >
+                                  <Plus className="w-3 h-3 stroke-[4]" />
+                                </button>
+                              )}
+                            </div>
+                            <div className="text-xs text-zinc-500 font-bold flex items-center gap-2">
+                              <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
+                            </div>
+                            {turn.es_manual && (
+                              <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-orange-600/10 text-orange-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
+                                <Scissors className="w-2.5 h-2.5" /> MARCACIÓN MANUAL
+                              </div>
                             )}
                           </div>
-                          <div className="text-xs text-zinc-500 font-bold flex items-center gap-2">
-                            <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
-                          </div>
-                          {turn.es_manual && (
-                            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-orange-600/10 text-orange-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
-                              <Scissors className="w-2.5 h-2.5" /> MARCACIÓN MANUAL
-                            </div>
-                          )}
+                          <a 
+                            href={`https://wa.me/${turn.cliente_telefono.replace('+', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-3 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-black rounded-full transition-all active:scale-90"
+                            title="Contactar por WhatsApp"
+                          >
+                            <MessageCircle className="w-5 h-5" />
+                          </a>
                         </div>
-                        <a 
-                          href={`https://wa.me/${turn.cliente_telefono.replace('+', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-3 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-black rounded-full transition-all active:scale-90"
-                          title="Contactar por WhatsApp"
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600/10 text-amber-500 rounded-xl font-mono font-black border border-amber-600/10">
+                          <Clock className="w-4 h-4" /> {turn.hora.substring(0, 5)}hs
+                        </div>
+                      </td>
+                      <td className="px-8 py-8 text-right">
+                        <button
+                          onClick={() => onFinishTurn(turn.id)}
+                          className="inline-flex items-center gap-3 px-6 py-3.5 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-black rounded-2xl transition-all font-black text-xs uppercase tracking-tighter shadow-lg shadow-emerald-900/5 border border-emerald-600/20 active:scale-90"
                         >
-                          <MessageCircle className="w-5 h-5" />
-                        </a>
-                      </div>
-                    </td>
-                    <td className="px-8 py-8">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600/10 text-amber-500 rounded-xl font-mono font-black border border-amber-600/10">
-                        <Clock className="w-4 h-4" /> {turn.hora.substring(0, 5)}hs
-                      </div>
-                    </td>
-                    <td className="px-8 py-8 text-right">
-                      <button
-                        onClick={() => onFinishTurn(turn.id)}
-                        className="inline-flex items-center gap-3 px-6 py-3.5 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-black rounded-2xl transition-all font-black text-xs uppercase tracking-tighter shadow-lg shadow-emerald-900/5 border border-emerald-600/20 active:scale-90"
-                      >
-                        <CheckCircle className="w-4 h-4" /> 
-                        FINALIZAR
-                      </button>
-                    </td>
-                  </tr>
+                          <CheckCircle className="w-4 h-4" /> 
+                          FINALIZAR
+                        </button>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr key={slot} className="bg-zinc-950/10">
+                      <td className="px-8 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-zinc-800 rounded-full" />
+                          <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">Disponible</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-4">
+                        <div className="font-mono text-zinc-700 font-bold text-xs">{slot}hs</div>
+                      </td>
+                      <td className="px-8 py-4 text-right">
+                        <div className="inline-block px-3 py-1 border border-zinc-800/30 rounded-lg text-[9px] font-black text-zinc-800 uppercase tracking-[0.2em]">
+                          Libre
+                        </div>
+                      </td>
+                    </tr>
+                  )
                 ))
               ) : (
                 <tr>
                   <td colSpan={3} className="px-8 py-20 text-center">
-                    <div className="text-zinc-700 text-4xl font-black uppercase opacity-20 mb-4 tracking-tighter italic">No hay turnos</div>
-                    <p className="text-zinc-600 font-medium italic">Todo despejado para esta fecha.</p>
+                    <div className="text-zinc-700 text-4xl font-black uppercase opacity-20 mb-4 tracking-tighter italic">Sin Agenda</div>
+                    <p className="text-zinc-600 font-medium italic uppercase tracking-widest text-xs">No hay horarios programados para hoy</p>
                   </td>
                 </tr>
               )}
