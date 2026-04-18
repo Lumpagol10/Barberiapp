@@ -274,27 +274,27 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
               className="flex items-center gap-2 px-6 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-500 hover:text-amber-500 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-200 active:scale-95"
             >
               <Globe className="w-3 h-3" />
-              LLEGAR
+              UBICACIÓN
             </a>
           )}
         </div>
       </header>
 
-      <main className="w-full max-w-xl relative z-10 px-2 sm:px-0">
+      <main className="w-full max-w-xl md:max-w-2xl relative z-10 px-2 sm:px-0">
         <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-4 md:p-6 rounded-[2rem] shadow-2xl overflow-hidden">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Nombre</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
-                  <input required value={nombre} onChange={(e) => setNombre(e.target.value)} type="text" placeholder="Juan Pérez" className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-2.5 pl-10 pr-3 outline-none text-white transition-all text-xs" />
+                  <input required value={nombre} onChange={(e) => setNombre(e.target.value)} type="text" placeholder="Juan Pérez" className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-3 pl-10 pr-3 outline-none text-white transition-all text-xs" />
                 </div>
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Teléfono</label>
                 <div className="flex items-center bg-zinc-800/30 border border-zinc-700/30 focus-within:border-amber-500/50 rounded-xl overflow-hidden transition-all">
-                  <div className="bg-zinc-800 px-3 py-2.5 border-r border-zinc-700/30 text-zinc-600 font-bold text-[10px]">
+                  <div className="bg-zinc-800 px-3 py-3 border-r border-zinc-700/30 text-zinc-600 font-bold text-[10px]">
                     +54
                   </div>
                   <input 
@@ -303,7 +303,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     onChange={(e) => setPhoneSuffix(e.target.value.replace(/\D/g, ''))} 
                     type="tel" 
                     placeholder="2634XXXXXX" 
-                    className={`flex-1 min-w-0 bg-transparent py-2.5 px-3 outline-none text-white font-bold placeholder:text-zinc-700 text-xs border-l ${phoneSuffix.length > 0 && !isValidPhone ? 'border-amber-500/30 text-amber-200' : 'border-zinc-700/50'}`}
+                    className={`flex-1 min-w-0 bg-transparent py-3 px-3 outline-none text-white font-bold placeholder:text-zinc-700 text-xs border-l ${phoneSuffix.length > 0 && !isValidPhone ? 'border-amber-500/30 text-amber-200' : 'border-zinc-700/50'}`}
                   />
                 </div>
               </div>
@@ -319,7 +319,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   onChange={(e) => handleDateChange(e.target.value)}
                   min={new Date().toLocaleDateString('en-CA')}
                   max={new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')}
-                  className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-2.5 px-4 outline-none text-white font-bold transition-all [color-scheme:dark] relative [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10 text-xs" 
+                  className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-3 px-4 outline-none text-white font-bold transition-all [color-scheme:dark] relative [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10 text-xs" 
                 />
                 <CalendarIcon className="absolute right-4 w-4 h-4 text-amber-500 z-0" />
               </div>

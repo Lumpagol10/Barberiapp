@@ -89,7 +89,7 @@ export default function ClientesTab({
                       </div>
                     </div>
                     <div className="px-3 py-1 bg-emerald-600/10 text-emerald-500 rounded-lg font-black text-[10px]">
-                      {cliente.total_cortes} CORTES
+                      {cliente.total_cortes} {cliente.total_cortes === 1 ? 'CORTE' : 'CORTES'}
                     </div>
                   </div>
                   <div className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest flex items-center gap-2">
@@ -137,7 +137,7 @@ export default function ClientesTab({
                     </td>
                     <td className="px-8 py-6 text-center">
                       <span className="font-black text-white text-lg px-4 py-2 bg-zinc-800/50 rounded-xl group-hover:bg-emerald-600/10 group-hover:text-emerald-500 transition-all">
-                        {cliente.total_cortes} CORTES
+                        {cliente.total_cortes} {cliente.total_cortes === 1 ? 'CORTE' : 'CORTES'}
                       </span>
                     </td>
                     <td className="px-8 py-6 text-right">
