@@ -384,14 +384,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans max-w-full overflow-x-hidden">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#050505] text-zinc-100 flex lg:pb-0 pb-12 font-sans max-w-full overflow-x-hidden">
       <Sidebar 
         activeTab={activeTab} setActiveTab={setActiveTab} 
         isMobileSidebarOpen={isMobileSidebarOpen} setIsMobileSidebarOpen={setIsMobileSidebarOpen}
         config={config} userEmail={user?.email} setShowLogoutModal={setShowLogoutModal}
       />
 
-      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-screen max-w-full overflow-x-hidden">
+      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-screen lg:h-screen lg:overflow-y-auto max-w-full overflow-x-hidden custom-scrollbar">
         {/* BRANDING LIBERADO (SIN CAJAS, SIN FONDOS) */}
         {config && (
           <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full mb-10 bg-transparent border-none p-0 shadow-none">
