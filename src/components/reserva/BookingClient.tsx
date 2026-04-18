@@ -192,7 +192,11 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
           <div className="w-24 h-24 md:w-32 md:h-32 bg-zinc-900 rounded-full border-4 border-amber-600/20 p-2 shadow-2xl overflow-hidden flex items-center justify-center relative group">
             <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden relative">
               {barberConfig.logo_url ? (
-                <Image src={barberConfig.logo_url} alt="Logo" fill className="object-cover" sizes="(max-width: 768px) 96px, 128px" />
+                <img 
+                  src={barberConfig.logo_url} 
+                  alt="Logo" 
+                  className="w-full h-full object-cover rounded-full" 
+                />
               ) : (
                 <Store className="w-10 h-10 md:w-14 md:h-14 text-zinc-800" />
               )}
@@ -264,8 +268,19 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   onChange={(e) => handleDateChange(e.target.value)}
                   min={new Date().toLocaleDateString('en-CA')}
                   max={new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')}
-                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark]" 
+                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 pr-12 outline-none text-white font-bold transition-all [color-scheme:dark]" 
                 />
+                <style jsx>{`
+                  input[type="date"]::-webkit-calendar-picker-indicator {
+                    cursor: pointer;
+                    filter: invert(1);
+                    opacity: 0.6;
+                    transition: opacity 0.2s;
+                  }
+                  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+                    opacity: 1;
+                  }
+                `}</style>
               </div>
             </div>
 
