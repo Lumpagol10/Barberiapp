@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Calendar as CalendarIcon, Clock, User, Phone, CheckCircle2, AlertTriangle, Globe, MessageCircle, Store } from 'lucide-react'
 import { toast } from 'sonner'
@@ -22,11 +22,38 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
   const [phoneSuffix, setPhoneSuffix] = useState('')
   const [fecha, setFecha] = useState('')
   const [horaSeleccionada, setHoraSeleccionada] = useState('')
-  
+
   // Barber/Tenant States
   const [barberConfig] = useState<ConfiguracionBarberia>(initialBarberConfig)
-  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+
+  // REALTIME DISPONIBILIDAD: Suscripción a cambios en turnos
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!fecha || !barberConfig?.user_id) return
+
+    const channel = supabase
+      .channel(`realtime_availability_${fecha}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'turnos',
+          filter: `barbero_id=eq.${barberConfig.user_id}`
+        },
+        () => {
+          // Si algo cambia en los turnos de este barbero (especialmente en esta fecha), refrescamos
+          fetchBookedTurns(fecha)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [fecha, barberConfig?.user_id])
   const [diaCerrado, setDiaCerrado] = useState(false)
 
   const getFormattedDate = (dateStr: string) => {
@@ -269,7 +296,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   max={new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')}
                   className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark] relative [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10" 
                 />
-                <CalendarIcon className="absolute right-3 w-5 h-5 text-amber-500 z-0" />
+                <CalendarIcon className="absolute right-4 w-5 h-5 text-amber-500 z-0" />
               </div>
             </div>
 

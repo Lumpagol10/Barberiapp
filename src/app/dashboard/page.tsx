@@ -271,6 +271,33 @@ export default function Dashboard() {
     }
   }, [user?.id, fetchData, fetchFinances, fetchClients])
 
+  // REALTIME PARA EL BARBERO: Suscripción a nuevos turnos
+  useEffect(() => {
+    if (!user?.id) return
+
+    const channel = supabase
+      .channel('realtime_turns_dashboard')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'turnos',
+          filter: `barbero_id=eq.${user.id}`
+        },
+        () => {
+          // Si algo cambia en los turnos del barbero, refrescamos la lista del día seleccionado y finanzas
+          fetchTurnsForDate(user.id, viewDate)
+          fetchFinances(user.id)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id, viewDate, fetchTurnsForDate, fetchFinances])
+
   const handleUpdateConfig = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
