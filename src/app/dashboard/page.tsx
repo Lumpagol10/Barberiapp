@@ -359,24 +359,7 @@ export default function Dashboard() {
     if (config?.nombre_barberia) document.title = `${config.nombre_barberia.toUpperCase()} | PANEL`
   }, [config?.nombre_barberia])
 
-  if (checkingAuth || (loading && !config)) {
-    return (
-      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-4">
-        <div className="relative">
-          <div className="w-24 h-24 border-4 border-amber-500/10 border-t-amber-500 rounded-full animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Scissors className="w-8 h-8 text-amber-500 animate-pulse rotate-90" />
-          </div>
-        </div>
-        <div className="mt-8 flex flex-col items-center gap-2">
-           <h2 className="text-xl font-black italic uppercase tracking-tighter text-white animate-pulse">Cargando Panel</h2>
-           <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">
-             {checkingAuth ? 'Verificando sesión...' : 'Sincronizando con la barbería...'}
-           </p>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans max-w-full overflow-x-hidden">
@@ -401,16 +384,6 @@ export default function Dashboard() {
             <ProgramarTab 
               planningSchedule={planningSchedule} setPlanningSchedule={setPlanningSchedule}
               onUpdatePlanning={handleUpdatePlanning}
-              addPlanningDay={() => {
-                const nextDate = new Date(planningSchedule[planningSchedule.length - 1].fecha + 'T12:00:00')
-                nextDate.setDate(nextDate.getDate() + 1)
-                const fechaStr = nextDate.toLocaleDateString('en-CA')
-                setPlanningSchedule(prev => [
-                  ...prev, 
-                  { fecha: fechaStr, user_id: user?.id || '', activo: false, slots: [], isNew: true }
-                ])
-                toast.info(`📅 Día ${nextDate.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} agregado`)
-              }}
               copyRoutineToPlanning={async (idx) => {
                   const { data: scheduleData } = await supabase.from('horarios_barberia').select('*').eq('user_id', user?.id).order('dia_semana', { ascending: true })
                   const dayObj = new Date(planningSchedule[idx].fecha + 'T12:00:00')

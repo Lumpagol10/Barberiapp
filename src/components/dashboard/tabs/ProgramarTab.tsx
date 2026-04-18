@@ -13,7 +13,6 @@ interface ProgramarTabProps {
   addPlanningSlot: (idx: number) => void
   removePlanningSlot: (dayIdx: number, slotIdx: number) => void
   updatePlanningSlot: (dayIdx: number, slotIdx: number, newValue: string) => void
-  addPlanningDay: () => void
   saving: boolean
   config: ConfiguracionBarberia | null
   onOpenSidebar: () => void
@@ -27,7 +26,6 @@ export default function ProgramarTab({
   addPlanningSlot,
   removePlanningSlot,
   updatePlanningSlot,
-  addPlanningDay,
   saving,
   config,
   onOpenSidebar
@@ -138,21 +136,7 @@ export default function ProgramarTab({
           </div>
         ))}
 
-        {/* Botón Maestro para agregar día */}
-        <button 
-          type="button"
-          onClick={addPlanningDay}
-          className="w-full flex items-center justify-center gap-4 py-8 border-2 border-dashed border-zinc-800 hover:border-amber-500/50 hover:bg-amber-500/5 rounded-[2.5rem] transition-all text-zinc-500 hover:text-amber-500 group"
-        >
-          <div className="p-3 bg-zinc-800 group-hover:bg-amber-500 rounded-xl transition-colors">
-            <Calendar className="w-6 h-6 group-hover:text-black" />
-          </div>
-          <div className="text-left">
-            <p className="text-lg font-black uppercase tracking-tight italic">Agregar próximo día a la agenda</p>
-            <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">Extendé tu planificación semanal</p>
-          </div>
-        </button>
-      </div>
+    </div>
 
       <div className="flex justify-end sticky bottom-6 z-50">
         <button 
