@@ -28,6 +28,7 @@ import ConfigTab from '@/components/dashboard/tabs/ConfigTab'
 import CheckoutModal from '@/components/dashboard/modals/CheckoutModal'
 import ShareModal from '@/components/dashboard/modals/ShareModal'
 import CropperModal from '@/components/dashboard/modals/CropperModal'
+import ManualTurnoModal from '@/components/dashboard/modals/ManualTurnoModal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function Dashboard() {
@@ -45,6 +46,7 @@ export default function Dashboard() {
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showCropper, setShowCropper] = useState(false)
+  const [showManualModal, setShowManualModal] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   const [viewDate, setViewDate] = useState(() => {
@@ -345,6 +347,41 @@ export default function Dashboard() {
     router.push('/admin/auth')
     toast.success('Sesión cerrada')
   }
+  
+  const handleCreateManualTurn = async (data: { nombre: string; servicio: string; precio: number; hora: string }) => {
+    if (!user) return
+    setSaving(true)
+    try {
+      const { error } = await supabase.from('turnos').insert([{
+        barbero_id: user.id,
+        cliente_nombre: data.nombre.toUpperCase(),
+        cliente_telefono: 'MANUAL', 
+        fecha: viewDate,
+        hora: data.hora,
+        precio: data.precio,
+        servicio: data.servicio,
+        estado: 'completado',
+        es_manual: true
+      }])
+
+      if (error) throw error
+      
+      toast.success('✅ Turno manual registrado')
+      setShowManualModal(false)
+      
+      // Atomic Refresh
+      await Promise.all([
+        fetchData(user.id),
+        fetchFinances(user.id),
+        fetchTurnsForDate(user.id, viewDate)
+      ])
+    } catch (err: unknown) {
+      const error = err as { message?: string }
+      toast.error(`Error: ${error.message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const handleShareWhatsApp = () => {
     const shareUrl = `${window.location.origin}/reserva/${config?.slug}`
@@ -422,6 +459,7 @@ export default function Dashboard() {
               onFinishTurn={(id) => { setSelectedTurnId(id); setShowCheckoutModal(true); }}
               config={config} onShare={() => setShowShareModal(true)}
               onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+              onAddManualTurn={() => setShowManualModal(true)}
               fetchingTurns={fetchingTurns}
             />
           )}
@@ -493,6 +531,11 @@ export default function Dashboard() {
       <CropperModal 
         isOpen={showCropper} image={tempImage || ''} onClose={() => setShowCropper(false)}
         onSave={handleSaveCrop} saving={saving}
+      />
+      
+      <ManualTurnoModal 
+        isOpen={showManualModal} onClose={() => setShowManualModal(false)}
+        onConfirm={handleCreateManualTurn} saving={saving}
       />
 
       <ConfirmModal 

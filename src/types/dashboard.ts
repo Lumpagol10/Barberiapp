@@ -9,6 +9,8 @@ export interface Turno {
   hora: string; // HH:mm:ss
   precio: number | null;
   estado: BookingStatus;
+  es_manual?: boolean;
+  servicio?: string;
   created_at?: string;
 }
 

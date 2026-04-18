@@ -1,6 +1,6 @@
 'use client'
 
-import { Phone, CheckCircle, Clock, Calendar, MessageCircle } from 'lucide-react'
+import { Phone, CheckCircle, Clock, Calendar, MessageCircle, Plus, Scissors } from 'lucide-react'
 import { Turno, ConfiguracionBarberia } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
 
@@ -12,6 +12,7 @@ interface AgendaTabProps {
   config: ConfiguracionBarberia | null
   onShare: () => void
   onOpenSidebar: () => void
+  onAddManualTurn: () => void
   fetchingTurns?: boolean
 }
 
@@ -23,6 +24,7 @@ export default function AgendaTab({
   config,
   onShare,
   onOpenSidebar,
+  onAddManualTurn,
   fetchingTurns = false
 }: AgendaTabProps) {
   
@@ -81,6 +83,14 @@ export default function AgendaTab({
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
               <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest hidden xs:inline">ACTUALIZADO</span>
             </div>
+            {isToday && (
+              <button 
+                onClick={onAddManualTurn}
+                className="w-full sm:w-auto px-6 py-3.5 bg-orange-600 hover:bg-orange-500 text-black font-black text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-orange-900/20 active:scale-95 flex items-center justify-center gap-2 border border-orange-500/20"
+              >
+                <Plus className="w-3.5 h-3.5" /> AGREGAR TURNO MANUAL
+              </button>
+            )}
           </div>
         </div>
 
@@ -103,6 +113,11 @@ export default function AgendaTab({
                       <div className="text-[10px] text-zinc-500 font-bold flex items-center gap-2 mt-1 uppercase">
                         <Phone className="w-3 h-3" /> {turn.cliente_telefono}
                       </div>
+                      {turn.es_manual && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-600/10 text-orange-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
+                          <Scissors className="w-2.5 h-2.5" /> MANUAL
+                        </div>
+                      )}
                     </div>
                     <a 
                       href={`https://wa.me/${turn.cliente_telefono.replace('+', '')}`}
@@ -156,6 +171,11 @@ export default function AgendaTab({
                           <div className="text-xs text-zinc-500 font-bold flex items-center gap-2">
                             <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
                           </div>
+                          {turn.es_manual && (
+                            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-orange-600/10 text-orange-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
+                              <Scissors className="w-2.5 h-2.5" /> MARCACIÓN MANUAL
+                            </div>
+                          )}
                         </div>
                         <a 
                           href={`https://wa.me/${turn.cliente_telefono.replace('+', '')}`}
