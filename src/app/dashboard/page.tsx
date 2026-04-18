@@ -337,7 +337,7 @@ export default function Dashboard() {
   }, [config?.nombre_barberia])
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans max-w-full overflow-x-hidden">
       <Sidebar 
         activeTab={activeTab} setActiveTab={setActiveTab} 
         isMobileSidebarOpen={isMobileSidebarOpen} setIsMobileSidebarOpen={setIsMobileSidebarOpen}

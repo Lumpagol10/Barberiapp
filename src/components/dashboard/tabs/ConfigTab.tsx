@@ -55,9 +55,9 @@ export default function ConfigTab({
         icon={<Settings className="w-6 h-6" />}
       />
 
-      <form onSubmit={onUpdateConfig} className="space-y-8 sm:space-y-10">
-        {/* Branding y Logo */}
-        <div className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-8 lg:p-12 shadow-2xl relative overflow-hidden">
+      <form onSubmit={onUpdateConfig} className="space-y-12 sm:space-y-16">
+        {/* Branding y Logo - Flat */}
+        <div className="py-8 lg:py-12 relative overflow-hidden border-b border-zinc-800/50">
           <div className="flex flex-col lg:flex-row gap-12 items-center lg:items-start relative z-10">
             {/* Uploader Circular Pro */}
             <div className="relative group shrink-0">
@@ -109,7 +109,7 @@ export default function ConfigTab({
                    <Globe className="w-3 h-3" /> Tu Link Profesional de Reservas
                  </label>
                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1 bg-zinc-950/80 border border-zinc-800 rounded-xl px-6 py-5 text-emerald-500 font-black text-sm md:text-base truncate shadow-inner tracking-tighter">
+                    <div className="flex-1 rounded-xl py-5 text-emerald-500 font-black text-sm md:text-base truncate tracking-tighter">
                        {reservationUrl}
                     </div>
                     <div className="flex gap-3">
@@ -139,8 +139,8 @@ export default function ConfigTab({
           </div>
         </div>
 
-        {/* Sección Contacto */}
-        <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl">
+        {/* Sección Contacto - Flat */}
+        <div className="py-8 sm:py-12 space-y-6 sm:space-y-8 border-b border-zinc-800/50">
           <div className="flex items-center gap-4 text-emerald-500">
             <div className="p-2.5 sm:p-3 bg-emerald-600/10 rounded-xl sm:rounded-2xl"><Phone className="w-5 h-5 sm:w-6 sm:h-6" /></div>
             <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Canal de Ventas</h3>
@@ -172,8 +172,8 @@ export default function ConfigTab({
           </div>
         </div>
 
-        {/* Sección Cuenta y Seguridad */}
-        <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl">
+        {/* Sección Cuenta y Seguridad - Flat */}
+        <div className="py-8 sm:py-12 space-y-6 sm:space-y-8">
           <div className="flex items-center gap-4 text-zinc-400">
             <div className="p-2.5 sm:p-3 bg-zinc-800 rounded-xl sm:rounded-2xl"><UserIcon className="w-5 h-5 sm:w-6 sm:h-6" /></div>
             <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Cuenta y Seguridad</h3>

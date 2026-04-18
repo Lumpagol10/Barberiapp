@@ -38,9 +38,9 @@ export default function FinanzasTab({
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-10 lg:mb-12">
-        {/* Total Diario */}
-        <div className="bg-zinc-900/50 border border-emerald-500/20 p-5 sm:p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
-          <div className="flex flex-row items-start justify-between gap-4 mb-4 sm:mb-6">
+        {/* Total Diario - Flat */}
+        <div className="py-4 sm:py-6 group transition-all">
+          <div className="flex flex-row items-start justify-between gap-4 mb-2">
             <div className="flex-1">
               <label className={`text-[8.5px] sm:text-[10px] font-black uppercase tracking-widest mb-1.5 block transition-colors ${historyFilterMode === 'day' ? 'text-emerald-500' : 'text-zinc-600'}`}>
                 Monto Diario {historyFilterMode === 'day' && '• ACTIVO'}
@@ -68,9 +68,9 @@ export default function FinanzasTab({
           </div>
         </div>
 
-        {/* Total Mensual */}
-        <div className="bg-zinc-900/50 border border-amber-500/20 p-5 sm:p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-amber-950/10 backdrop-blur-xl group hover:border-amber-500/40 transition-all">
-          <div className="flex flex-row items-start justify-between gap-4 mb-4 sm:mb-6">
+        {/* Total Mensual - Flat */}
+        <div className="py-4 sm:py-6 group transition-all">
+          <div className="flex flex-row items-start justify-between gap-4 mb-2">
             <div className="flex-1">
               <label className={`text-[8.5px] sm:text-[10px] font-black uppercase tracking-widest mb-1.5 block transition-colors ${historyFilterMode === 'month' ? 'text-amber-500' : 'text-zinc-600'}`}>
                 Cierre Mensual {historyFilterMode === 'month' && '• ACTIVO'}
@@ -98,9 +98,9 @@ export default function FinanzasTab({
           </div>
         </div>
 
-        {/* Total Anual */}
-        <div className="bg-zinc-900/50 border border-blue-500/20 p-5 sm:p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-blue-950/10 backdrop-blur-xl group hover:border-blue-500/40 transition-all">
-          <div className="flex flex-row items-start justify-between gap-4 mb-4 sm:mb-6">
+        {/* Total Anual - Flat */}
+        <div className="py-4 sm:py-6 group transition-all">
+          <div className="flex flex-row items-start justify-between gap-4 mb-2">
             <div className="flex-1">
               <p className="text-blue-500 text-[8.5px] sm:text-[10px] font-black uppercase tracking-widest mb-1.5">Balance Anual</p>
               <span className="text-zinc-600 text-xs font-bold uppercase tracking-widest block py-1 sm:py-0">Año {new Date().getFullYear()}</span>
@@ -116,8 +116,8 @@ export default function FinanzasTab({
         </div>
       </div>
 
-      <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
-        <div className="p-6 sm:p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-900/20">
+      <div className="overflow-hidden border-t border-zinc-800/50 mt-8">
+        <div className="py-8 flex justify-between items-center transition-all">
           <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Cronograma de Ingresos</h3>
           <div className="p-2 bg-emerald-600/10 rounded-lg text-emerald-500">
             <DollarSign className="w-4 h-4" />
@@ -127,9 +127,9 @@ export default function FinanzasTab({
         {/* Vista Mobile: Cards */}
         <div className="block md:hidden">
           {financesData.history.length > 0 ? (
-            <div className="divide-y divide-zinc-800/30">
+            <div className="divide-y divide-zinc-800">
               {financesData.history.map((item) => (
-                <div key={item.id} className="p-6 flex justify-between items-center active:bg-white/[0.02] transition-colors">
+                <div key={item.id} className="py-6 flex justify-between items-center active:bg-white/[0.01] transition-colors border-b border-zinc-800/50">
                   <div>
                     <div className="font-black text-zinc-100 uppercase tracking-tight">{item.cliente_nombre}</div>
                     <div className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">

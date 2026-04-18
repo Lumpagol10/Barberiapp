@@ -28,7 +28,7 @@ export default function DashboardHeader({
   icon
 }: DashboardHeaderProps) {
   return (
-    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8 mb-6 md:mb-12 lg:mb-16 w-full">
+    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8 mb-6 md:mb-12 lg:mb-16 w-full max-w-full overflow-x-hidden">
       {/* Contenedor Principal Adaptativo */}
       <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
         
@@ -51,7 +51,7 @@ export default function DashboardHeader({
               </div>
             )}
           </div>
-          <span className="text-xl md:text-3xl font-bold tracking-tighter uppercase italic text-white truncate max-w-[220px] md:max-w-none">
+          <span className="text-xl md:text-3xl font-bold tracking-tighter uppercase italic text-white truncate max-w-[60vw] md:max-w-none">
             {config?.nombre_barberia}
           </span>
         </div>
@@ -81,10 +81,10 @@ export default function DashboardHeader({
         </div>
       </div>
 
-      {/* FILA 3: PENDIENTES (Stats) - Compacto y centrado */}
+      {/* FILA 3: PENDIENTES (Stats) - Flat Design */}
       {showStats && (
         <div className="flex justify-center w-full md:w-auto">
-          <div className="bg-zinc-900 border border-zinc-800 p-2.5 sm:p-5 rounded-2xl sm:rounded-3xl min-w-[130px] shadow-xl flex flex-col items-center md:items-start group transition-all">
+          <div className="p-2 sm:p-0 min-w-[130px] flex flex-col items-center md:items-start group transition-all text-center md:text-left">
             <p className="text-zinc-500 text-[8px] md:text-[10px] font-black uppercase tracking-widest mb-0.5 md:mb-1">{statsLabel}</p>
             <div className="flex items-end gap-1.5 md:gap-2">
               <span className="text-xl md:text-4xl font-black text-amber-500 leading-none">{statsValue}</span>
