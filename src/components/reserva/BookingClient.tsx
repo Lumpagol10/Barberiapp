@@ -240,11 +240,11 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
       <link rel="preconnect" href="https://maps.gstatic.com" />
       <link rel="preconnect" href="https://www.google.com" />
       
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-900/20 rounded-full blur-[120px]" />
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-900/10 rounded-full blur-[120px]" />
       
-      <header className="mb-10 text-center relative z-10 px-4">
-        <div className="flex items-center justify-center mb-6">
-          <div className="w-24 h-24 md:w-32 md:h-32 bg-zinc-900 rounded-full border-4 border-amber-600/20 p-2 shadow-2xl overflow-hidden flex items-center justify-center relative group">
+      <header className="mb-2 text-center relative z-10 px-4 pt-0">
+        <div className="flex items-center justify-center mb-2">
+          <div className="w-10 h-10 md:w-16 md:h-16 bg-zinc-900 rounded-full border border-amber-600/20 p-1 shadow-2xl overflow-hidden flex items-center justify-center relative group">
             <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden relative">
               {barberConfig.logo_url ? (
                 <img 
@@ -253,17 +253,17 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   className="w-full h-full object-cover rounded-full" 
                 />
               ) : (
-                <Store className="w-10 h-10 md:w-14 md:h-14 text-zinc-800" />
+                <Store className="w-5 h-5 md:w-8 md:h-8 text-zinc-800" />
               )}
             </div>
           </div>
         </div>
-        <h1 className="text-3xl md:text-6xl font-black tracking-tighter uppercase mb-4 break-words px-2">
+        <h1 className="text-base md:text-2xl font-black tracking-tighter uppercase mb-1 break-words px-2">
           {barberConfig.nombre_barberia}
         </h1>
-        <div className="flex flex-col items-center gap-6">
-          <p className="text-zinc-500 tracking-wider md:tracking-widest text-[10px] md:text-xs font-bold uppercase leading-relaxed max-w-[280px] md:max-w-none">
-            RESERVAS ONLINE | POTENCIADO POR BARBERIAPP
+        <div className="flex flex-col items-center gap-1">
+          <p className="text-zinc-600 tracking-widest text-[7px] md:text-[8px] font-bold uppercase leading-relaxed">
+            RESERVAS ONLINE | BARBERIAPP
           </p>
           
           {barberConfig.google_maps_link && (
@@ -271,30 +271,30 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
               href={barberConfig.google_maps_link} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="mt-4 flex items-center gap-3 px-10 py-4 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-400 hover:text-amber-500 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 shadow-2xl active:scale-95"
+              className="flex items-center gap-2 px-6 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-500 hover:text-amber-500 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-200 active:scale-95"
             >
-              <Globe className="w-4 h-4" />
-              CÓMO LLEGAR
+              <Globe className="w-3 h-3" />
+              LLEGAR
             </a>
           )}
         </div>
       </header>
 
-      <main className="w-full max-w-2xl relative z-10 px-2 sm:px-0">
-        <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-5 md:p-10 rounded-[2.5rem] shadow-2xl overflow-hidden">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid md:grid-cols-2 gap-5 md:gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400 ml-1">Tu Nombre</label>
+      <main className="w-full max-w-xl relative z-10 px-2 sm:px-0">
+        <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-4 md:p-6 rounded-[2rem] shadow-2xl overflow-hidden">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Nombre</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                  <input required value={nombre} onChange={(e) => setNombre(e.target.value)} type="text" placeholder="Juan Pérez" className="w-full bg-zinc-800/50 border border-zinc-700/50 focus:border-amber-500/50 rounded-2xl py-4 pl-12 pr-4 outline-none text-white transition-all text-sm md:text-base" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+                  <input required value={nombre} onChange={(e) => setNombre(e.target.value)} type="text" placeholder="Juan Pérez" className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-2.5 pl-10 pr-3 outline-none text-white transition-all text-xs" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400 ml-1">Tu Teléfono</label>
-                <div className="flex items-center bg-zinc-800/50 border border-zinc-700/50 focus-within:border-amber-500/50 rounded-2xl overflow-hidden transition-all">
-                  <div className="bg-zinc-800 px-4 md:px-5 py-4 border-r border-zinc-700/50 text-zinc-500 font-black text-xs md:text-sm">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Teléfono</label>
+                <div className="flex items-center bg-zinc-800/30 border border-zinc-700/30 focus-within:border-amber-500/50 rounded-xl overflow-hidden transition-all">
+                  <div className="bg-zinc-800 px-3 py-2.5 border-r border-zinc-700/30 text-zinc-600 font-bold text-[10px]">
                     +54
                   </div>
                   <input 
@@ -303,17 +303,14 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     onChange={(e) => setPhoneSuffix(e.target.value.replace(/\D/g, ''))} 
                     type="tel" 
                     placeholder="2634XXXXXX" 
-                    className={`flex-1 min-w-0 bg-transparent py-4 px-4 md:px-6 outline-none text-white font-bold placeholder:text-zinc-700 text-sm md:text-base border-l ${phoneSuffix.length > 0 && !isValidPhone ? 'border-amber-500/30 text-amber-200' : 'border-zinc-700/50'}`}
+                    className={`flex-1 min-w-0 bg-transparent py-2.5 px-3 outline-none text-white font-bold placeholder:text-zinc-700 text-xs border-l ${phoneSuffix.length > 0 && !isValidPhone ? 'border-amber-500/30 text-amber-200' : 'border-zinc-700/50'}`}
                   />
                 </div>
-                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider ml-1 mt-1">
-                  Ej: 2634XXXXXX - 261XXXXXXX
-                </p>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-400 ml-1">Fecha</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Fecha de Reserva</label>
               <div className="relative flex items-center">
                 <input 
                   type="date" 
@@ -322,9 +319,9 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   onChange={(e) => handleDateChange(e.target.value)}
                   min={new Date().toLocaleDateString('en-CA')}
                   max={new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')}
-                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500/50 rounded-2xl py-5 px-6 outline-none text-white font-bold transition-all [color-scheme:dark] relative [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10" 
+                  className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-2.5 px-4 outline-none text-white font-bold transition-all [color-scheme:dark] relative [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10 text-xs" 
                 />
-                <CalendarIcon className="absolute right-4 w-5 h-5 text-amber-500 z-0" />
+                <CalendarIcon className="absolute right-4 w-4 h-4 text-amber-500 z-0" />
               </div>
             </div>
 
@@ -336,33 +333,33 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                 </label>
                 
                 {isFetchingAvailability ? (
-                  <div className="py-20 text-center animate-in fade-in zoom-in-95 duration-700">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
-                      <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] animate-pulse">
-                        Consultando disponibilidad...
+                  <div className="py-12 text-center animate-in fade-in zoom-in-95 duration-700">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-1 h-1 bg-amber-500 rounded-full animate-ping" />
+                      <p className="text-zinc-600 font-bold uppercase tracking-[0.3em] text-[8px] animate-pulse text-center">
+                        Consultando...
                       </p>
                     </div>
                   </div>
                 ) : diaCerrado ? (
-                  <div className="bg-red-600/10 border border-red-900/40 p-12 rounded-[2.5rem] text-center animate-in fade-in duration-500">
-                    <div className="w-20 h-20 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-8">
-                      <AlertTriangle className="w-10 h-10 text-red-500" />
+                  <div className="bg-red-600/5 border border-red-900/40 p-6 rounded-2xl text-center animate-in fade-in duration-500">
+                    <div className="w-12 h-12 bg-red-900/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <AlertTriangle className="w-6 h-6 text-red-500" />
                     </div>
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic mb-4">Agenda No Programada</h3>
-                    <p className="text-zinc-500 font-medium italic max-w-xs mx-auto">El barbero aún no ha confirmado su disponibilidad para este día. Por favor, intentá con otra fecha o consultale por WhatsApp.</p>
+                    <h3 className="text-sm font-black uppercase tracking-tighter italic mb-2">Agenda No Programada</h3>
+                    <p className="text-zinc-600 text-[10px] font-medium leading-tight italic max-w-xs mx-auto">No hay turnos disponibles para esta fecha aún.</p>
                   </div>
                 ) : availableSlots.length === 0 ? (
-                  <div className="py-20 text-center animate-in fade-in zoom-in-95 duration-700">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
-                      <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] animate-pulse">
-                        No hay turnos para esta fecha
+                  <div className="py-12 text-center animate-in fade-in zoom-in-95 duration-700">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-1 h-1 bg-amber-500 rounded-full animate-ping" />
+                      <p className="text-zinc-600 font-bold uppercase tracking-[0.3em] text-[8px] animate-pulse">
+                        No hay turnos
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar border-t border-zinc-800/30 pt-4">
+                  <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar border-t border-zinc-800/30 pt-3">
                     {availableSlots
                       .filter(slot => !bookedSlots.includes(slot))
                       .map((slot) => {
@@ -372,7 +369,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                             key={slot} 
                             type="button" 
                             onClick={() => setHoraSeleccionada(slot)} 
-                            className={`py-4 rounded-xl text-center text-xs md:text-sm font-bold transition-all border ${isSelected ? 'bg-amber-600 border-amber-500 text-black shadow-lg shadow-amber-900/40' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-300 hover:border-amber-500/50 hover:bg-zinc-800'}`}
+                            className={`py-2 px-1 rounded-lg text-center text-[10px] font-bold transition-all border ${isSelected ? 'bg-amber-600 border-amber-500 text-black' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:border-amber-500/50'}`}
                           >
                             {slot}
                           </button>
@@ -384,7 +381,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
               </div>
             )}
 
-            <button disabled={loading || !horaSeleccionada || !isValidPhone} type="submit" className="w-full py-5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-black text-lg rounded-2xl transition-all shadow-xl shadow-amber-900/20 disabled:opacity-30 disabled:grayscale flex items-center justify-center gap-2">
+            <button disabled={loading || !horaSeleccionada || !isValidPhone} type="submit" className="w-full py-3.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-black text-sm rounded-xl transition-all shadow-lg disabled:opacity-30 disabled:grayscale flex items-center justify-center gap-2 mt-2">
               {loading ? <div className="w-6 h-6 border-4 border-black/30 border-t-black rounded-full animate-spin" /> : 'CONFIRMAR RESERVA'}
             </button>
           </form>
