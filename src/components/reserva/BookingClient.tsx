@@ -125,6 +125,13 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
     e.preventDefault()
     if (!horaSeleccionada || !barberConfig) return
 
+    // VALIDACIÓN ESTRICTA DE TELÉFONO (10 dígitos, 261 o 2634)
+    const phoneRegex = /^(261\d{7}|2634\d{6})$/
+    if (!phoneRegex.test(phoneSuffix)) {
+      toast.error('Formato inválido. Usar 261 o 2634 con 10 dígitos totales')
+      return
+    }
+
     setLoading(true)
     
     // NORMALIZACIÓN DE HORA PARA DB (HH:mm:00)
@@ -176,10 +183,15 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
 
   const getWhatsAppLink = () => {
     if (!barberConfig?.telefono_barbero) return null
+    
+    // Normalización del número del barbero para evitar duplicaciones de 54
+    const cleanNumber = barberConfig.telefono_barbero.replace(/\D/g, '')
+    const finalNumber = cleanNumber.startsWith('54') ? cleanNumber : `54${cleanNumber}`
+
     const mensaje = encodeURIComponent(
       `Hola! Soy ${nombre}, acabo de reservar un turno para el ${fecha} a las ${horaSeleccionada}hs desde la web. ¿Me lo confirmas?`
     )
-    return `https://wa.me/${barberConfig.telefono_barbero}?text=${mensaje}`
+    return `https://wa.me/${finalNumber}?text=${mensaje}`
   }
 
   if (submitted) {
