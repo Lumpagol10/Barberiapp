@@ -228,10 +228,12 @@ export default function Dashboard() {
       console.error('Error fetching data:', error)
       toast.error('Error al sincronizar datos. Intente recargar.')
     } finally {
-      setLoading(false)
+      // SOLO liberamos el cargador si config ya existe (ya sea de cache o de red)
+      // Pero para Atomic Loading real, esperamos un leve delay para asegurar render estable
+      setTimeout(() => setLoading(false), 300)
       window.scrollTo(0, 0)
     }
-  }, [router])
+  }, [router, fetchFinances, fetchTurnsForDate, viewDate])
 
   // Efecto para cambios de fecha (optimizado: solo carga turnos)
   useEffect(() => {
@@ -374,6 +376,30 @@ export default function Dashboard() {
     if (config?.nombre_barberia) document.title = `${config.nombre_barberia.toUpperCase()} | PANEL`
   }, [config?.nombre_barberia])
 
+  // ==========================================
+  // ATOMIC LOADING MASK (Unified SplashScreen)
+  // ==========================================
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-[#050505] flex flex-col items-center justify-center z-[9999] animate-in fade-in duration-500">
+        <div className="relative mb-8">
+          <div className="absolute inset-0 bg-amber-500/10 blur-[100px] rounded-full animate-pulse" />
+          <div className="relative p-6 border-2 border-amber-500/10 rounded-[3rem] backdrop-blur-3xl">
+             <Scissors className="w-16 h-16 text-amber-500 animate-bounce" />
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+           <h1 className="text-xl font-black italic uppercase tracking-[0.6em] text-white animate-pulse">
+             Barberiapp
+           </h1>
+           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-800 italic">
+             Professional Platform
+           </p>
+        </div>
+      </div>
+    )
+  }
+
 
 
   return (
@@ -385,24 +411,24 @@ export default function Dashboard() {
       />
 
       <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-screen max-w-full overflow-x-hidden">
-        {/* BRANDING INDEPENDIENTE (GLOBAL) */}
+        {/* BRANDING LIBERADO (SIN CAJAS, SIN FONDOS) */}
         {config && (
-          <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full mb-10 animate-in fade-in duration-700">
-            <div className="w-14 h-14 md:w-20 md:h-20 shrink-0 flex items-center justify-center overflow-hidden relative">
+          <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full mb-10 bg-transparent border-none p-0 shadow-none">
+            <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 flex items-center justify-center overflow-hidden relative p-0 bg-transparent">
               {config.logo_url ? (
                 <img 
                   src={config.logo_url} 
                   alt="Logo" 
-                  className="w-full h-full object-cover rounded-xl"
+                  className="w-full h-full object-cover rounded-2xl"
                   loading="eager"
                 />
               ) : (
-                <div className="w-full h-full bg-zinc-950 border border-zinc-900 flex items-center justify-center rounded-xl">
-                  <Scissors className="w-5 h-5 text-zinc-800" />
+                <div className="w-full h-full flex items-center justify-center rounded-2xl">
+                  <Scissors className="w-6 h-6 text-zinc-800" />
                 </div>
               )}
             </div>
-            <span className="text-xl md:text-3xl font-black tracking-tighter uppercase italic text-white truncate max-w-[60vw]">
+            <span className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic text-white truncate max-w-[65vw] drop-shadow-2xl">
               {config.nombre_barberia}
             </span>
           </div>

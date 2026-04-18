@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, DollarSign, Settings, Clock, LogOut, User as UserIcon, Store, X } from 'lucide-react'
+import { Calendar, DollarSign, Settings, Clock, LogOut, User as UserIcon, Store, X, Scissors } from 'lucide-react'
 import { DashboardTab, ConfiguracionBarberia } from '@/types/dashboard'
 import Image from 'next/image'
 
@@ -44,17 +44,17 @@ export default function Sidebar({
       {/* Sidebar - Ahora Drawer en Mobile */}
       <aside className={`fixed inset-y-0 left-0 w-80 flex flex-col bg-zinc-950 lg:bg-zinc-900/50 border-r border-zinc-800/50 p-6 backdrop-blur-md z-50 transition-transform duration-300 min-h-screen lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between mb-10">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="w-12 h-12 rounded-xl shadow-lg shrink-0 flex items-center justify-center overflow-hidden border border-amber-500/20 bg-zinc-900 relative">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
+            <div className="w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center overflow-hidden relative shadow-2xl">
               {config?.logo_url ? (
-                <Image src={config.logo_url} alt="Logo" fill className="object-cover" sizes="48px" unoptimized />
+                <Image src={config.logo_url} alt="Logo" fill className="object-cover" sizes="56px" unoptimized />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center">
-                  <Store className="w-6 h-6 text-zinc-500" />
+                <div className="w-full h-full flex items-center justify-center">
+                  <Scissors className="w-6 h-6 text-zinc-800" />
                 </div>
               )}
             </div>
-            <span className="text-lg font-black tracking-tighter uppercase italic truncate flex-1 min-w-0 text-white">
+            <span className="text-xl font-black tracking-tighter uppercase italic truncate flex-1 min-w-0 text-white drop-shadow-xl">
               {config?.nombre_barberia || 'BARBERIAPP'}
             </span>
           </div>
