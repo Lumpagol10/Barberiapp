@@ -377,30 +377,11 @@ export default function Dashboard() {
   }, [config?.nombre_barberia])
 
   // ==========================================
-  // ATOMIC LOADING MASK (Unified SplashScreen)
+  // ATOMIC LOADING MASK (Pure Black for Speed)
   // ==========================================
   if (loading) {
-    return (
-      <div className="fixed inset-0 bg-[#050505] flex flex-col items-center justify-center z-[9999] animate-in fade-in duration-500">
-        <div className="relative mb-8">
-          <div className="absolute inset-0 bg-amber-500/10 blur-[100px] rounded-full animate-pulse" />
-          <div className="relative p-6 border-2 border-amber-500/10 rounded-[3rem] backdrop-blur-3xl">
-             <Scissors className="w-16 h-16 text-amber-500 animate-bounce" />
-          </div>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-           <h1 className="text-xl font-black italic uppercase tracking-[0.6em] text-white animate-pulse">
-             Barberiapp
-           </h1>
-           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-800 italic">
-             Professional Platform
-           </p>
-        </div>
-      </div>
-    )
+    return <div className="fixed inset-0 bg-[#050505] z-[9999]" />
   }
-
-
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans max-w-full overflow-x-hidden">
@@ -428,7 +409,7 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            <span className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic text-white truncate max-w-[65vw] drop-shadow-2xl">
+            <span className="text-2xl md:text-5xl font-black tracking-tighter uppercase italic text-white drop-shadow-2xl">
               {config.nombre_barberia}
             </span>
           </div>
