@@ -89,17 +89,35 @@ export default function Dashboard() {
 
   useEffect(() => {
     const checkUser = async () => {
-      setCheckingAuth(true)
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) {
-        router.push('/admin/auth')
-      } else {
-        setUser(authUser)
+      try {
+        setCheckingAuth(true)
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (!authUser) {
+          router.push('/admin/auth')
+          setLoading(false)
+        } else {
+          setUser(authUser)
+        }
+      } catch (err) {
+        console.error('Auth check error:', err)
+        setLoading(false)
+      } finally {
+        setCheckingAuth(false)
       }
-      setCheckingAuth(false)
     }
     checkUser()
+    
+    // Restaurar pestaña desde localStorage
+    const savedTab = localStorage.getItem('activeDashboardTab')
+    if (savedTab) {
+      setActiveTab(savedTab as DashboardTab)
+    }
   }, [router])
+
+  // Persistir pestaña activa
+  useEffect(() => {
+    localStorage.setItem('activeDashboardTab', activeTab)
+  }, [activeTab])
 
   const fetchFinances = useCallback(async (userId: string) => {
     const firstDayOfMonth = financesMonth + '-01'
@@ -192,6 +210,9 @@ export default function Dashboard() {
       } else {
         router.push('/dashboard/onboarding')
       }
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      toast.error('Error al sincronizar datos. Intente recargar.')
     } finally {
       setLoading(false)
     }
