@@ -56,7 +56,7 @@ export default function ProgramarTab({
 
       <div className="grid gap-6 mb-12">
         {planningSchedule.map((dia, idx) => (
-          <div key={dia.fecha} className={`transition-all py-10 lg:py-16 flex flex-col gap-8 border-b border-zinc-800/50 ${dia.activo ? 'opacity-100' : 'opacity-40'}`}>
+          <div key={dia.fecha} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-emerald-500/20 shadow-lg mb-4' : 'border-white/5 opacity-60'}`}>
             {/* Header del Día */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-zinc-800/50">
               <div>
@@ -109,7 +109,7 @@ export default function ProgramarTab({
                         type="time" 
                         value={slot} 
                         onChange={(e) => updatePlanningSlot(idx, slotIdx, e.target.value)}
-                        className="w-full bg-transparent border-b-2 border-zinc-800 hover:border-emerald-500/50 py-4 px-2 text-base font-black text-center [color-scheme:dark] transition-all focus:border-emerald-500 outline-none"
+                        className="w-full bg-zinc-950/50 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl py-4 px-2 text-sm font-black text-center [color-scheme:dark] transition-all focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
                       />
                       <button 
                         onClick={() => removePlanningSlot(idx, slotIdx)}

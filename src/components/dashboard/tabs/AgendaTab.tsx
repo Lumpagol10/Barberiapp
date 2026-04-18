@@ -56,8 +56,8 @@ export default function AgendaTab({
         statsLabel="Pendientes Hoy"
       />
 
-      <div className="overflow-hidden">
-        <div className="py-6 sm:py-8 border-b border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+      <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
+        <div className="p-6 sm:p-8 border-b border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-zinc-900/20">
           <div className="w-full sm:w-auto">
             <h3 className="text-xl font-black uppercase italic tracking-tighter">
               {isToday ? 'Próximos Turnos' : `Turnos del ${new Date(viewDate + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}`}
@@ -94,9 +94,9 @@ export default function AgendaTab({
         {/* Vista Mobile: Cards */}
         <div className={`block md:hidden transition-opacity duration-300 ${fetchingTurns ? 'opacity-50' : 'opacity-100'}`}>
           {turns.length > 0 ? (
-            <div className="divide-y divide-zinc-800">
+            <div className="divide-y divide-zinc-800/30">
               {turns.map((turn) => (
-                <div key={turn.id} className="py-6 space-y-4 active:bg-white/[0.02] transition-colors border-b border-zinc-800/50">
+                <div key={turn.id} className="p-6 space-y-4 active:bg-white/[0.02] transition-colors">
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="font-black text-lg text-zinc-100 uppercase tracking-tight">{turn.cliente_nombre}</div>

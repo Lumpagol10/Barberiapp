@@ -15,6 +15,7 @@ import {
   DashboardTab 
 } from '@/types/dashboard'
 import { User } from '@supabase/supabase-js'
+import { Scissors } from 'lucide-react'
 
 // Components
 import Sidebar from '@/components/dashboard/Sidebar'
@@ -336,6 +337,23 @@ export default function Dashboard() {
     if (config?.nombre_barberia) document.title = `${config.nombre_barberia.toUpperCase()} | PANEL`
   }, [config?.nombre_barberia])
 
+  if (loading && !config) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-4">
+        <div className="relative">
+          <div className="w-24 h-24 border-4 border-amber-500/10 border-t-amber-500 rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Scissors className="w-8 h-8 text-amber-500 animate-pulse rotate-90" />
+          </div>
+        </div>
+        <div className="mt-8 flex flex-col items-center gap-2">
+           <h2 className="text-xl font-black italic uppercase tracking-tighter text-white animate-pulse">Cargando Panel</h2>
+           <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Sincronizando con la barbería...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 flex pb-12 font-sans max-w-full overflow-x-hidden">
       <Sidebar 
@@ -344,74 +362,67 @@ export default function Dashboard() {
         config={config} userEmail={user?.email} setShowLogoutModal={setShowLogoutModal}
       />
 
-      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-screen">
-        {loading && !config ? (
-          <div className="animate-in fade-in duration-500 space-y-12">
-             <div className="h-12 w-64 md:w-96 bg-zinc-800/50 animate-pulse rounded-2xl" />
-             <div className="h-96 w-full bg-zinc-800/50 animate-pulse rounded-[2rem]" />
-          </div>
-        ) : (
-          <>
-            {activeTab === 'agenda' && (
-              <AgendaTab 
-                turns={turns} viewDate={viewDate} setViewDate={setViewDate}
-                onFinishTurn={(id) => { setSelectedTurnId(id); setShowCheckoutModal(true); }}
-                config={config} onShare={() => setShowShareModal(true)}
-                onOpenSidebar={() => setIsMobileSidebarOpen(true)}
-                fetchingTurns={fetchingTurns}
-              />
-            )}
-            {activeTab === 'programar' && (
-              <ProgramarTab 
-                planningSchedule={planningSchedule} setPlanningSchedule={setPlanningSchedule}
-                onUpdatePlanning={handleUpdatePlanning}
-                copyRoutineToPlanning={async (idx) => {
-                   const { data: scheduleData } = await supabase.from('horarios_barberia').select('*').eq('user_id', user?.id).order('dia_semana', { ascending: true })
-                   const dayObj = new Date(planningSchedule[idx].fecha + 'T12:00:00')
-                   const routine = (scheduleData || []).find(r => r.dia_semana === dayObj.getDay())
-                   if (routine) {
-                     const newSched = [...planningSchedule]; newSched[idx].slots = [...(routine.slots || [])]; newSched[idx].activo = true; setPlanningSchedule(newSched)
-                   }
-                }}
-                addPlanningSlot={(idx) => {
-                  const newSched = [...planningSchedule]; const daySlots = [...(newSched[idx].slots || [])]
-                  let nextTime = "09:00"
-                  if (daySlots.length > 0) {
-                    const last = daySlots[daySlots.length - 1]; const [h, m] = last.split(':').map(Number)
-                    nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-screen max-w-full overflow-x-hidden">
+        <>
+          {activeTab === 'agenda' && (
+            <AgendaTab 
+              turns={turns} viewDate={viewDate} setViewDate={setViewDate}
+              onFinishTurn={(id) => { setSelectedTurnId(id); setShowCheckoutModal(true); }}
+              config={config} onShare={() => setShowShareModal(true)}
+              onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+              fetchingTurns={fetchingTurns}
+            />
+          )}
+          {activeTab === 'programar' && (
+            <ProgramarTab 
+              planningSchedule={planningSchedule} setPlanningSchedule={setPlanningSchedule}
+              onUpdatePlanning={handleUpdatePlanning}
+              copyRoutineToPlanning={async (idx) => {
+                  const { data: scheduleData } = await supabase.from('horarios_barberia').select('*').eq('user_id', user?.id).order('dia_semana', { ascending: true })
+                  const dayObj = new Date(planningSchedule[idx].fecha + 'T12:00:00')
+                  const routine = (scheduleData || []).find(r => r.dia_semana === dayObj.getDay())
+                  if (routine) {
+                    const newSched = [...planningSchedule]; newSched[idx].slots = [...(routine.slots || [])]; newSched[idx].activo = true; setPlanningSchedule(newSched)
                   }
-                  newSched[idx].slots = [...daySlots, nextTime]; setPlanningSchedule(newSched)
-                }}
-                removePlanningSlot={(dayIdx, slotIdx) => {
-                  const newSched = [...planningSchedule]; newSched[dayIdx].slots = newSched[dayIdx].slots.filter((_, i) => i !== slotIdx); setPlanningSchedule(newSched)
-                }}
-                updatePlanningSlot={(dayIdx, slotIdx, newValue) => {
-                  const newSched = [...planningSchedule]; newSched[dayIdx].slots[slotIdx] = newValue; setPlanningSchedule(newSched)
-                }}
-                saving={saving} config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
-              />
-            )}
-            {activeTab === 'finanzas' && (
-              <FinanzasTab 
-                financesData={financesData} financesDate={financesDate} setFinancesDate={setFinancesDate}
-                financesMonth={financesMonth} setFinancesMonth={setFinancesMonth}
-                historyFilterMode={historyFilterMode} setHistoryFilterMode={setHistoryFilterMode}
-                config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
-              />
-            )}
-            {activeTab === 'config' && (
-              <ConfigTab 
-                editNombre={editNombre} setEditNombre={setEditNombre}
-                editPhone={editPhone} setEditPhone={setEditPhone}
-                editMaps={editMaps} setEditMaps={setEditMaps}
-                editLogoUrl={editLogoUrl} setEditLogoUrl={setEditLogoUrl}
-                onUpdateConfig={handleUpdateConfig} onLogoUpload={handleLogoUpload}
-                config={config} userEmail={user?.email} onLogout={() => setShowLogoutModal(true)}
-                onShare={() => setShowShareModal(true)} saving={saving} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
-              />
-            )}
-          </>
-        )}
+              }}
+              addPlanningSlot={(idx) => {
+                const newSched = [...planningSchedule]; const daySlots = [...(newSched[idx].slots || [])]
+                let nextTime = "09:00"
+                if (daySlots.length > 0) {
+                  const last = daySlots[daySlots.length - 1]; const [h, m] = last.split(':').map(Number)
+                  nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+                }
+                newSched[idx].slots = [...daySlots, nextTime]; setPlanningSchedule(newSched)
+              }}
+              removePlanningSlot={(dayIdx, slotIdx) => {
+                const newSched = [...planningSchedule]; newSched[dayIdx].slots = newSched[dayIdx].slots.filter((_, i) => i !== slotIdx); setPlanningSchedule(newSched)
+              }}
+              updatePlanningSlot={(dayIdx, slotIdx, newValue) => {
+                const newSched = [...planningSchedule]; newSched[dayIdx].slots[slotIdx] = newValue; setPlanningSchedule(newSched)
+              }}
+              saving={saving} config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+            />
+          )}
+          {activeTab === 'finanzas' && (
+            <FinanzasTab 
+              financesData={financesData} financesDate={financesDate} setFinancesDate={setFinancesDate}
+              financesMonth={financesMonth} setFinancesMonth={setFinancesMonth}
+              historyFilterMode={historyFilterMode} setHistoryFilterMode={setHistoryFilterMode}
+              config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+            />
+          )}
+          {activeTab === 'config' && (
+            <ConfigTab 
+              editNombre={editNombre} setEditNombre={setEditNombre}
+              editPhone={editPhone} setEditPhone={setEditPhone}
+              editMaps={editMaps} setEditMaps={setEditMaps}
+              editLogoUrl={editLogoUrl} setEditLogoUrl={setEditLogoUrl}
+              onUpdateConfig={handleUpdateConfig} onLogoUpload={handleLogoUpload}
+              config={config} userEmail={user?.email} onLogout={() => setShowLogoutModal(true)}
+              onShare={() => setShowShareModal(true)} saving={saving} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+            />
+          )}
+        </>
       </main>
 
       <CheckoutModal 
