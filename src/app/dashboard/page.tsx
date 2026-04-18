@@ -112,6 +112,10 @@ export default function Dashboard() {
     if (savedTab) {
       setActiveTab(savedTab as DashboardTab)
     }
+
+    // Fix Scroll Glitch
+    window.history.scrollRestoration = 'manual'
+    window.scrollTo(0, 0)
   }, [router])
 
   // Persistir pestaña activa
@@ -215,6 +219,7 @@ export default function Dashboard() {
       toast.error('Error al sincronizar datos. Intente recargar.')
     } finally {
       setLoading(false)
+      window.scrollTo(0, 0)
     }
   }, [router])
 

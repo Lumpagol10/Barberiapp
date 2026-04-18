@@ -34,7 +34,7 @@ export default function ProgramarTab({
   const diasLetras = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl pb-24 lg:pb-0">
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl pb-24 lg:pb-0 min-h-screen">
       <DashboardHeader 
         title="Agenda Semanal"
         subtitle={<p className="text-zinc-500 font-medium italic hidden md:block">Confirmá los días que vas a trabajar esta semana</p>}
