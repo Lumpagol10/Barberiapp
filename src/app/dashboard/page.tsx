@@ -540,19 +540,29 @@ export default function Dashboard() {
                   }
               }}
               addPlanningSlot={(idx) => {
-                const newSched = [...planningSchedule]; const daySlots = [...(newSched[idx].slots || [])]
-                let nextTime = "09:00"
+                const newSched = [...planningSchedule];
+                const daySlots = [...(newSched[idx].slots || [])];
+                let nextTime = "09:00";
                 if (daySlots.length > 0) {
-                  const last = daySlots[daySlots.length - 1]; const [h, m] = last.split(':').map(Number)
-                  nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+                  const last = daySlots[daySlots.length - 1];
+                  const [h, m] = last.split(':').map(Number);
+                  nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
                 }
-                newSched[idx].slots = [...daySlots, nextTime].sort(); setPlanningSchedule(newSched)
+                newSched[idx] = { ...newSched[idx], slots: [...daySlots, nextTime].sort() };
+                setPlanningSchedule(newSched);
               }}
               removePlanningSlot={(dayIdx, slotIdx) => {
-                const newSched = [...planningSchedule]; newSched[dayIdx].slots = newSched[dayIdx].slots.filter((_, i) => i !== slotIdx); setPlanningSchedule(newSched)
+                const newSched = [...planningSchedule];
+                const newSlots = newSched[dayIdx].slots.filter((_, i) => i !== slotIdx);
+                newSched[dayIdx] = { ...newSched[dayIdx], slots: newSlots };
+                setPlanningSchedule(newSched);
               }}
               updatePlanningSlot={(dayIdx, slotIdx, newValue) => {
-                const newSched = [...planningSchedule]; newSched[dayIdx].slots[slotIdx] = newValue; newSched[dayIdx].slots.sort(); setPlanningSchedule(newSched)
+                const newSched = [...planningSchedule];
+                const newSlots = [...newSched[dayIdx].slots];
+                newSlots[slotIdx] = newValue;
+                newSched[dayIdx] = { ...newSched[dayIdx], slots: newSlots.sort() };
+                setPlanningSchedule(newSched);
               }}
               saving={saving} config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
             />
