@@ -13,6 +13,7 @@ interface ProgramarTabProps {
   addPlanningSlot: (idx: number) => void
   removePlanningSlot: (dayIdx: number, slotIdx: number) => void
   updatePlanningSlot: (dayIdx: number, slotIdx: number, newValue: string) => void
+  addPlanningDay: () => void
   saving: boolean
   config: ConfiguracionBarberia | null
   onOpenSidebar: () => void
@@ -26,6 +27,7 @@ export default function ProgramarTab({
   addPlanningSlot,
   removePlanningSlot,
   updatePlanningSlot,
+  addPlanningDay,
   saving,
   config,
   onOpenSidebar
@@ -54,9 +56,9 @@ export default function ProgramarTab({
         </p>
       </div>
 
-      <div className="grid gap-6 mb-12">
+    <div className="grid gap-6 mb-12">
         {planningSchedule.map((dia, idx) => (
-          <div key={dia.fecha} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-emerald-500/20 shadow-lg mb-4' : 'border-white/5 opacity-60'}`}>
+          <div key={dia.fecha} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-emerald-500/20 shadow-lg' : 'border-white/5 opacity-60'}`}>
             {/* Header del Día */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-zinc-800/50">
               <div>
@@ -69,7 +71,7 @@ export default function ProgramarTab({
                       HOY
                     </span>
                   )}
-                  {dia.isNew && <span className="text-[10px] text-zinc-500 font-bold italic tracking-tighter">(Usando plantilla)</span>}
+                  {dia.isNew && <span className="text-[10px] text-zinc-500 font-bold italic tracking-tighter">(Nuevo)</span>}
                 </div>
                 <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${dia.activo ? 'text-emerald-500' : 'text-zinc-600'}`}>
                   {dia.activo ? '🟢 Publicado en la web' : '🔴 No programado (Invisible)'}
@@ -79,6 +81,7 @@ export default function ProgramarTab({
               <div className="flex items-center gap-4">
                 {dia.activo === false && (
                    <button 
+                    type="button"
                     onClick={() => copyRoutineToPlanning(idx)}
                     className="px-4 py-2 text-[10px] font-bold text-amber-500 border border-amber-500/20 rounded-lg hover:bg-amber-500/10 transition-all font-mono"
                    >Cargar Rutina</button>
@@ -112,6 +115,7 @@ export default function ProgramarTab({
                         className="w-full bg-zinc-950/50 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl py-4 px-2 text-sm font-black text-center [color-scheme:dark] transition-all focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
                       />
                       <button 
+                        type="button"
                         onClick={() => removePlanningSlot(idx, slotIdx)}
                         className="absolute -top-2 -right-2 w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
                       >
@@ -121,29 +125,33 @@ export default function ProgramarTab({
                   ))}
                   
                   <button 
+                    type="button"
                     onClick={() => addPlanningSlot(idx)}
                     className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-800 hover:border-emerald-500/40 hover:bg-emerald-500/5 rounded-2xl py-4 transition-all text-zinc-600 hover:text-emerald-500"
                   >
                     <span className="text-2xl font-black">+</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest">Agregar</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Agregar Slot</span>
                   </button>
                 </div>
-
-                {(dia.slots || []).length === 0 && (
-                  <div className="py-12 text-center bg-zinc-950/20 rounded-[2rem] border border-dashed border-zinc-800">
-                    <p className="text-zinc-600 font-bold uppercase text-xs tracking-widest">No hay horarios cargados para este día</p>
-                    <button 
-                      onClick={() => addPlanningSlot(idx)}
-                      className="mt-4 text-emerald-500 font-black uppercase text-[10px] underline tracking-widest"
-                    >
-                      Hacé clic acá para empezar
-                    </button>
-                  </div>
-                )}
               </div>
             )}
           </div>
         ))}
+
+        {/* Botón Maestro para agregar día */}
+        <button 
+          type="button"
+          onClick={addPlanningDay}
+          className="w-full flex items-center justify-center gap-4 py-8 border-2 border-dashed border-zinc-800 hover:border-amber-500/50 hover:bg-amber-500/5 rounded-[2.5rem] transition-all text-zinc-500 hover:text-amber-500 group"
+        >
+          <div className="p-3 bg-zinc-800 group-hover:bg-amber-500 rounded-xl transition-colors">
+            <Calendar className="w-6 h-6 group-hover:text-black" />
+          </div>
+          <div className="text-left">
+            <p className="text-lg font-black uppercase tracking-tight italic">Agregar próximo día a la agenda</p>
+            <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">Extendé tu planificación semanal</p>
+          </div>
+        </button>
       </div>
 
       <div className="flex justify-end sticky bottom-6 z-50">

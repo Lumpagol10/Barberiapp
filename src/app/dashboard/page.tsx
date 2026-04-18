@@ -33,6 +33,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal'
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('agenda')
   const [loading, setLoading] = useState(true)
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const [fetchingTurns, setFetchingTurns] = useState(false)
   const [saving, setSaving] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -88,12 +89,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     const checkUser = async () => {
+      setCheckingAuth(true)
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (!authUser) {
         router.push('/admin/auth')
-        return
+      } else {
+        setUser(authUser)
       }
-      setUser(authUser)
+      setCheckingAuth(false)
     }
     checkUser()
   }, [router])
@@ -189,12 +192,10 @@ export default function Dashboard() {
       } else {
         router.push('/dashboard/onboarding')
       }
-    } catch (error) {
-      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }
-  }, [config, router])
+  }, [router])
 
   // Efecto para cambios de fecha (optimizado: solo carga turnos)
   useEffect(() => {
@@ -337,7 +338,7 @@ export default function Dashboard() {
     if (config?.nombre_barberia) document.title = `${config.nombre_barberia.toUpperCase()} | PANEL`
   }, [config?.nombre_barberia])
 
-  if (loading && !config) {
+  if (checkingAuth || (loading && !config)) {
     return (
       <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-4">
         <div className="relative">
@@ -348,7 +349,9 @@ export default function Dashboard() {
         </div>
         <div className="mt-8 flex flex-col items-center gap-2">
            <h2 className="text-xl font-black italic uppercase tracking-tighter text-white animate-pulse">Cargando Panel</h2>
-           <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">Sincronizando con la barbería...</p>
+           <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">
+             {checkingAuth ? 'Verificando sesión...' : 'Sincronizando con la barbería...'}
+           </p>
         </div>
       </div>
     )
@@ -377,12 +380,25 @@ export default function Dashboard() {
             <ProgramarTab 
               planningSchedule={planningSchedule} setPlanningSchedule={setPlanningSchedule}
               onUpdatePlanning={handleUpdatePlanning}
+              addPlanningDay={() => {
+                const nextDate = new Date(planningSchedule[planningSchedule.length - 1].fecha + 'T12:00:00')
+                nextDate.setDate(nextDate.getDate() + 1)
+                const fechaStr = nextDate.toLocaleDateString('en-CA')
+                setPlanningSchedule(prev => [
+                  ...prev, 
+                  { fecha: fechaStr, user_id: user?.id || '', activo: false, slots: [], isNew: true }
+                ])
+                toast.info(`📅 Día ${nextDate.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} agregado`)
+              }}
               copyRoutineToPlanning={async (idx) => {
                   const { data: scheduleData } = await supabase.from('horarios_barberia').select('*').eq('user_id', user?.id).order('dia_semana', { ascending: true })
                   const dayObj = new Date(planningSchedule[idx].fecha + 'T12:00:00')
                   const routine = (scheduleData || []).find(r => r.dia_semana === dayObj.getDay())
                   if (routine) {
                     const newSched = [...planningSchedule]; newSched[idx].slots = [...(routine.slots || [])]; newSched[idx].activo = true; setPlanningSchedule(newSched)
+                    toast.success('✅ Rutilla cargada')
+                  } else {
+                    toast.error('❌ No hay plantilla para este día')
                   }
               }}
               addPlanningSlot={(idx) => {
@@ -392,13 +408,13 @@ export default function Dashboard() {
                   const last = daySlots[daySlots.length - 1]; const [h, m] = last.split(':').map(Number)
                   nextTime = `${String((h + 1) % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
                 }
-                newSched[idx].slots = [...daySlots, nextTime]; setPlanningSchedule(newSched)
+                newSched[idx].slots = [...daySlots, nextTime].sort(); setPlanningSchedule(newSched)
               }}
               removePlanningSlot={(dayIdx, slotIdx) => {
                 const newSched = [...planningSchedule]; newSched[dayIdx].slots = newSched[dayIdx].slots.filter((_, i) => i !== slotIdx); setPlanningSchedule(newSched)
               }}
               updatePlanningSlot={(dayIdx, slotIdx, newValue) => {
-                const newSched = [...planningSchedule]; newSched[dayIdx].slots[slotIdx] = newValue; setPlanningSchedule(newSched)
+                const newSched = [...planningSchedule]; newSched[dayIdx].slots[slotIdx] = newValue; newSched[dayIdx].slots.sort(); setPlanningSchedule(newSched)
               }}
               saving={saving} config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
             />

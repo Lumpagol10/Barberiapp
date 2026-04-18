@@ -27,6 +27,8 @@ export default function DashboardHeader({
   statsLabel,
   icon
 }: DashboardHeaderProps) {
+  if (!config) return null
+
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8 mb-6 md:mb-12 lg:mb-16 w-full max-w-full overflow-x-hidden">
       {/* Contenedor Principal Adaptativo */}
@@ -35,15 +37,12 @@ export default function DashboardHeader({
         {/* FILA 1: MARCA (Logo + Nombre) - OCULTO EN DESKTOP por redundancia con Sidebar */}
         <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full md:w-auto">
           <div className="w-14 h-14 md:w-20 md:h-20 shrink-0 flex items-center justify-center overflow-hidden relative">
-            {config?.logo_url ? (
-              <Image 
+            {config.logo_url ? (
+              <img 
                 src={config.logo_url} 
                 alt="Logo" 
-                fill 
-                className="object-cover rounded-xl"
-                sizes="(max-width: 768px) 56px, 80px"
-                priority
-                unoptimized
+                className="w-full h-full object-cover rounded-xl"
+                loading="eager"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center rounded-xl">
@@ -52,7 +51,7 @@ export default function DashboardHeader({
             )}
           </div>
           <span className="text-xl md:text-3xl font-bold tracking-tighter uppercase italic text-white truncate max-w-[55vw] md:max-w-none">
-            {config?.nombre_barberia}
+            {config.nombre_barberia}
           </span>
         </div>
 
