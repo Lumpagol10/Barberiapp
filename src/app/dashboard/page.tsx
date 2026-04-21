@@ -31,6 +31,7 @@ import CheckoutModal from '@/components/dashboard/modals/CheckoutModal'
 import ShareModal from '@/components/dashboard/modals/ShareModal'
 import CropperModal from '@/components/dashboard/modals/CropperModal'
 import ManualTurnoModal from '@/components/dashboard/modals/ManualTurnoModal'
+import RegisterClientModal from '@/components/dashboard/modals/RegisterClientModal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function Dashboard() {
@@ -52,7 +53,9 @@ export default function Dashboard() {
   const [showShareModal, setShowShareModal] = useState(false)
   const [showCropper, setShowCropper] = useState(false)
   const [showManualModal, setShowManualModal] = useState(false)
+  const [showRegisterModal, setShowRegisterModal] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [clientToRegister, setClientToRegister] = useState({ nombre: '', telefono: '' })
 
   const [viewDate, setViewDate] = useState(() => {
     return new Intl.DateTimeFormat('en-CA', {
@@ -442,6 +445,7 @@ export default function Dashboard() {
 
   const handleRegisterClient = async (nombre: string, telefono: string) => {
     if (!user) return
+    setSaving(true)
     try {
       const { error } = await supabase.from('clientes').insert([{
         id_barbero: user.id,
@@ -450,10 +454,18 @@ export default function Dashboard() {
       }])
       if (error) throw error
       toast.success('👤 Cliente registrado con éxito')
+      setShowRegisterModal(false)
       fetchClients(user.id)
     } catch (err: any) {
       toast.error(`Error: ${err.message}`)
+    } finally {
+      setSaving(false)
     }
+  }
+
+  const openRegisterModal = (nombre: string, telefono: string) => {
+    setClientToRegister({ nombre, telefono })
+    setShowRegisterModal(true)
   }
 
   const updateClientStats = async (nombre: string, telefono: string) => {
@@ -638,7 +650,7 @@ export default function Dashboard() {
               fetchingTurns={fetchingTurns}
               clients={clients}
               vipPhones={vipPhones}
-              onRegisterClient={handleRegisterClient}
+              onRegisterClient={openRegisterModal}
               planningSchedule={planningSchedule}
             />
           )}
@@ -747,6 +759,15 @@ export default function Dashboard() {
         isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} onConfirm={handleLogout}
         title="¿Cerrar Sesión?" description="Tendrás que volver a ingresar para gestionar tus turnos."
         confirmText="Cerrar Sesión" cancelText="Cancelar" type="info"
+      />
+
+      <RegisterClientModal 
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onConfirm={handleRegisterClient}
+        initialName={clientToRegister.nombre}
+        initialPhone={clientToRegister.telefono}
+        saving={saving}
       />
     </div>
   )

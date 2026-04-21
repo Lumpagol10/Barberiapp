@@ -1,6 +1,10 @@
 'use client'
 
-import { Phone, CheckCircle, Clock, Calendar, MessageCircle, Plus, Scissors, Trash2 } from 'lucide-react'
+import React from 'react'
+import { 
+  Calendar, Clock, CheckCircle, MessageCircle, Phone, Scissors, 
+  Trash2, UserPlus, Star, ChevronLeft, ChevronRight, Plus 
+} from 'lucide-react'
 import { Turno, ConfiguracionBarberia, Cliente, HorarioEspecifico } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
 
@@ -147,15 +151,8 @@ export default function AgendaTab({
                             <span className="text-sm jump-animation" title="Cliente VIP">💎</span>
                           )}
 
-                          {/* BOTÓN REGISTRO RÁPIDO */}
-                          {!clients.some(c => c.telefono === turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
-                            <button 
-                              onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
-                              className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black active:scale-90 transition-transform shadow-lg shadow-emerald-900/40"
-                              title="Registrar Cliente"
-                            >
-                              <Plus className="w-3 h-3 stroke-[4]" />
-                            </button>
+                          {vipPhones.has(turn.cliente_telefono) && (
+                            <span className="text-sm jump-animation" title="Cliente VIP">💎</span>
                           )}
                         </div>
                         
@@ -173,6 +170,17 @@ export default function AgendaTab({
                         })()}
                         <div className="text-[10px] text-zinc-500 font-bold flex items-center gap-2 mt-1 uppercase">
                           <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
+                          
+                          {/* QUICK REGISTER CRM (AMBER USERPLUS) */}
+                          {!clients.some(c => c.telefono === turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
+                            <button 
+                              onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
+                              className="ml-1 p-1 bg-amber-500/10 text-amber-500 rounded-md border border-amber-500/20 active:scale-90 transition-all shadow-lg"
+                              title="Registrar Cliente Nuevo"
+                            >
+                              <UserPlus className="w-3 h-3 stroke-[3]" />
+                            </button>
+                          )}
                         </div>
                         {turn.es_manual && (
                           <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-600/10 text-orange-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
@@ -269,15 +277,8 @@ export default function AgendaTab({
                                 <span className="text-xl jump-animation" title="Cliente VIP">💎</span>
                               )}
 
-                              {/* BOTÓN REGISTRO RÁPIDO */}
-                              {!clients.some(c => c.telefono === turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
-                                <button 
-                                  onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
-                                  className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black hover:scale-110 active:scale-90 transition-all shadow-lg shadow-emerald-900/40"
-                                  title="Registrar como Cliente"
-                                >
-                                  <Plus className="w-3 h-3 stroke-[4]" />
-                                </button>
+                              {vipPhones.has(turn.cliente_telefono) && (
+                                <span className="text-xl jump-animation" title="Cliente VIP">💎</span>
                               )}
                             </div>
 
@@ -295,6 +296,17 @@ export default function AgendaTab({
                             })()}
                             <div className="text-xs text-zinc-500 font-bold flex items-center gap-2">
                               <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
+
+                              {/* QUICK REGISTER CRM (AMBER USERPLUS) */}
+                              {!clients.some(c => c.telefono === turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
+                                <button 
+                                  onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
+                                  className="p-1 px-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-black rounded-md border border-amber-500/20 transition-all transform hover:scale-105 active:scale-90 shadow-xl"
+                                  title="Registrar Cliente Nuevo"
+                                >
+                                  <UserPlus className="w-3.5 h-3.5 stroke-[3]" />
+                                </button>
+                              )}
                             </div>
                             {turn.es_manual && (
                               <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-orange-600/10 text-orange-500 rounded-md text-[9px] font-black uppercase tracking-widest border border-orange-500/20">
