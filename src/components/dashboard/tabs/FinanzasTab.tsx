@@ -1,8 +1,10 @@
 'use client'
 
-import { DollarSign, TrendingUp, Scissors, Wallet, Building2 } from 'lucide-react'
-import { FinanzasData, ConfiguracionBarberia } from '@/types/dashboard'
+import { DollarSign, TrendingUp, Scissors, Wallet, Building2, Package, ShoppingBag, Plus } from 'lucide-react'
+import { FinanzasData, ConfiguracionBarberia, Producto } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
+import VentaProductoModal from '../modals/VentaProductoModal'
+import { useState } from 'react'
 
 interface FinanzasTabProps {
   financesData: FinanzasData
@@ -14,6 +16,9 @@ interface FinanzasTabProps {
   setHistoryFilterMode: (mode: 'day' | 'month') => void
   config: ConfiguracionBarberia | null
   onOpenSidebar: () => void
+  products?: Producto[]
+  onRecordSale?: (nombre: string, precio: number, metodo: 'efectivo' | 'transferencia') => void
+  saving?: boolean
 }
 
 export default function FinanzasTab({
@@ -25,8 +30,13 @@ export default function FinanzasTab({
   historyFilterMode,
   setHistoryFilterMode,
   config,
-  onOpenSidebar
+  onOpenSidebar,
+  products = [],
+  onRecordSale,
+  saving = false
 }: FinanzasTabProps) {
+  const [showVentaModal, setShowVentaModal] = useState(false)
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
       <DashboardHeader 
@@ -36,6 +46,15 @@ export default function FinanzasTab({
         onOpenSidebar={onOpenSidebar}
         icon={<DollarSign className="w-6 h-6" />}
       />
+
+      <div className="flex justify-end mb-8">
+        <button 
+          onClick={() => setShowVentaModal(true)}
+          className="flex items-center gap-3 px-6 py-4 bg-amber-600 hover:bg-amber-500 text-black font-black text-xs rounded-2xl transition-all shadow-xl shadow-amber-900/20 active:scale-95 uppercase tracking-widest"
+        >
+          <Plus className="w-4 h-4 stroke-[3]" /> Venta de Producto
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-10 lg:mb-12">
         {/* Total Diario */}
@@ -138,19 +157,22 @@ export default function FinanzasTab({
               {financesData.history.map((item) => (
                 <div key={item.id} className="p-6 flex justify-between items-center active:bg-white/[0.02] transition-colors">
                   <div>
-                    <div className="font-black text-zinc-100 uppercase tracking-tight">{item.cliente_nombre}</div>
-                    {item.descripcion_servicio && (
+                    {item.isSale ? (
+                        <div className="text-[10px] text-emerald-500 font-bold mt-1 uppercase flex items-center gap-1.5">
+                            <Package className="w-3 h-3" /> PRODUCTO
+                        </div>
+                    ) : item.descripcion_servicio && (
                       <div className="text-[10px] text-amber-500 font-bold mt-1 uppercase flex items-center gap-1.5">
                         <Scissors className="w-3 h-3" /> {item.descripcion_servicio}
                       </div>
                     )}
-                    <div className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">
-                      {new Date(item.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} • {item.hora.substring(0, 5)}hs
+                    <div className="text-[10px] text-zinc-500 font-bold mt-1 uppercase italic">
+                      {item.fecha && new Date(item.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} • {item.hora?.substring(0, 5)}hs
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-black text-emerald-500 text-lg">
-                      +${(Number(item.precio) || 0).toLocaleString('es-AR')}
+                    <div className={`font-black text-lg ${item.isSale ? 'text-emerald-400' : 'text-emerald-500'}`}>
+                      +${(Number(item.precio || (item as any).precio) || 0).toLocaleString('es-AR')}
                     </div>
                     {item.metodo_pago && (
                       <div className="text-[8px] text-zinc-500 font-black mt-1 uppercase tracking-widest flex items-center justify-end gap-1">
@@ -185,8 +207,12 @@ export default function FinanzasTab({
                 financesData.history.map((item) => (
                   <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                     <td className="px-8 py-6">
-                      <span className="font-black text-zinc-100 uppercase tracking-tight block">{item.cliente_nombre}</span>
-                      {item.descripcion_servicio && (
+                      <span className="font-black text-zinc-100 uppercase tracking-tight block">{item.isSale ? (item as any).nombre_producto : item.cliente_nombre}</span>
+                      {item.isSale ? (
+                         <div className="text-[10px] text-emerald-500 font-bold mt-1.5 uppercase flex items-center gap-1.5">
+                            <ShoppingBag className="w-3 h-3" /> PRODUCTO EXCLUSIVO
+                         </div>
+                      ) : item.descripcion_servicio && (
                         <div className="text-[10px] text-amber-500 font-bold mt-1.5 uppercase flex items-center gap-1.5">
                           <Scissors className="w-3 h-3" /> {item.descripcion_servicio}
                         </div>
@@ -194,12 +220,12 @@ export default function FinanzasTab({
                     </td>
                     <td className="px-8 py-6">
                       <div className="text-xs text-zinc-500 font-bold">
-                        {new Date(item.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} - {item.hora.substring(0, 5)}hs
+                        {item.fecha && new Date(item.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} - {item.hora?.substring(0, 5)}hs
                       </div>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <span className="font-black text-emerald-500 text-lg group-hover:scale-110 transition-transform inline-block">
-                        +${(Number(item.precio) || 0).toLocaleString('es-AR')}
+                      <span className={`font-black text-lg group-hover:scale-110 transition-transform inline-block ${item.isSale ? 'text-emerald-400' : 'text-emerald-500'}`}>
+                        +${(Number(item.precio || (item as any).precio) || 0).toLocaleString('es-AR')}
                       </span>
                       {item.metodo_pago && (
                         <div className="text-[9px] text-zinc-500 font-black mt-1.5 uppercase tracking-widest flex items-center justify-end gap-1">
@@ -222,6 +248,13 @@ export default function FinanzasTab({
           </table>
         </div>
       </div>
+      <VentaProductoModal 
+        isOpen={showVentaModal}
+        onClose={() => setShowVentaModal(false)}
+        onConfirm={(name, price, method) => onRecordSale?.(name, price, method)}
+        products={products}
+        saving={saving}
+      />
     </div>
   )
 }

@@ -69,13 +69,23 @@ export interface HorarioEspecifico {
   isNew?: boolean; // Propiedad helper para el Dashboard
 }
 
+export interface VentaProducto {
+  id: string;
+  user_id: string;
+  nombre_producto: string;
+  precio: number;
+  metodo_pago: 'efectivo' | 'transferencia';
+  fecha: string;
+  created_at?: string;
+}
+
 export interface FinanzasData {
   dailyTotal: number;
   dailyCashTotal: number;
   dailyTransferTotal: number;
   monthlyTotal: number;
   annualTotal: number;
-  history: Turno[];
+  history: (Turno | VentaProducto)[];
 }
 
 export interface Cliente {

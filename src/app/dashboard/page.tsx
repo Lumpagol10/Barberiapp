@@ -15,7 +15,8 @@ import {
   DashboardTab,
   Cliente,
   Producto,
-  CategoriaProducto
+  CategoriaProducto,
+  VentaProducto
 } from '@/types/dashboard'
 import { User } from '@supabase/supabase-js'
 import { Scissors } from 'lucide-react'
@@ -198,26 +199,57 @@ export default function Dashboard() {
 
     const { data: dailyData } = await supabase.from('turnos').select('precio, metodo_pago').eq('barbero_id', userId).eq('estado', 'completado').eq('fecha', financesDate)
     const { data: monthlyData } = await supabase.from('turnos').select('precio').eq('barbero_id', userId).eq('estado', 'completado').gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth)
-    const { data: annualData } = await supabase.from('turnos').select('precio').eq('barbero_id', userId).eq('estado', 'completado').gte('fecha', firstDayOfYear)
+     const { data: annualData } = await supabase.from('turnos').select('precio').eq('barbero_id', userId).eq('estado', 'completado').gte('fecha', firstDayOfYear)
+ 
+     const historyQuery = supabase.from('turnos').select('*').eq('barbero_id', userId).eq('estado', 'completado')
+     if (historyFilterMode === 'day') {
+       historyQuery.eq('fecha', financesDate).order('hora', { ascending: true })
+     } else {
+       historyQuery.gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth).order('fecha', { ascending: false }).order('hora', { ascending: false })
+     }
+ 
+     const { data: historyData } = await historyQuery.limit(50)
 
-    const historyQuery = supabase.from('turnos').select('*').eq('barbero_id', userId).eq('estado', 'completado')
-    if (historyFilterMode === 'day') {
-      historyQuery.eq('fecha', financesDate).order('hora', { ascending: true })
-    } else {
-      historyQuery.gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth).order('fecha', { ascending: false }).order('hora', { ascending: false })
-    }
+     // NUEVO: Consultar Ventas de Productos
+     const { data: salesDaily } = await supabase.from('ventas_productos').select('precio, metodo_pago').eq('user_id', userId).eq('fecha', financesDate)
+     const { data: salesMonthly } = await supabase.from('ventas_productos').select('precio').eq('user_id', userId).gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth)
+     const { data: salesAnnual } = await supabase.from('ventas_productos').select('precio').eq('user_id', userId).gte('fecha', firstDayOfYear)
+     const { data: salesHistory } = await supabase.from('ventas_productos').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20)
 
-    const { data: historyData } = await historyQuery.limit(50)
+     const totalDailyTurns = dailyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+     const totalDailySales = salesDaily?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+     
+     const cashDailyTurns = dailyData?.filter(t => t.metodo_pago === 'efectivo').reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+     const cashDailySales = salesDaily?.filter(s => s.metodo_pago === 'efectivo').reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+     
+     const transDailyTurns = dailyData?.filter(t => t.metodo_pago === 'transferencia').reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+     const transDailySales = salesDaily?.filter(s => s.metodo_pago === 'transferencia').reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
 
-    setFinancesData({
-      dailyTotal: dailyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
-      dailyCashTotal: dailyData?.filter(t => t.metodo_pago === 'efectivo').reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
-      dailyTransferTotal: dailyData?.filter(t => t.metodo_pago === 'transferencia').reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
-      monthlyTotal: monthlyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
-      annualTotal: annualData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
-      history: (historyData as Turno[]) || []
-    })
-  }, [financesDate, financesMonth, historyFilterMode])
+     const totalMonthlyTurns = monthlyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+     const totalMonthlySales = salesMonthly?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+
+     const totalAnnualTurns = annualData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+     const totalAnnualSales = salesAnnual?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
+
+     // Combinar turnos y ventas en el historial, ordenados por tiempo
+     const combinedHistory = [
+       ...((historyData as any[]) || []),
+       ...((salesHistory as any[]) || []).map(s => ({ ...s, isSale: true, hora: new Date(s.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) }))
+     ].sort((a, b) => {
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0
+        return timeB - timeA // Descendente por defecto
+     })
+
+     setFinancesData({
+       dailyTotal: totalDailyTurns + totalDailySales,
+       dailyCashTotal: cashDailyTurns + cashDailySales,
+       dailyTransferTotal: transDailyTurns + transDailySales,
+       monthlyTotal: totalMonthlyTurns + totalMonthlySales,
+       annualTotal: totalAnnualTurns + totalAnnualSales,
+       history: combinedHistory.slice(0, 50)
+     })
+   }, [financesDate, financesMonth, historyFilterMode])
 
   const fetchClients = useCallback(async (userId: string) => {
     try {
@@ -610,6 +642,27 @@ export default function Dashboard() {
     setShowShareModal(false)
   }
 
+  const handleRecordProductSale = async (nombre: string, precio: number, metodo: 'efectivo' | 'transferencia') => {
+    if (!user) return
+    setSaving(true)
+    try {
+      const { error } = await supabase.from('ventas_productos').insert([{
+        user_id: user.id,
+        nombre_producto: nombre.toUpperCase(),
+        precio,
+        metodo_pago: metodo,
+        fecha: new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date())
+      }])
+      if (error) throw error
+      toast.success('🛍️ Venta registrada correctamente')
+      fetchFinances(user.id)
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleShareNative = async () => {
     const shareUrl = `${window.location.origin}/reserva/${config?.slug}`
     if (navigator.share) {
@@ -736,6 +789,9 @@ export default function Dashboard() {
               financesMonth={financesMonth} setFinancesMonth={setFinancesMonth}
               historyFilterMode={historyFilterMode} setHistoryFilterMode={setHistoryFilterMode}
               config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+              products={products}
+              onRecordSale={handleRecordProductSale}
+              saving={saving}
             />
           )}
           {activeTab === 'clientes' && (

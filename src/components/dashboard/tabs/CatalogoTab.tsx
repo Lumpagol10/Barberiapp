@@ -43,7 +43,12 @@ export default function CatalogoTab({
   // Category State
   const [newCatName, setNewCatName] = useState('')
 
-  const catalogUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/catalogo/${config?.slug}`
+  // FIX: Asegurar link de producción incluso en localhost
+  const catalogUrl = typeof window !== 'undefined' 
+    ? (window.location.hostname === 'localhost'
+        ? `https://Barberiapp-v2.vercel.app/catalogo/${config?.slug}` // URL base de producción detectada
+        : `${window.location.origin}/catalogo/${config?.slug}`)
+    : ''
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(catalogUrl)
@@ -316,13 +321,23 @@ export default function CatalogoTab({
                                <Trash2 className="w-4 h-4" />
                              </button>
                           </div>
-                          {category && (
-                             <div className="absolute top-4 left-4">
+                          <div className="absolute top-4 left-4 flex flex-col gap-2">
+                             {category && (
                                <span className="px-3 py-1 bg-black/60 backdrop-blur-md text-zinc-400 text-[8px] font-black uppercase tracking-[0.2em] rounded-full border border-white/5">
                                  {category.nombre}
                                </span>
-                             </div>
-                          )}
+                             )}
+                             {/* QUICK STOCK TOGGLE */}
+                             <button 
+                                onClick={async () => {
+                                    const { error } = await supabase.from('productos').update({ activo: !prod.activo }).eq('id', prod.id)
+                                    if (!error) onRefresh()
+                                }}
+                                className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all ${prod.activo ? 'bg-emerald-500/80 text-white border-emerald-400' : 'bg-red-500/80 text-white border-red-400'}`}
+                             >
+                                {prod.activo ? 'EN STOCK' : 'SIN STOCK'}
+                             </button>
+                          </div>
                         </div>
 
                         {/* Info del Producto */}
