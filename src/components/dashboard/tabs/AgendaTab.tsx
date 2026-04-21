@@ -1,7 +1,7 @@
 'use client'
 
 import { Phone, CheckCircle, Clock, Calendar, MessageCircle, Plus, Scissors } from 'lucide-react'
-import { Turno, ConfiguracionBarberia } from '@/types/dashboard'
+import { Turno, ConfiguracionBarberia, Cliente, HorarioEspecifico } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
 
 interface AgendaTabProps {
