@@ -214,12 +214,24 @@ export default function AgendaTab({
                     </div>
                   </div>
                 ) : (
-                  <div key={slot} className="px-6 py-4 flex items-center justify-between bg-zinc-950/20">
-                    <div className="font-mono text-zinc-700 font-black text-[10px] uppercase">{slot}hs</div>
-                    <div className="px-3 py-1 border border-zinc-800/50 rounded-lg text-[9px] font-black text-zinc-700 uppercase tracking-widest">
-                      Disponible
+                  <button 
+                    key={slot} 
+                    onClick={onAddManualTurn}
+                    className="w-full p-6 flex items-center justify-between bg-zinc-950/10 hover:bg-amber-500/5 transition-all group border-b border-zinc-800/10 last:border-0"
+                  >
+                    <div className="flex flex-col items-start gap-1">
+                      <div className="font-mono text-zinc-600 font-black text-xs uppercase tracking-tighter">{slot}hs</div>
+                      <div className="text-[9px] font-black text-zinc-700 uppercase tracking-[0.2em] group-hover:text-amber-500/50 transition-colors">
+                        Disponible
+                      </div>
                     </div>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-black text-zinc-800 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Agendar</span>
+                      <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-700 group-hover:bg-amber-500 group-hover:text-black group-hover:border-amber-500 transition-all shadow-xl">
+                        <Plus className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </button>
                 )
               ))}
             </div>
@@ -329,19 +341,31 @@ export default function AgendaTab({
                       </td>
                     </tr>
                   ) : (
-                    <tr key={slot} className="bg-zinc-950/10">
-                      <td className="px-8 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-zinc-800 rounded-full" />
-                          <span className="text-[10px] font-black text-zinc-700 uppercase tracking-widest">Disponible</span>
+                    <tr 
+                      key={slot} 
+                      onClick={onAddManualTurn}
+                      className="bg-zinc-950/5 hover:bg-amber-500/5 transition-all cursor-pointer group"
+                    >
+                      <td className="px-8 py-8">
+                        <div className="flex items-center gap-4">
+                          <div className="w-1.5 h-8 bg-zinc-900 border border-white/5 rounded-full group-hover:bg-amber-500 shadow-inner transition-all" />
+                          <div>
+                            <div className="text-zinc-700 font-black text-[10px] uppercase tracking-[0.3em] group-hover:text-amber-500 transition-colors">
+                              Disponible
+                            </div>
+                            <div className="text-zinc-800 text-[8px] font-bold uppercase tracking-tighter mt-1">Slot Libre para Reserva</div>
+                          </div>
                         </div>
                       </td>
-                      <td className="px-8 py-4">
-                        <div className="font-mono text-zinc-700 font-bold text-xs">{slot}hs</div>
+                      <td className="px-8 py-8">
+                        <div className="inline-flex items-center gap-2 px-3 py-2 bg-zinc-900 text-zinc-600 rounded-lg font-mono font-black border border-white/5 group-hover:text-amber-500 group-hover:border-amber-500/20 transition-all text-xs">
+                          {slot}hs
+                        </div>
                       </td>
-                      <td className="px-8 py-4 text-right">
-                        <div className="inline-block px-3 py-1 border border-zinc-800/30 rounded-lg text-[9px] font-black text-zinc-800 uppercase tracking-[0.2em]">
-                          Libre
+                      <td className="px-8 py-8 text-right">
+                        <div className="inline-flex items-center gap-3 px-6 py-3.5 bg-zinc-900 border border-white/5 text-zinc-600 group-hover:text-black group-hover:bg-amber-500 group-hover:border-amber-500 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.1em] shadow-lg">
+                          <Plus className="w-4 h-4" /> 
+                          AGENDAR TURNO
                         </div>
                       </td>
                     </tr>
