@@ -75,6 +75,8 @@ export default function Dashboard() {
   const [historyFilterMode, setHistoryFilterMode] = useState<'day' | 'month'>('day')
   const [financesData, setFinancesData] = useState<FinanzasData>({
     dailyTotal: 0,
+    dailyCashTotal: 0,
+    dailyTransferTotal: 0,
     monthlyTotal: 0,
     annualTotal: 0,
     history: []
