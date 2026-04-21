@@ -1,6 +1,6 @@
 'use client'
 
-import { DollarSign, Wallet, Building2, Ticket } from 'lucide-react'
+import { DollarSign, Wallet, Building2, Ticket, X } from 'lucide-react'
 import { useState } from 'react'
 
 export type PaymentMethod = 'efectivo' | 'transferencia' | null
@@ -33,7 +33,13 @@ export default function CheckoutModal({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
-      <div className="bg-zinc-900 border border-white/10 w-full max-w-md rounded-[2.5rem] p-6 sm:p-10 shadow-2xl animate-in slide-in-from-bottom-8 duration-500 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div className="bg-zinc-900 border border-white/10 w-full max-w-md rounded-[2.5rem] p-6 sm:p-10 shadow-2xl animate-in slide-in-from-bottom-8 duration-500 max-h-[90vh] overflow-y-auto custom-scrollbar relative">
+        <button 
+          onClick={onClose}
+          className="absolute top-6 right-6 p-2 bg-zinc-800 text-zinc-400 hover:text-white rounded-full transition-colors z-10"
+        >
+          <X className="w-5 h-5" />
+        </button>
         <div className="flex flex-col items-center text-center mb-6 sm:mb-8">
           <div className="p-4 bg-emerald-600/10 rounded-full mb-4 sm:mb-6 text-emerald-500">
             <DollarSign className="w-8 h-8 sm:w-10 sm:h-10" />
