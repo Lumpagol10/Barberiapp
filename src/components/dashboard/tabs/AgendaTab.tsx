@@ -18,6 +18,7 @@ interface AgendaTabProps {
   vipPhones?: Set<string>
   onRegisterClient?: (nombre: string, telefono: string) => void
   planningSchedule?: HorarioEspecifico[]
+  onDeleteTurn?: (id: string) => void
 }
 
 export default function AgendaTab({
@@ -33,7 +34,8 @@ export default function AgendaTab({
   clients = [],
   vipPhones = new Set(),
   onRegisterClient,
-  planningSchedule = []
+  planningSchedule = [],
+  onDeleteTurn
 }: AgendaTabProps) {
   
   const isToday = viewDate === new Intl.DateTimeFormat('en-CA', { 
@@ -191,12 +193,24 @@ export default function AgendaTab({
                       <div className="px-3 py-1.5 bg-amber-600/10 text-amber-500 rounded-lg font-mono font-black text-xs border border-amber-600/10 uppercase">
                         {turn.hora.substring(0, 5)}hs
                       </div>
-                      <button
-                        onClick={() => onFinishTurn(turn.id)}
-                        className="px-5 py-2.5 bg-emerald-600 text-black rounded-xl font-black text-[10px] uppercase tracking-tighter"
-                      >
-                        FINALIZAR
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteTurn?.(turn.id);
+                          }}
+                          className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl hover:bg-red-500/20 transition-all active:scale-95"
+                          title="Eliminar Turno"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => onFinishTurn(turn.id)}
+                          className="px-5 py-2.5 bg-emerald-600 text-black rounded-xl font-black text-[10px] uppercase tracking-tighter shadow-lg shadow-emerald-900/20 active:scale-95 transition-transform"
+                        >
+                          FINALIZAR
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -293,13 +307,25 @@ export default function AgendaTab({
                         </div>
                       </td>
                       <td className="px-8 py-8 text-right">
-                        <button
-                          onClick={() => onFinishTurn(turn.id)}
-                          className="inline-flex items-center gap-3 px-6 py-3.5 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-black rounded-2xl transition-all font-black text-xs uppercase tracking-tighter shadow-lg shadow-emerald-900/5 border border-emerald-600/20 active:scale-90"
-                        >
-                          <CheckCircle className="w-4 h-4" /> 
-                          FINALIZAR
-                        </button>
+                        <div className="flex items-center justify-end gap-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteTurn?.(turn.id);
+                            }}
+                            className="p-3.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl transition-all shadow-lg shadow-red-900/5 active:scale-90"
+                            title="Eliminar Turno"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => onFinishTurn(turn.id)}
+                            className="inline-flex items-center gap-3 px-6 py-3.5 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-black rounded-2xl transition-all font-black text-xs uppercase tracking-tighter shadow-lg shadow-emerald-900/5 border border-emerald-600/20 active:scale-90"
+                          >
+                            <CheckCircle className="w-4 h-4" /> 
+                            FINALIZAR
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ) : (

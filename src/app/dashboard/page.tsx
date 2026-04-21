@@ -489,6 +489,19 @@ export default function Dashboard() {
     setSaving(false)
   }
 
+  const handleDeleteTurn = async (id: string) => {
+    if (!user) return
+    if (window.confirm('¿Estás seguro de que deseas eliminar este turno y liberar el horario para otro cliente?')) {
+      const { error } = await supabase.from('turnos').delete().eq('id', id).eq('barbero_id', user.id)
+      if (!error) {
+        setTurns(prev => prev.filter(t => t.id !== id))
+        toast.success('Turno eliminado correctamente')
+      } else {
+        toast.error(`Error al eliminar: ${error.message}`)
+      }
+    }
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/admin/auth')
@@ -606,6 +619,7 @@ export default function Dashboard() {
             <AgendaTab 
               turns={turns} viewDate={viewDate} setViewDate={setViewDate}
               onFinishTurn={(id) => { setSelectedTurnId(id); setShowCheckoutModal(true); }}
+              onDeleteTurn={handleDeleteTurn}
               config={config} onShare={() => setShowShareModal(true)}
               onOpenSidebar={() => setIsMobileSidebarOpen(true)}
               onAddManualTurn={() => setShowManualModal(true)}

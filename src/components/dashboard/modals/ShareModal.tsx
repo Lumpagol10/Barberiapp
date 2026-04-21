@@ -1,6 +1,6 @@
 'use client'
 
-import { LogOut, MessageCircle, Copy, ExternalLink } from 'lucide-react'
+import { LogOut, MessageCircle, Copy, ExternalLink, X } from 'lucide-react'
 
 interface ShareModalProps {
   isOpen: boolean
@@ -21,11 +21,11 @@ export default function ShareModal({
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-zinc-900/90 border border-white/10 w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-2xl">
+      <div className="bg-zinc-900/90 border border-white/10 w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-2xl relative">
         <div className="p-8 pb-4 flex justify-between items-center">
           <h2 className="text-xl font-black uppercase italic tracking-tighter text-white">Compartir Agenda</h2>
-          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full text-zinc-500 transition-all">
-            <LogOut className="w-5 h-5 rotate-180" />
+          <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-zinc-800 text-zinc-400 hover:text-white rounded-full transition-colors z-10">
+            <X className="w-5 h-5" />
           </button>
         </div>
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Cropper, { Area } from 'react-easy-crop'
-import { LogOut, Loader2 } from 'lucide-react'
+import { LogOut, Loader2, X } from 'lucide-react'
 
 interface CropperModalProps {
   image: string
@@ -31,14 +31,14 @@ export default function CropperModal({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
-      <div className="bg-zinc-900 border border-white/10 w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-[80vh]">
+      <div className="bg-zinc-900 border border-white/10 w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-[80vh] relative">
         <div className="p-8 border-b border-white/5 flex items-center justify-between bg-zinc-900/50 backdrop-blur-md">
           <div>
             <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Ajustar Logo</h2>
             <p className="text-zinc-500 text-xs font-medium italic">Centrá y hacé zoom para el encuadre perfecto</p>
           </div>
-          <button onClick={onClose} className="p-3 hover:bg-zinc-800 rounded-full transition-all text-zinc-500">
-            <LogOut className="w-5 h-5 rotate-180" />
+          <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-zinc-800 text-zinc-400 hover:text-white rounded-full transition-colors z-10">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
