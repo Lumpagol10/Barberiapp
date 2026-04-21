@@ -157,13 +157,16 @@ export default function FinanzasTab({
               {financesData.history.map((item) => (
                 <div key={item.id} className="p-6 flex justify-between items-center active:bg-white/[0.02] transition-colors">
                   <div>
+                    <div className="font-black text-zinc-100 uppercase tracking-tight">
+                        {item.isSale ? (item as VentaProducto).nombre_producto : (item as Turno).cliente_nombre}
+                    </div>
                     {item.isSale ? (
                         <div className="text-[10px] text-emerald-500 font-bold mt-1 uppercase flex items-center gap-1.5">
                             <Package className="w-3 h-3" /> PRODUCTO
                         </div>
-                    ) : item.descripcion_servicio && (
+                    ) : (item as Turno).descripcion_servicio && (
                       <div className="text-[10px] text-amber-500 font-bold mt-1 uppercase flex items-center gap-1.5">
-                        <Scissors className="w-3 h-3" /> {item.descripcion_servicio}
+                        <Scissors className="w-3 h-3" /> {(item as Turno).descripcion_servicio}
                       </div>
                     )}
                     <div className="text-[10px] text-zinc-500 font-bold mt-1 uppercase italic">
@@ -172,12 +175,12 @@ export default function FinanzasTab({
                   </div>
                   <div className="text-right">
                     <div className={`font-black text-lg ${item.isSale ? 'text-emerald-400' : 'text-emerald-500'}`}>
-                      +${(Number(item.precio || (item as any).precio) || 0).toLocaleString('es-AR')}
+                      +${(Number(item.precio) || 0).toLocaleString('es-AR')}
                     </div>
-                    {item.metodo_pago && (
+                    {(item as Turno).metodo_pago && (
                       <div className="text-[8px] text-zinc-500 font-black mt-1 uppercase tracking-widest flex items-center justify-end gap-1">
-                        {item.metodo_pago === 'efectivo' ? <Wallet className="w-2.5 h-2.5" /> : <Building2 className="w-2.5 h-2.5" />}
-                        {item.metodo_pago}
+                        {(item as Turno).metodo_pago === 'efectivo' ? <Wallet className="w-2.5 h-2.5" /> : <Building2 className="w-2.5 h-2.5" />}
+                        {(item as Turno).metodo_pago}
                       </div>
                     )}
                   </div>
@@ -207,14 +210,16 @@ export default function FinanzasTab({
                 financesData.history.map((item) => (
                   <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                     <td className="px-8 py-6">
-                      <span className="font-black text-zinc-100 uppercase tracking-tight block">{item.isSale ? (item as any).nombre_producto : item.cliente_nombre}</span>
+                      <span className="font-black text-zinc-100 uppercase tracking-tight block">
+                        {item.isSale ? (item as VentaProducto).nombre_producto : (item as Turno).cliente_nombre}
+                      </span>
                       {item.isSale ? (
                          <div className="text-[10px] text-emerald-500 font-bold mt-1.5 uppercase flex items-center gap-1.5">
                             <ShoppingBag className="w-3 h-3" /> PRODUCTO EXCLUSIVO
                          </div>
-                      ) : item.descripcion_servicio && (
+                      ) : (item as Turno).descripcion_servicio && (
                         <div className="text-[10px] text-amber-500 font-bold mt-1.5 uppercase flex items-center gap-1.5">
-                          <Scissors className="w-3 h-3" /> {item.descripcion_servicio}
+                          <Scissors className="w-3 h-3" /> {(item as Turno).descripcion_servicio}
                         </div>
                       )}
                     </td>
@@ -225,12 +230,12 @@ export default function FinanzasTab({
                     </td>
                     <td className="px-8 py-6 text-right">
                       <span className={`font-black text-lg group-hover:scale-110 transition-transform inline-block ${item.isSale ? 'text-emerald-400' : 'text-emerald-500'}`}>
-                        +${(Number(item.precio || (item as any).precio) || 0).toLocaleString('es-AR')}
+                        +${(Number(item.precio) || 0).toLocaleString('es-AR')}
                       </span>
-                      {item.metodo_pago && (
+                      {(item as Turno).metodo_pago && (
                         <div className="text-[9px] text-zinc-500 font-black mt-1.5 uppercase tracking-widest flex items-center justify-end gap-1">
-                          {item.metodo_pago === 'efectivo' ? <Wallet className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
-                          {item.metodo_pago}
+                          {(item as Turno).metodo_pago === 'efectivo' ? <Wallet className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
+                          {(item as Turno).metodo_pago}
                         </div>
                       )}
                     </td>

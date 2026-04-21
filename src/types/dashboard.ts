@@ -11,8 +11,9 @@ export interface Turno {
   estado: BookingStatus;
   es_manual?: boolean;
   servicio?: string;
-  metodo_pago?: 'efectivo' | 'transferencia' | null;
   descripcion_servicio?: string | null;
+  metodo_pago?: 'efectivo' | 'transferencia' | null;
+  isSale?: boolean; // Discriminador para finanzas
   created_at?: string;
 }
 
@@ -76,6 +77,8 @@ export interface VentaProducto {
   precio: number;
   metodo_pago: 'efectivo' | 'transferencia';
   fecha: string;
+  hora?: string;
+  isSale?: boolean;
   created_at?: string;
 }
 

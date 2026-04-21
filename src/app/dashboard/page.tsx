@@ -232,13 +232,17 @@ export default function Dashboard() {
      const totalAnnualSales = salesAnnual?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
 
      // Combinar turnos y ventas en el historial, ordenados por tiempo
-     const combinedHistory = [
-       ...((historyData as any[]) || []),
-       ...((salesHistory as any[]) || []).map(s => ({ ...s, isSale: true, hora: new Date(s.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) }))
+     const combinedHistory: (Turno | VentaProducto)[] = [
+       ...((historyData as Turno[]) || []).map(t => ({ ...t, isSale: false })),
+       ...((salesHistory as VentaProducto[]) || []).map(s => ({ 
+          ...s, 
+          isSale: true, 
+          hora: s.created_at ? new Date(s.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) : '00:00'
+       }))
      ].sort((a, b) => {
         const timeA = a.created_at ? new Date(a.created_at).getTime() : 0
         const timeB = b.created_at ? new Date(b.created_at).getTime() : 0
-        return timeB - timeA // Descendente por defecto
+        return timeB - timeA
      })
 
      setFinancesData({
