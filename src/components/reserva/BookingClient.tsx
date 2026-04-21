@@ -22,6 +22,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
   const [phoneSuffix, setPhoneSuffix] = useState('')
   const [fecha, setFecha] = useState('')
   const [horaSeleccionada, setHoraSeleccionada] = useState('')
+  const [clientCortes, setClientCortes] = useState<number | null>(null)
 
   // Barber/Tenant States
   const [barberConfig] = useState<ConfiguracionBarberia>(initialBarberConfig)
@@ -186,6 +187,19 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
       } else {
         // OPTIMISTIC UPDATE: Bloqueamos el horario localmente antes de mostrar el éxito
         setBookedSlots(prev => [...prev, horaSeleccionada.substring(0, 5)])
+
+        // CONSULTAR FIDELIZACIÓN (Si está activa)
+        if (barberConfig.fidelizacion_activa) {
+          const { data: clientData } = await supabase
+            .from('clientes')
+            .select('total_cortes')
+            .eq('id_barbero', barberConfig.user_id)
+            .eq('telefono', `+54${phoneSuffix}`)
+            .single()
+          
+          setClientCortes(clientData?.total_cortes || 0)
+        }
+
         setSubmitted(true)
       }
     } catch {
@@ -202,8 +216,21 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
     const cleanNumber = barberConfig.telefono_barbero.replace(/\D/g, '')
     const finalNumber = cleanNumber.startsWith('54') ? cleanNumber : `54${cleanNumber}`
 
+    let fidelityText = ''
+    if (barberConfig.fidelizacion_activa && clientCortes !== null) {
+      const currentCortes = clientCortes + 1 // +1 por el que está reservando
+      const threshold = barberConfig.fidelizacion_threshold || 10
+      const remaining = threshold - (currentCortes % threshold)
+      
+      if (currentCortes % threshold === 0) {
+        fidelityText = `\n\n¡Llevás ${currentCortes} cortes! ¡ESTE TURNO ES TU REGALO! 🎁`
+      } else {
+        fidelityText = `\n\n¡Llevás ${currentCortes} cortes! Te faltan ${remaining} para tu próximo regalo. 🎁`
+      }
+    }
+
     const mensaje = encodeURIComponent(
-      `Hola! Soy ${nombre}, acabo de reservar un turno para el ${fecha} a las ${horaSeleccionada}hs desde la web. ¿Me lo confirmas?`
+      `Hola! Soy ${nombre}, acabo de reservar un turno para el ${getFormattedDate(fecha)} a las ${horaSeleccionada}hs desde la web. ¿Me lo confirmas?${fidelityText}`
     )
     return `https://wa.me/${finalNumber}?text=${mensaje}`
   }

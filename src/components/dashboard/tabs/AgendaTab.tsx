@@ -14,7 +14,8 @@ interface AgendaTabProps {
   onOpenSidebar: () => void
   onAddManualTurn: () => void
   fetchingTurns?: boolean
-  registeredClientsPhones?: Set<string>
+  clients?: Cliente[]
+  vipPhones?: Set<string>
   onRegisterClient?: (nombre: string, telefono: string) => void
   planningSchedule?: HorarioEspecifico[]
 }
@@ -29,7 +30,8 @@ export default function AgendaTab({
   onOpenSidebar,
   onAddManualTurn,
   fetchingTurns = false,
-  registeredClientsPhones = new Set(),
+  clients = [],
+  vipPhones = new Set(),
   onRegisterClient,
   planningSchedule = []
 }: AgendaTabProps) {
@@ -63,6 +65,14 @@ export default function AgendaTab({
         @keyframes loading-bar {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(333%); }
+        }
+        @keyframes jump {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        .jump-animation {
+          display: inline-block;
+          animation: jump 2s ease-in-out infinite;
         }
       `}</style>
       <DashboardHeader 
@@ -129,7 +139,14 @@ export default function AgendaTab({
                       <div>
                         <div className="font-black text-lg text-zinc-100 uppercase tracking-tight flex items-center gap-2">
                           {turn.cliente_nombre}
-                          {!registeredClientsPhones.has(turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
+                          
+                          {/* INDICADOR VIP 💎 */}
+                          {vipPhones.has(turn.cliente_telefono) && (
+                            <span className="text-sm" title="Cliente VIP">💎</span>
+                          )}
+
+                          {/* BOTÓN REGISTRO RÁPIDO */}
+                          {!clients.some(c => c.telefono === turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
                             <button 
                               onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
                               className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black active:scale-90 transition-transform shadow-lg shadow-emerald-900/40"
@@ -139,6 +156,19 @@ export default function AgendaTab({
                             </button>
                           )}
                         </div>
+                        
+                        {/* BADGE DE REGALO 🎁 */}
+                        {(() => {
+                          const clientData = clients.find(c => c.telefono === turn.cliente_telefono)
+                          if (config?.fidelizacion_activa && clientData && (clientData.total_cortes + 1) % (config.fidelizacion_threshold || 10) === 0) {
+                            return (
+                              <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500 text-black text-[8px] font-black uppercase rounded-md shadow-lg shadow-amber-900/20 animate-bounce">
+                                🎁 ¡CORTE GRATIS!
+                              </div>
+                            )
+                          }
+                          return null
+                        })()}
                         <div className="text-[10px] text-zinc-500 font-bold flex items-center gap-2 mt-1 uppercase">
                           <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
                         </div>
@@ -207,7 +237,14 @@ export default function AgendaTab({
                           <div>
                             <div className="font-black text-lg text-zinc-100 uppercase tracking-tight mb-1 flex items-center gap-2">
                               {turn.cliente_nombre}
-                              {!registeredClientsPhones.has(turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
+                              
+                              {/* INDICADOR VIP 💎 */}
+                              {vipPhones.has(turn.cliente_telefono) && (
+                                <span className="text-xl jump-animation" title="Cliente VIP">💎</span>
+                              )}
+
+                              {/* BOTÓN REGISTRO RÁPIDO */}
+                              {!clients.some(c => c.telefono === turn.cliente_telefono) && turn.cliente_telefono !== 'MANUAL' && (
                                 <button 
                                   onClick={() => onRegisterClient?.(turn.cliente_nombre, turn.cliente_telefono)}
                                   className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-black hover:scale-110 active:scale-90 transition-all shadow-lg shadow-emerald-900/40"
@@ -217,6 +254,19 @@ export default function AgendaTab({
                                 </button>
                               )}
                             </div>
+
+                            {/* BADGE DE REGALO 🎁 */}
+                            {(() => {
+                              const clientData = clients.find(c => c.telefono === turn.cliente_telefono)
+                              if (config?.fidelizacion_activa && clientData && (clientData.total_cortes + 1) % (config.fidelizacion_threshold || 10) === 0) {
+                                return (
+                                  <div className="mb-2 inline-flex items-center gap-2 px-3 py-1 bg-amber-500 text-black text-[10px] font-black uppercase rounded-lg shadow-lg shadow-amber-900/20 animate-pulse">
+                                    🎁 ESTE CORTE ES GRATIS
+                                  </div>
+                                )
+                              }
+                              return null
+                            })()}
                             <div className="text-xs text-zinc-500 font-bold flex items-center gap-2">
                               <Phone className="w-3 h-3 text-zinc-700" /> {turn.cliente_telefono}
                             </div>

@@ -44,6 +44,7 @@ export default function Dashboard() {
   const [turns, setTurns] = useState<Turno[]>([])
   const [allUpcomingTurns, setAllUpcomingTurns] = useState<Turno[]>([])
   const [clients, setClients] = useState<Cliente[]>([])
+  const [vipPhones, setVipPhones] = useState<Set<string>>(new Set())
   
   // Modal states
   const [showLogoutModal, setShowLogoutModal] = useState(false)
@@ -88,6 +89,11 @@ export default function Dashboard() {
   const [editMaps, setEditMaps] = useState('')
   const [editLogoUrl, setEditLogoUrl] = useState<string | null>(null)
   
+  // Fidelización states
+  const [editFidelizacionActiva, setEditFidelizacionActiva] = useState(false)
+  const [editThreshold, setEditThreshold] = useState(10)
+  const [editVipActivo, setEditVipActivo] = useState(false)
+  
   // Cropper states
   const [tempImage, setTempImage] = useState<string | null>(null)
   
@@ -129,6 +135,9 @@ export default function Dashboard() {
         setEditPhone(parsed.telefono_barbero.replace('+54', ''))
         setEditMaps(parsed.google_maps_link || '')
         setEditLogoUrl(parsed.logo_url || null)
+        setEditFidelizacionActiva(parsed.fidelizacion_activa || false)
+        setEditThreshold(parsed.fidelizacion_threshold || 10)
+        setEditVipActivo(parsed.vip_activo || false)
       } catch (e) { console.error('Cache parse error:', e) }
     }
 
@@ -141,6 +150,35 @@ export default function Dashboard() {
   useEffect(() => {
     localStorage.setItem('activeDashboardTab', activeTab)
   }, [activeTab])
+
+  const fetchVipStatus = useCallback(async (userId: string) => {
+    if (!config?.vip_activo) {
+      setVipPhones(new Set())
+      return
+    }
+
+    const now = new Date()
+    const firstDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date(now.getFullYear(), now.getMonth(), 1))
+    
+    // Consultamos turnos completados del mes para identificar VIPs (>= 3 cortes)
+    const { data } = await supabase
+      .from('turnos')
+      .select('cliente_telefono')
+      .eq('barbero_id', userId)
+      .eq('estado', 'completado')
+      .gte('fecha', firstDay)
+
+    if (data) {
+      const counts: Record<string, number> = {}
+      data.forEach(t => {
+        if (t.cliente_telefono !== 'MANUAL') {
+          counts[t.cliente_telefono] = (counts[t.cliente_telefono] || 0) + 1
+        }
+      })
+      const vips = new Set(Object.keys(counts).filter(phone => counts[phone] >= 3))
+      setVipPhones(vips)
+    }
+  }, [config?.vip_activo])
 
   const fetchFinances = useCallback(async (userId: string) => {
     const firstDayOfMonth = financesMonth + '-01'
@@ -234,6 +272,9 @@ export default function Dashboard() {
         setEditPhone(configData.telefono_barbero.replace('+54', ''))
         setEditMaps(configData.google_maps_link || '')
         setEditLogoUrl(configData.logo_url || null)
+        setEditFidelizacionActiva(configData.fidelizacion_activa || false)
+        setEditThreshold(configData.fidelizacion_threshold || 10)
+        setEditVipActivo(configData.vip_activo || false)
 
         // Procesar planificación semanal
         const finalPlanning: HorarioEspecifico[] = next7Days.map(fechaStr => {
@@ -272,8 +313,9 @@ export default function Dashboard() {
       fetchData(user.id)
       fetchFinances(user.id)
       fetchClients(user.id)
+      fetchVipStatus(user.id)
     }
-  }, [user?.id, fetchData, fetchFinances, fetchClients])
+  }, [user?.id, fetchData, fetchFinances, fetchClients, fetchVipStatus])
 
   // REALTIME PARA EL BARBERO: Suscripción a nuevos turnos
   useEffect(() => {
@@ -308,7 +350,14 @@ export default function Dashboard() {
     setSaving(true)
     const newSlug = editNombre.toLowerCase().trim().replace(/\s+/g, '-')
     const { error } = await supabase.from('configuracion_barberia').update({
-      nombre_barberia: editNombre, slug: newSlug, telefono_barbero: `+54${editPhone}`, google_maps_link: editMaps, logo_url: editLogoUrl
+      nombre_barberia: editNombre, 
+      slug: newSlug, 
+      telefono_barbero: `+54${editPhone}`, 
+      google_maps_link: editMaps, 
+      logo_url: editLogoUrl,
+      fidelizacion_activa: editFidelizacionActiva,
+      fidelizacion_threshold: editThreshold,
+      vip_activo: editVipActivo
     }).eq('user_id', user?.id)
 
     if (error) {
@@ -552,7 +601,8 @@ export default function Dashboard() {
               onOpenSidebar={() => setIsMobileSidebarOpen(true)}
               onAddManualTurn={() => setShowManualModal(true)}
               fetchingTurns={fetchingTurns}
-              registeredClientsPhones={new Set(clients.map(c => c.telefono))}
+              clients={clients}
+              vipPhones={vipPhones}
               onRegisterClient={handleRegisterClient}
               planningSchedule={planningSchedule}
             />
@@ -627,6 +677,9 @@ export default function Dashboard() {
               editPhone={editPhone} setEditPhone={setEditPhone}
               editMaps={editMaps} setEditMaps={setEditMaps}
               editLogoUrl={editLogoUrl} setEditLogoUrl={setEditLogoUrl}
+              editFidelizacionActiva={editFidelizacionActiva} setEditFidelizacionActiva={setEditFidelizacionActiva}
+              editThreshold={editThreshold} setEditThreshold={setEditThreshold}
+              editVipActivo={editVipActivo} setEditVipActivo={setEditVipActivo}
               onUpdateConfig={handleUpdateConfig} onLogoUpload={handleLogoUpload}
               config={config} userEmail={user?.email} onLogout={() => setShowLogoutModal(true)}
               onShare={() => setShowShareModal(true)} saving={saving} onOpenSidebar={() => setIsMobileSidebarOpen(true)}

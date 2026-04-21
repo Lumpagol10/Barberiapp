@@ -15,6 +15,12 @@ interface ConfigTabProps {
   setEditMaps: (val: string) => void
   editLogoUrl: string | null
   setEditLogoUrl: (val: string | null) => void
+  editFidelizacionActiva: boolean
+  setEditFidelizacionActiva: (val: boolean) => void
+  editThreshold: number
+  setEditThreshold: (val: number) => void
+  editVipActivo: boolean
+  setEditVipActivo: (val: boolean) => void
   onUpdateConfig: (e: React.FormEvent) => Promise<void>
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   config: ConfiguracionBarberia | null
@@ -34,6 +40,12 @@ export default function ConfigTab({
   setEditMaps,
   editLogoUrl,
   setEditLogoUrl,
+  editFidelizacionActiva,
+  setEditFidelizacionActiva,
+  editThreshold,
+  setEditThreshold,
+  editVipActivo,
+  setEditVipActivo,
   onUpdateConfig,
   onLogoUpload,
   config,
@@ -150,6 +162,82 @@ export default function ConfigTab({
                     </div>
                  </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECCIÓN FIDELIZACIÓN (NUEVA) */}
+        <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 space-y-6 sm:space-y-8 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <Settings className="w-32 h-32 rotate-12" />
+          </div>
+          
+          <div className="flex items-center gap-4 text-amber-500 relative z-10">
+            <div className="p-2.5 sm:p-3 bg-amber-600/10 rounded-xl sm:rounded-2xl border border-amber-600/20">
+              <Store className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg sm:text-xl font-black uppercase italic tracking-tighter">Fidelización y Premios</h3>
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Incentivá a tus clientes a volver</p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 sm:gap-8 relative z-10">
+            {/* OPCION A: CORTE GRATIS */}
+            <div className={`p-6 rounded-3xl border transition-all duration-300 ${editFidelizacionActiva ? 'bg-amber-600/5 border-amber-600/20 shadow-lg shadow-amber-900/5' : 'bg-zinc-950/20 border-zinc-800/50 opacity-60'}`}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-black uppercase tracking-tight text-white">Programa de Puntos</h4>
+                  <p className="text-[9px] text-zinc-500 font-bold uppercase">1 Corte Gratis cada X visitas</p>
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => setEditFidelizacionActiva(!editFidelizacionActiva)}
+                  className={`relative w-14 h-8 rounded-full transition-all duration-300 ${editFidelizacionActiva ? 'bg-amber-600' : 'bg-zinc-800'}`}
+                >
+                  <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-md ${editFidelizacionActiva ? 'left-7' : 'left-1'}`} />
+                </button>
+              </div>
+
+              {editFidelizacionActiva && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-amber-500/80 ml-1">Cortes necesarios para el premio:</label>
+                  <div className="flex items-center gap-4">
+                    <input 
+                      type="range"
+                      min="2"
+                      max="20"
+                      value={editThreshold}
+                      onChange={(e) => setEditThreshold(Number(e.target.value))}
+                      className="flex-1 accent-amber-600 h-1 bg-zinc-800 rounded-full appearance-none cursor-pointer"
+                    />
+                    <div className="w-14 h-14 bg-zinc-950 border border-amber-600/30 rounded-2xl flex items-center justify-center font-black text-xl text-amber-500 shadow-inner italic">
+                      {editThreshold}
+                    </div>
+                  </div>
+                  <p className="text-[8px] text-zinc-600 font-bold uppercase italic text-center">El cliente recibirá un aviso de regalo en su visita nº {editThreshold}, {editThreshold * 2}, etc.</p>
+                </div>
+              )}
+            </div>
+
+            {/* OPCION B: VIP ALERT */}
+            <div className={`p-6 rounded-3xl border transition-all duration-300 ${editVipActivo ? 'bg-amber-600/5 border-amber-600/20 shadow-lg shadow-amber-900/5' : 'bg-zinc-950/20 border-zinc-800/50 opacity-60'}`}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-black uppercase tracking-tight text-white">Portal de Clientes VIP</h4>
+                  <p className="text-[9px] text-zinc-500 font-bold uppercase">Identificación con diamante 💎</p>
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => setEditVipActivo(!editVipActivo)}
+                  className={`relative w-14 h-8 rounded-full transition-all duration-300 ${editVipActivo ? 'bg-amber-600' : 'bg-zinc-800'}`}
+                >
+                  <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-md ${editVipActivo ? 'left-7' : 'left-1'}`} />
+                </button>
+              </div>
+              <p className="text-[9px] text-zinc-600 font-bold uppercase leading-relaxed">
+                Si está activo, verás un diamante dorado en la agenda junto a los clientes que hayan venido 3 o más veces en el último mes.
+              </p>
             </div>
           </div>
         </div>

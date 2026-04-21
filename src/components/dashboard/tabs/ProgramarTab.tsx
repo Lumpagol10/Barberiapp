@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Calendar, Settings, Scissors } from 'lucide-react'
+import { toast } from 'sonner'
 import { HorarioRutina, HorarioEspecifico, ConfiguracionBarberia } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
 
@@ -104,6 +105,15 @@ export default function ProgramarTab({
                   <button 
                     type="button"
                     onClick={() => {
+                      // HOTFIX: Validar si hay turnos antes de cerrar el día
+                      const hasTurns = upcomingTurns?.some(t => t.fecha === dia.fecha)
+                      if (hasTurns && dia.activo) {
+                        toast.error("No podés cerrar este día porque ya tenés clientes agendados. Cancelá los turnos primero.", {
+                          style: { background: '#18181b', color: '#ef4444', border: '1px solid #ef444420' }
+                        })
+                        return
+                      }
+
                       const newShed = [...planningSchedule]
                       newShed[idx].activo = !newShed[idx].activo
                       setPlanningSchedule(newShed)
@@ -135,15 +145,23 @@ export default function ProgramarTab({
                                 : 'border-zinc-800 hover:border-emerald-500/30 focus:ring-emerald-500/20 focus:border-emerald-500 text-white'
                               }`}
                           />
-                          {!isOccupied ? (
-                            <button 
-                              type="button"
-                              onClick={() => removePlanningSlot(idx, slotIdx)}
-                              className="absolute -top-2 -right-2 w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
-                            >
-                              ✕
-                            </button>
-                          ) : (
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              if (isOccupied) {
+                                toast.error("No podés borrar este horario porque ya tenés un cliente agendado. Cancelá el turno primero.", {
+                                  style: { background: '#18181b', color: '#ef4444', border: '1px solid #ef444420' }
+                                })
+                                return
+                              }
+                              removePlanningSlot(idx, slotIdx)
+                            }}
+                            className={`absolute -top-2 -right-2 w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg transition-all hover:scale-110 z-10 
+                              ${isOccupied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                          >
+                            ✕
+                          </button>
+                          {isOccupied && (
                             <div className="absolute -top-1.5 -right-1.5 px-2 py-0.5 bg-red-600 text-white text-[7px] font-black uppercase rounded-full shadow-lg">
                               Ocupado
                             </div>

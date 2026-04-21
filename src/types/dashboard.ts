@@ -25,6 +25,9 @@ export interface ConfiguracionBarberia {
   hora_apertura: string; // HH:mm
   hora_cierre: string; // HH:mm
   intervalo_minutos: number;
+  fidelizacion_activa: boolean;
+  fidelizacion_threshold: number;
+  vip_activo: boolean;
   created_at?: string;
 }
 
