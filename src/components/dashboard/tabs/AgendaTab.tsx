@@ -1,6 +1,6 @@
 'use client'
 
-import { Phone, CheckCircle, Clock, Calendar, MessageCircle, Plus, Scissors } from 'lucide-react'
+import { Phone, CheckCircle, Clock, Calendar, MessageCircle, Plus, Scissors, Trash2 } from 'lucide-react'
 import { Turno, ConfiguracionBarberia, Cliente, HorarioEspecifico } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
 
