@@ -142,7 +142,7 @@ export default function AgendaTab({
                           
                           {/* INDICADOR VIP 💎 */}
                           {vipPhones.has(turn.cliente_telefono) && (
-                            <span className="text-sm" title="Cliente VIP">💎</span>
+                            <span className="text-sm jump-animation" title="Cliente VIP">💎</span>
                           )}
 
                           {/* BOTÓN REGISTRO RÁPIDO */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { DollarSign, TrendingUp, Scissors } from 'lucide-react'
+import { DollarSign, TrendingUp, Scissors, Wallet, Building2 } from 'lucide-react'
 import { FinanzasData, ConfiguracionBarberia } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
 
@@ -66,6 +66,13 @@ export default function FinanzasTab({
             <span className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">${financesData.dailyTotal.toLocaleString('es-AR')}</span>
             <span className="text-zinc-500 font-bold uppercase text-[8px] sm:text-[10px] tracking-widest italic">ARS</span>
           </div>
+          {historyFilterMode === 'day' && (
+            <div className="mt-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-emerald-500/70">
+              <span>EFEC: ${(financesData.dailyCashTotal || 0).toLocaleString('es-AR')}</span>
+              <span className="text-zinc-700">|</span>
+              <span>TRANSF: ${(financesData.dailyTransferTotal || 0).toLocaleString('es-AR')}</span>
+            </div>
+          )}
         </div>
 
         {/* Total Mensual */}
@@ -132,6 +139,11 @@ export default function FinanzasTab({
                 <div key={item.id} className="p-6 flex justify-between items-center active:bg-white/[0.02] transition-colors">
                   <div>
                     <div className="font-black text-zinc-100 uppercase tracking-tight">{item.cliente_nombre}</div>
+                    {item.descripcion_servicio && (
+                      <div className="text-[10px] text-amber-500 font-bold mt-1 uppercase flex items-center gap-1.5">
+                        <Scissors className="w-3 h-3" /> {item.descripcion_servicio}
+                      </div>
+                    )}
                     <div className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">
                       {new Date(item.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })} • {item.hora.substring(0, 5)}hs
                     </div>
@@ -140,6 +152,12 @@ export default function FinanzasTab({
                     <div className="font-black text-emerald-500 text-lg">
                       +${(Number(item.precio) || 0).toLocaleString('es-AR')}
                     </div>
+                    {item.metodo_pago && (
+                      <div className="text-[8px] text-zinc-500 font-black mt-1 uppercase tracking-widest flex items-center justify-end gap-1">
+                        {item.metodo_pago === 'efectivo' ? <Wallet className="w-2.5 h-2.5" /> : <Building2 className="w-2.5 h-2.5" />}
+                        {item.metodo_pago}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -167,7 +185,12 @@ export default function FinanzasTab({
                 financesData.history.map((item) => (
                   <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                     <td className="px-8 py-6">
-                      <span className="font-black text-zinc-100 uppercase tracking-tight">{item.cliente_nombre}</span>
+                      <span className="font-black text-zinc-100 uppercase tracking-tight block">{item.cliente_nombre}</span>
+                      {item.descripcion_servicio && (
+                        <div className="text-[10px] text-amber-500 font-bold mt-1.5 uppercase flex items-center gap-1.5">
+                          <Scissors className="w-3 h-3" /> {item.descripcion_servicio}
+                        </div>
+                      )}
                     </td>
                     <td className="px-8 py-6">
                       <div className="text-xs text-zinc-500 font-bold">
@@ -178,6 +201,12 @@ export default function FinanzasTab({
                       <span className="font-black text-emerald-500 text-lg group-hover:scale-110 transition-transform inline-block">
                         +${(Number(item.precio) || 0).toLocaleString('es-AR')}
                       </span>
+                      {item.metodo_pago && (
+                        <div className="text-[9px] text-zinc-500 font-black mt-1.5 uppercase tracking-widest flex items-center justify-end gap-1">
+                          {item.metodo_pago === 'efectivo' ? <Wallet className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
+                          {item.metodo_pago}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))

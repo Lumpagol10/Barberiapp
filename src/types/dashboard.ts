@@ -11,6 +11,8 @@ export interface Turno {
   estado: BookingStatus;
   es_manual?: boolean;
   servicio?: string;
+  metodo_pago?: 'efectivo' | 'transferencia' | null;
+  descripcion_servicio?: string | null;
   created_at?: string;
 }
 
@@ -50,6 +52,8 @@ export interface HorarioEspecifico {
 
 export interface FinanzasData {
   dailyTotal: number;
+  dailyCashTotal: number;
+  dailyTransferTotal: number;
   monthlyTotal: number;
   annualTotal: number;
   history: Turno[];

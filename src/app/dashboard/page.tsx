@@ -186,7 +186,7 @@ export default function Dashboard() {
     const lastDayOfMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).toISOString().split('T')[0]
     const firstDayOfYear = new Date().getFullYear() + '-01-01'
 
-    const { data: dailyData } = await supabase.from('turnos').select('precio').eq('barbero_id', userId).eq('estado', 'completado').eq('fecha', financesDate)
+    const { data: dailyData } = await supabase.from('turnos').select('precio, metodo_pago').eq('barbero_id', userId).eq('estado', 'completado').eq('fecha', financesDate)
     const { data: monthlyData } = await supabase.from('turnos').select('precio').eq('barbero_id', userId).eq('estado', 'completado').gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth)
     const { data: annualData } = await supabase.from('turnos').select('precio').eq('barbero_id', userId).eq('estado', 'completado').gte('fecha', firstDayOfYear)
 
@@ -201,6 +201,8 @@ export default function Dashboard() {
 
     setFinancesData({
       dailyTotal: dailyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
+      dailyCashTotal: dailyData?.filter(t => t.metodo_pago === 'efectivo').reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
+      dailyTransferTotal: dailyData?.filter(t => t.metodo_pago === 'transferencia').reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
       monthlyTotal: monthlyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
       annualTotal: annualData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0,
       history: (historyData as Turno[]) || []
@@ -460,11 +462,16 @@ export default function Dashboard() {
     } catch (e) { console.error('Error updating client stats:', e) }
   }
 
-  const confirmCheckout = async (omitValue: boolean = false) => {
+  const confirmCheckout = async (omitValue: boolean = false, method: 'efectivo' | 'transferencia' | null = null, desc: string = '') => {
     if (!selectedTurnId || !user) return
     setSaving(true)
     const finalPrice = omitValue ? 0 : Number(checkoutPrice)
-    const { error } = await supabase.from('turnos').update({ estado: 'completado', precio: finalPrice }).eq('id', selectedTurnId).eq('barbero_id', user.id)
+    const { error } = await supabase.from('turnos').update({ 
+      estado: 'completado', 
+      precio: finalPrice,
+      metodo_pago: method,
+      descripcion_servicio: desc
+    }).eq('id', selectedTurnId).eq('barbero_id', user.id)
     if (!error) {
       const finishedTurn = turns.find(t => t.id === selectedTurnId)
       if (finishedTurn) {
