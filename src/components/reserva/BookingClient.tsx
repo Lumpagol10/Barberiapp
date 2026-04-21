@@ -88,13 +88,17 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
     
     try {
       if (barberConfig) {
-        // 2. BUSCAR PLANIFICACIÓN ESPECÍFICA PARA ESTA FECHA (STRICT MODE)
-        const { data: specificShed } = await supabase
+        // 2. BUSCAR PLANIFICACIÓN ESPECÍFICA PARA ESTA FECHA
+        const { data: specificShed, error } = await supabase
           .from('horarios_especificos')
           .select('*')
           .eq('user_id', barberConfig.user_id)
           .eq('fecha', nuevaFecha)
-          .single()
+          .maybeSingle()
+
+        if (error) {
+          console.error("Supabase Error fetching shed:", error)
+        }
 
         if (specificShed) {
           if (!specificShed.activo) {
