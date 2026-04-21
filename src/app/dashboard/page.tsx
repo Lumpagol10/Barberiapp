@@ -311,15 +311,27 @@ export default function Dashboard() {
     }
   }, [viewDate, user?.id, fetchTurnsForDate])
 
-  // Efecto inicial y finanzas
+  // Efecto inicial: Carga datos estructurales una sola vez al montar o cambiar de usuario
   useEffect(() => {
     if (user?.id) {
       fetchData(user.id)
-      fetchFinances(user.id)
       fetchClients(user.id)
+    }
+  }, [user?.id, fetchData, fetchClients])
+
+  // Efecto Finanzas: Se dispara solo cuando cambian los filtros de finanzas
+  useEffect(() => {
+    if (user?.id) {
+      fetchFinances(user.id)
+    }
+  }, [user?.id, fetchFinances])
+
+  // Efecto VIP: Se dispara cuando la configuración está lista
+  useEffect(() => {
+    if (user?.id && config) {
       fetchVipStatus(user.id)
     }
-  }, [user?.id, fetchData, fetchFinances, fetchClients, fetchVipStatus])
+  }, [user?.id, config, fetchVipStatus])
 
   // REALTIME PARA EL BARBERO: Suscripción a nuevos turnos
   useEffect(() => {
