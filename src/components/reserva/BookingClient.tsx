@@ -380,35 +380,68 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     <h3 className="text-sm font-black uppercase tracking-tighter italic mb-2">Agenda No Programada</h3>
                     <p className="text-zinc-600 text-[10px] font-medium leading-tight italic max-w-xs mx-auto">No hay turnos disponibles para esta fecha aún.</p>
                   </div>
-                ) : availableSlots.length === 0 ? (
-                  <div className="py-12 text-center animate-in fade-in zoom-in-95 duration-700">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-1 h-1 bg-amber-500 rounded-full animate-ping" />
-                      <p className="text-zinc-600 font-bold uppercase tracking-[0.3em] text-[8px] animate-pulse">
-                        No hay turnos
-                      </p>
+                ) : (() => {
+                  const isToday = fecha === new Intl.DateTimeFormat('en-CA', { 
+                    timeZone: 'America/Argentina/Buenos_Aires', 
+                    year: 'numeric', month: '2-digit', day: '2-digit' 
+                  }).format(new Date())
+                  
+                  const argNow = new Date()
+                  const currentArgTime = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'America/Argentina/Buenos_Aires',
+                    hour: '2-digit', minute: '2-digit', hour12: false
+                  }).format(argNow)
+                  const [currH, currM] = currentArgTime.split(':').map(Number)
+                  const currentTotalMinutes = currH * 60 + currM
+
+                  const futureSlots = availableSlots.filter(slot => {
+                    if (!isToday) return true
+                    const [slotH, slotM] = slot.split(':').map(Number)
+                    const slotTotalMinutes = slotH * 60 + slotM
+                    return slotTotalMinutes >= currentTotalMinutes + 15
+                  })
+
+                  const displaySlots = futureSlots.filter(slot => !bookedSlots.includes(slot))
+
+                  if (isToday && displaySlots.length === 0) {
+                    return (
+                      <div className="bg-amber-500/5 border border-amber-500/20 p-6 rounded-2xl text-center animate-in fade-in duration-500">
+                        <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <CheckCircle2 className="w-6 h-6 text-amber-500" />
+                        </div>
+                        <h3 className="text-sm font-black uppercase tracking-tighter italic mb-2">¡Día Completado!</h3>
+                        <p className="text-zinc-500 text-[10px] font-medium leading-tight italic max-w-xs mx-auto">Ya no quedan turnos disponibles para hoy. Consultá los turnos para mañana.</p>
+                      </div>
+                    )
+                  }
+
+                  if (displaySlots.length === 0) {
+                     return (
+                      <div className="py-12 text-center">
+                        <p className="text-zinc-700 text-[8px] font-black uppercase tracking-widest italic animate-pulse">Sin turnos disponibles</p>
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar border-t border-zinc-800/30 pt-3">
+                      {displaySlots.map((slot) => {
+                          const isSelected = horaSeleccionada === slot
+                          return (
+                            <button 
+                              key={slot} 
+                              type="button" 
+                              onClick={() => setHoraSeleccionada(slot)} 
+                              className={`py-2 px-1 rounded-lg text-center text-[10px] font-bold transition-all border ${isSelected ? 'bg-amber-600 border-amber-500 text-black' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:border-amber-500/50'}`}
+                            >
+                              {slot}
+                            </button>
+                          )
+                        })
+                      }
                     </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar border-t border-zinc-800/30 pt-3">
-                    {availableSlots
-                      .filter(slot => !bookedSlots.includes(slot))
-                      .map((slot) => {
-                        const isSelected = horaSeleccionada === slot
-                        return (
-                          <button 
-                            key={slot} 
-                            type="button" 
-                            onClick={() => setHoraSeleccionada(slot)} 
-                            className={`py-2 px-1 rounded-lg text-center text-[10px] font-bold transition-all border ${isSelected ? 'bg-amber-600 border-amber-500 text-black' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:border-amber-500/50'}`}
-                          >
-                            {slot}
-                          </button>
-                        )
-                      })
-                    }
-                  </div>
-                )}
+                  )
+                })() }
               </div>
             )}
 

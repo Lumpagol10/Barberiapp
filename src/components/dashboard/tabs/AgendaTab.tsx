@@ -57,11 +57,27 @@ export default function AgendaTab({
   const dayPlanning = planningSchedule.find(p => p.fecha === viewDate)
   const allSlots = dayPlanning?.slots || []
 
+  // Lógica de Tiempo Real (Argentina)
+  const argNow = new Date()
+  const currentArgTime = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).format(argNow)
+  const [currH, currM] = currentArgTime.split(':').map(Number)
+  const currentTotalMinutes = currH * 60 + currM
+
   // Create unified timeline
-  const timeline = allSlots.map(slot => ({
-    slot,
-    turn: turns.find(t => t.hora.startsWith(slot))
-  }))
+  const timeline = allSlots.map(slot => {
+    const [slotH, slotM] = slot.split(':').map(Number)
+    const slotTotalMinutes = slotH * 60 + slotM
+    const isPast = isToday && (slotTotalMinutes < currentTotalMinutes + 15)
+    
+    return {
+      slot,
+      isPast,
+      turn: turns.find(t => t.hora.startsWith(slot))
+    }
+  })
 
   const hasContent = timeline.length > 0
 
@@ -138,9 +154,9 @@ export default function AgendaTab({
         <div className={`block md:hidden transition-opacity duration-300 ${fetchingTurns ? 'opacity-50' : 'opacity-100'}`}>
           {hasContent ? (
             <div className="divide-y divide-zinc-800/30">
-              {timeline.map(({ slot, turn }) => (
+              {timeline.map(({ slot, turn, isPast }) => (
                 turn ? (
-                  <div key={turn.id} className="p-6 space-y-4 active:bg-white/[0.02] transition-colors">
+                  <div key={turn.id} className={`p-6 space-y-4 active:bg-white/[0.02] transition-colors ${isPast ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="font-black text-lg text-zinc-100 uppercase tracking-tight flex items-center gap-2">
@@ -224,8 +240,9 @@ export default function AgendaTab({
                 ) : (
                   <button 
                     key={slot} 
-                    onClick={onAddManualTurn}
-                    className="w-full p-6 flex items-center justify-between bg-zinc-950/10 hover:bg-amber-500/5 transition-all group border-b border-zinc-800/10 last:border-0"
+                    onClick={isPast ? undefined : onAddManualTurn}
+                    disabled={isPast}
+                    className={`w-full p-6 flex items-center justify-between transition-all group border-b border-zinc-800/10 last:border-0 ${isPast ? 'bg-zinc-950/20 opacity-30 grayscale cursor-not-allowed' : 'bg-zinc-950/10 hover:bg-amber-500/5'}`}
                   >
                     <div className="flex flex-col items-start gap-1">
                       <div className="font-mono text-zinc-600 font-black text-xs uppercase tracking-tighter">{slot}hs</div>
@@ -263,9 +280,9 @@ export default function AgendaTab({
             </thead>
             <tbody className="divide-y divide-zinc-800/20">
               {hasContent ? (
-                timeline.map(({ slot, turn }) => (
+                timeline.map(({ slot, turn, isPast }) => (
                   turn ? (
-                    <tr key={turn.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <tr key={turn.id} className={`transition-colors group ${isPast ? 'opacity-30 grayscale pointer-events-none select-none' : 'hover:bg-white/[0.02]'}`}>
                       <td className="px-8 py-8">
                         <div className="flex items-center gap-4">
                           <div>
@@ -355,8 +372,8 @@ export default function AgendaTab({
                   ) : (
                     <tr 
                       key={slot} 
-                      onClick={onAddManualTurn}
-                      className="bg-zinc-950/5 hover:bg-amber-500/5 transition-all cursor-pointer group"
+                      onClick={isPast ? undefined : onAddManualTurn}
+                      className={`transition-all group ${isPast ? 'bg-zinc-950/20 opacity-30 grayscale cursor-not-allowed text-zinc-700' : 'bg-zinc-950/5 hover:bg-amber-500/5 cursor-pointer'}`}
                     >
                       <td className="px-8 py-8">
                         <div className="flex items-center gap-4">

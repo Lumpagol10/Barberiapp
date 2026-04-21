@@ -13,7 +13,9 @@ import {
   HorarioEspecifico, 
   FinanzasData, 
   DashboardTab,
-  Cliente
+  Cliente,
+  Producto,
+  CategoriaProducto
 } from '@/types/dashboard'
 import { User } from '@supabase/supabase-js'
 import { Scissors } from 'lucide-react'
@@ -24,6 +26,7 @@ import AgendaTab from '@/components/dashboard/tabs/AgendaTab'
 import ProgramarTab from '@/components/dashboard/tabs/ProgramarTab'
 import FinanzasTab from '@/components/dashboard/tabs/FinanzasTab'
 import ClientesTab from '@/components/dashboard/tabs/ClientesTab'
+import CatalogoTab from '@/components/dashboard/tabs/CatalogoTab'
 import ConfigTab from '@/components/dashboard/tabs/ConfigTab'
 
 // Modals
@@ -45,6 +48,8 @@ export default function Dashboard() {
   const [turns, setTurns] = useState<Turno[]>([])
   const [allUpcomingTurns, setAllUpcomingTurns] = useState<Turno[]>([])
   const [clients, setClients] = useState<Cliente[]>([])
+  const [products, setProducts] = useState<Producto[]>([])
+  const [categories, setCategories] = useState<CategoriaProducto[]>([])
   const [vipPhones, setVipPhones] = useState<Set<string>>(new Set())
   
   // Modal states
@@ -229,6 +234,20 @@ export default function Dashboard() {
     }
   }, [])
 
+  const fetchCatalogo = useCallback(async (userId: string) => {
+    try {
+      const [pRes, cRes] = await Promise.all([
+        supabase.from('productos').select('*').eq('user_id', userId).order('nombre', { ascending: true }),
+        supabase.from('categorias_productos').select('*').eq('user_id', userId).order('nombre', { ascending: true })
+      ])
+      
+      setProducts((pRes.data as Producto[]) || [])
+      setCategories((cRes.data as CategoriaProducto[]) || [])
+    } catch (error) {
+      console.error('Error fetching catalog:', error)
+    }
+  }, [])
+
   const fetchTurnsForDate = useCallback(async (userId: string, targetDate: string) => {
     setFetchingTurns(true)
     try {
@@ -319,8 +338,9 @@ export default function Dashboard() {
     if (user?.id) {
       fetchData(user.id)
       fetchClients(user.id)
+      fetchCatalogo(user.id)
     }
-  }, [user?.id, fetchData, fetchClients])
+  }, [user?.id, fetchData, fetchClients, fetchCatalogo])
 
   // Efecto Finanzas: Se dispara solo cuando cambian los filtros de finanzas
   useEffect(() => {
@@ -427,9 +447,16 @@ export default function Dashboard() {
   const handleUpdatePlanning = async () => {
     if (!user) return
     setSaving(true)
+    
+    // ORDENAMIENTO FINAL antes de guardar (Vista prolija al final)
+    const sortedSchedule = planningSchedule.map(dia => ({
+      ...dia,
+      slots: [...(dia.slots || [])].sort()
+    }))
+
     try {
       const { error } = await supabase.from('horarios_especificos').upsert(
-        planningSchedule.map(s => ({ user_id: user.id, fecha: s.fecha, activo: s.activo, slots: s.slots || [] })),
+        sortedSchedule.map(s => ({ user_id: user.id, fecha: s.fecha, activo: s.activo, slots: s.slots || [] })),
         { onConflict: 'user_id,fecha' }
       )
       if (error) throw error
@@ -665,7 +692,7 @@ export default function Dashboard() {
                   if (routine) {
                     setPlanningSchedule(prev => prev.map((dia, i) => {
                       if (i !== idx) return dia
-                      return { ...dia, slots: [...(routine.slots || [])], activo: true }
+                      return { ...dia, slots: [...(routine.slots || [])].sort(), activo: true }
                     }))
                     toast.success('✅ Rutina cargada')
                   } else {
@@ -696,7 +723,7 @@ export default function Dashboard() {
                   if (i !== dayIdx) return dia;
                   const newSlots = [...dia.slots];
                   newSlots[slotIdx] = newValue;
-                  return { ...dia, slots: newSlots.sort() };
+                  return { ...dia, slots: newSlots };
                 }));
               }}
               saving={saving} config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
@@ -716,6 +743,24 @@ export default function Dashboard() {
               clientes={clients}
               config={config}
               onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+            />
+          )}
+          {activeTab === 'catalogo' && (
+            <CatalogoTab 
+              config={config} 
+              products={products} 
+              categories={categories}
+              onRefresh={() => user && fetchCatalogo(user.id)}
+              onToggleActive={async (val) => {
+                if (!user) return
+                const { error } = await supabase.from('configuracion_barberia').update({ catalogo_activo: val }).eq('user_id', user.id)
+                if (!error) {
+                  setConfig(prev => prev ? { ...prev, catalogo_activo: val } : null)
+                  toast.success(val ? '🚀 Catálogo activado' : '🔴 Catálogo desactivado')
+                }
+              }}
+              onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+              userId={user?.id}
             />
           )}
           {activeTab === 'config' && (

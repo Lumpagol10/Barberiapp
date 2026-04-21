@@ -30,6 +30,25 @@ export interface ConfiguracionBarberia {
   fidelizacion_activa: boolean;
   fidelizacion_threshold: number;
   vip_activo: boolean;
+  catalogo_activo: boolean; // NUEVO: Flag para vidriera digital
+  created_at?: string;
+}
+
+export interface CategoriaProducto {
+  id: string;
+  user_id: string;
+  nombre: string;
+  created_at?: string;
+}
+
+export interface Producto {
+  id: string;
+  user_id: string;
+  nombre: string;
+  precio: number;
+  imagen_url: string | null;
+  categoria_id: string | null;
+  activo: boolean;
   created_at?: string;
 }
 
@@ -69,4 +88,4 @@ export interface Cliente {
   created_at?: string;
 }
 
-export type DashboardTab = 'agenda' | 'programar' | 'finanzas' | 'clientes' | 'config';
+export type DashboardTab = 'agenda' | 'programar' | 'finanzas' | 'clientes' | 'catalogo' | 'config';

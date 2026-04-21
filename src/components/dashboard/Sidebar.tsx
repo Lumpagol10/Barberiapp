@@ -29,6 +29,7 @@ export default function Sidebar({
     { id: 'programar' as DashboardTab, label: 'Programar Agenda', icon: Clock },
     { id: 'finanzas' as DashboardTab, label: 'Finanzas', icon: DollarSign, color: 'emerald' },
     { id: 'clientes' as DashboardTab, label: 'Clientes', icon: Users },
+    { id: 'catalogo' as DashboardTab, label: 'Catálogo', icon: Store, color: 'amber' },
     { id: 'config' as DashboardTab, label: 'Mi Perfil', icon: Settings },
   ]
 
