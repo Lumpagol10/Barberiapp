@@ -1,7 +1,7 @@
 'use client'
 
 import { DollarSign, TrendingUp, Scissors, Wallet, Building2, Package, ShoppingBag, Plus } from 'lucide-react'
-import { FinanzasData, ConfiguracionBarberia, Producto } from '@/types/dashboard'
+import { FinanzasData, ConfiguracionBarberia, Producto, VentaProducto, Turno } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
 import VentaProductoModal from '../modals/VentaProductoModal'
 import { useState } from 'react'
