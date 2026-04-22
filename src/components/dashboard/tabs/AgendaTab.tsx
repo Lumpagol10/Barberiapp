@@ -168,7 +168,7 @@ export default function AgendaTab({
             <div className="divide-y divide-zinc-800/30">
               {timeline.map(({ slot, turn, isPast }, idx) => (
                 turn ? (
-                  <div key={turn.id} className={`p-6 space-y-4 active:bg-white/[0.02] transition-colors relative border-l-2 ${isPast ? 'border-l-amber-500 bg-amber-500/5' : 'border-l-transparent'}`}>
+                  <div key={turn.id} className={`p-6 space-y-4 active:bg-white/[0.02] transition-colors relative border-l-2 hover:border-l-amber-500 hover:bg-amber-500/5 hover:grayscale-0 hover:opacity-100 ${isPast ? 'border-l-amber-500 bg-amber-500/5 opacity-50 grayscale' : 'border-l-transparent'}`}>
                     <div className="flex justify-between items-start pr-12">
                       <div>
                         <div className="font-black text-lg text-zinc-100 uppercase tracking-tight flex items-center gap-2">
@@ -261,7 +261,7 @@ export default function AgendaTab({
                     key={`${slot}-${idx}`} 
                     aria-label="Agendar turno"
                     onClick={onAddManualTurn}
-                    className={`w-full p-6 flex items-center justify-between group border-b border-zinc-800/10 last:border-0 transition-all duration-200 hover:bg-amber-500/5 hover:border-amber-500/20 group-hover:grayscale-0 group-hover:opacity-100 ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale' : 'bg-zinc-950/10'}`}
+                    className={`w-full p-6 flex items-center justify-between group border-b border-zinc-800/10 last:border-0 transition-all duration-200 hover:bg-amber-500/5 hover:border-amber-500/20 hover:grayscale-0 hover:opacity-100 ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale' : 'bg-zinc-950/10'}`}
                   >
                     <div className="flex flex-col items-start gap-1">
                       <div className="font-mono text-zinc-600 font-black text-xs uppercase tracking-tighter">{slot}hs</div>
@@ -301,7 +301,7 @@ export default function AgendaTab({
               {hasContent ? (
                 timeline.map(({ slot, turn, isPast }, idx) => (
                   turn ? (
-                    <tr key={turn.id} className={`transition-colors group border-l-2 ${isPast ? 'border-l-amber-500 bg-amber-500/5' : 'border-l-transparent hover:bg-white/[0.02]'}`}>
+                    <tr key={turn.id} className={`transition-colors group border-l-2 hover:border-l-amber-500 hover:bg-amber-500/5 hover:grayscale-0 hover:opacity-100 ${isPast ? 'border-l-amber-500 bg-amber-500/5 opacity-50 grayscale' : 'border-l-transparent hover:bg-white/[0.02]'}`}>
                       <td className="px-8 py-8">
                         <div className="flex items-center gap-4">
                           <div>
@@ -399,7 +399,7 @@ export default function AgendaTab({
                     <tr 
                       key={`${slot}-${idx}`} 
                       onClick={onAddManualTurn}
-                      className={`transition-all duration-200 group cursor-pointer hover:bg-amber-500/5 group-hover:grayscale-0 group-hover:opacity-100 ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale' : 'bg-zinc-950/5'}`}
+                      className={`transition-all duration-200 group cursor-pointer hover:bg-amber-500/5 hover:grayscale-0 hover:opacity-100 ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale' : 'bg-zinc-950/5'}`}
                     >
                       <td className="px-8 py-8">
                         <div className="flex items-center gap-4">
