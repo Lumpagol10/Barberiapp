@@ -666,7 +666,7 @@ export default function Dashboard() {
         nombre_producto: nombre.toUpperCase(),
         precio,
         metodo_pago: metodo,
-        fecha: new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date())
+        fecha: viewDate
       }])
       if (error) throw error
       toast.success('🛍️ Venta registrada correctamente')

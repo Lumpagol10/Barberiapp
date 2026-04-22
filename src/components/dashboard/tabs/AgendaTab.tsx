@@ -171,7 +171,7 @@ export default function AgendaTab({
             <div className="divide-y divide-zinc-800/30">
               {timeline.map(({ slot, turn, isPast }, idx) => (
                 turn ? (
-                  <div key={turn.id} className={`p-6 space-y-4 active:bg-white/[0.02] transition-colors relative ${isPast ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
+                  <div key={turn.id} className={`p-6 space-y-4 active:bg-white/[0.02] transition-colors relative border-l-2 ${isPast ? 'border-l-amber-500 bg-amber-500/5' : 'border-l-transparent'}`}>
                     <div className="flex justify-between items-start pr-12">
                       <div>
                         <div className="font-black text-lg text-zinc-100 uppercase tracking-tight flex items-center gap-2">
@@ -217,21 +217,19 @@ export default function AgendaTab({
                       </div>
                       
                       {/* BOTÓN ELIMINAR MINIMALISTA MOBILE (ESQUINA SUPERIOR DERECHA) - X SUTIL */}
-                      {!isPast && (
-                        <button
-                          type="button"
-                          aria-label="Eliminar turno"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteTurn?.(turn.id);
-                          }}
-                          className="absolute top-1 right-1 p-3 text-red-500/50 hover:text-red-500 active:scale-95 z-10"
-                        >
-                          <div className="w-4 h-4 rounded-full flex items-center justify-center bg-red-500/10 border border-red-500/10">
-                            <X className="w-3 h-3 stroke-[3]" />
-                          </div>
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        aria-label="Eliminar turno"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteTurn?.(turn.id);
+                        }}
+                        className="absolute top-1 right-1 p-3 text-red-500/50 hover:text-red-500 active:scale-95 z-10"
+                      >
+                        <div className="w-4 h-4 rounded-full flex items-center justify-center bg-red-500/10 border border-red-500/10">
+                          <X className="w-3 h-3 stroke-[3]" />
+                        </div>
+                      </button>
 
                       <a 
                         href={`https://wa.me/${turn.cliente_telefono.replace('+', '')}`}
@@ -243,8 +241,15 @@ export default function AgendaTab({
                       </a>
                     </div>
                     <div className="flex items-center justify-between pt-2">
-                      <div className="px-3 py-1.5 bg-amber-600/10 text-amber-500 rounded-lg font-mono font-black text-xs border border-amber-600/10 uppercase">
-                        {turn.hora.substring(0, 5)}hs
+                      <div className="flex items-center gap-2">
+                        <div className="px-3 py-1.5 bg-amber-600/10 text-amber-500 rounded-lg font-mono font-black text-xs border border-amber-600/10 uppercase">
+                          {turn.hora.substring(0, 5)}hs
+                        </div>
+                        {isPast && (
+                          <div className="px-2 py-1 bg-amber-500/10 text-amber-500 rounded font-black text-[9px] uppercase tracking-widest border border-amber-500/20">
+                            Pendiente
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => onFinishTurn(turn.id)}
@@ -299,7 +304,7 @@ export default function AgendaTab({
               {hasContent ? (
                 timeline.map(({ slot, turn, isPast }, idx) => (
                   turn ? (
-                    <tr key={turn.id} className={`transition-colors group ${isPast ? 'opacity-30 grayscale pointer-events-none select-none' : 'hover:bg-white/[0.02]'}`}>
+                    <tr key={turn.id} className={`transition-colors group border-l-2 ${isPast ? 'border-l-amber-500 bg-amber-500/5' : 'border-l-transparent hover:bg-white/[0.02]'}`}>
                       <td className="px-8 py-8">
                         <div className="flex items-center gap-4">
                           <div>
@@ -360,8 +365,15 @@ export default function AgendaTab({
                         </div>
                       </td>
                       <td className="px-8 py-8">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600/10 text-amber-500 rounded-xl font-mono font-black border border-amber-600/10">
-                          <Clock className="w-4 h-4" /> {turn.hora.substring(0, 5)}hs
+                        <div className="flex flex-col items-start gap-2">
+                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600/10 text-amber-500 rounded-xl font-mono font-black border border-amber-600/10">
+                            <Clock className="w-4 h-4" /> {turn.hora.substring(0, 5)}hs
+                          </div>
+                          {isPast && (
+                            <div className="px-2 py-1 bg-amber-500/10 text-amber-500 rounded font-black text-[10px] uppercase tracking-widest border border-amber-500/20">
+                              Pendiente
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-8 py-8 text-right">
