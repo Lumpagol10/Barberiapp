@@ -112,32 +112,34 @@ export default function AgendaTab({
       <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
         <div className="p-6 sm:p-8 border-b border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-zinc-900/20">
           <div className="w-full sm:w-auto">
-            <h3 className="text-xl font-black uppercase italic tracking-tighter flex flex-wrap items-center gap-4">
+            <h3 className="text-xl font-black uppercase italic tracking-tighter">
               {isToday ? 'Próximos Turnos' : `Turnos del ${new Date(viewDate + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}`}
-              
-              {!isToday && (
-                <button 
-                  onClick={() => setViewDate(todayStr)}
-                  className="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-black text-[9px] font-black uppercase rounded-full shadow-lg shadow-amber-900/40 active:scale-95 transition-all animate-in fade-in zoom-in duration-300 italic tracking-widest"
-                >
-                  ↩ Volver a Hoy
-                </button>
-              )}
             </h3>
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-            <div className="w-full sm:w-auto">
-              <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1 block">📅 Calendario de Agenda:</label>
-              <div className="relative group">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none" />
-                <input 
-                  type="date"
-                  value={viewDate}
-                  onChange={(e) => setViewDate(e.target.value)}
-                  className="w-full sm:w-auto bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/50 rounded-xl py-3.5 pl-12 pr-4 text-xs font-black text-white uppercase outline-none transition-all [color-scheme:dark]"
-                />
+            <div className="w-full sm:w-auto flex flex-col xs:flex-row items-end xs:items-center gap-3">
+              <div className="w-full sm:w-auto">
+                <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1 block">📅 Calendario de Agenda:</label>
+                <div className="relative group">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none" />
+                  <input 
+                    type="date"
+                    value={viewDate}
+                    onChange={(e) => setViewDate(e.target.value)}
+                    className="w-full sm:w-auto bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/50 rounded-xl py-3.5 pl-12 pr-4 text-xs font-black text-white uppercase outline-none transition-all [color-scheme:dark]"
+                  />
+                </div>
               </div>
+              
+              {!isToday && (
+                <button 
+                  onClick={() => setViewDate(todayStr)}
+                  className="w-full xs:w-auto px-4 py-3.5 bg-amber-600/10 hover:bg-amber-600 text-amber-500 hover:text-black text-[9px] font-black uppercase rounded-xl border border-amber-500/20 shadow-lg active:scale-95 transition-all animate-in fade-in zoom-in duration-300 italic tracking-widest h-[46px] flex items-center justify-center"
+                >
+                  ↩ Volver a Hoy
+                </button>
+              )}
             </div>
             <div className="hidden sm:flex items-center gap-2 shrink-0">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
@@ -167,17 +169,13 @@ export default function AgendaTab({
             <div className="divide-y divide-zinc-800/30">
               {timeline.map(({ slot, turn, isPast }) => (
                 turn ? (
-                  <div key={turn.id} className={`p-6 space-y-4 active:bg-white/[0.02] transition-colors ${isPast ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
-                    <div className="flex justify-between items-start">
+                  <div key={turn.id} className={`p-6 space-y-4 active:bg-white/[0.02] transition-colors relative ${isPast ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
+                    <div className="flex justify-between items-start pr-12">
                       <div>
                         <div className="font-black text-lg text-zinc-100 uppercase tracking-tight flex items-center gap-2">
                           {turn.cliente_nombre}
                           
                           {/* INDICADOR VIP 💎 */}
-                          {vipPhones.has(turn.cliente_telefono) && (
-                            <span className="text-sm jump-animation" title="Cliente VIP">💎</span>
-                          )}
-
                           {vipPhones.has(turn.cliente_telefono) && (
                             <span className="text-sm jump-animation" title="Cliente VIP">💎</span>
                           )}
@@ -215,6 +213,21 @@ export default function AgendaTab({
                           </div>
                         )}
                       </div>
+                      
+                      {/* BOTÓN ELIMINAR SIEMPRE VISIBLE MOBILE (ESQUINA SUPERIOR DERECHA) */}
+                      {!isPast && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteTurn?.(turn.id);
+                          }}
+                          className="absolute top-4 right-4 p-4 text-red-500/40 hover:text-red-500 transition-colors active:scale-95"
+                          title="Eliminar Turno"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
+
                       <a 
                         href={`https://wa.me/${turn.cliente_telefono.replace('+', '')}`}
                         target="_blank"
@@ -228,24 +241,12 @@ export default function AgendaTab({
                       <div className="px-3 py-1.5 bg-amber-600/10 text-amber-500 rounded-lg font-mono font-black text-xs border border-amber-600/10 uppercase">
                         {turn.hora.substring(0, 5)}hs
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteTurn?.(turn.id);
-                          }}
-                          className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl hover:bg-red-500/20 transition-all active:scale-95"
-                          title="Eliminar Turno"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => onFinishTurn(turn.id)}
-                          className="px-5 py-2.5 bg-emerald-600 text-black rounded-xl font-black text-[10px] uppercase tracking-tighter shadow-lg shadow-emerald-900/20 active:scale-95 transition-transform"
-                        >
-                          FINALIZAR
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => onFinishTurn(turn.id)}
+                        className="px-8 py-3 bg-emerald-600 text-black rounded-xl font-black text-[11px] uppercase tracking-tighter shadow-lg shadow-emerald-900/20 active:scale-95 transition-transform"
+                      >
+                        FINALIZAR TURNO
+                      </button>
                     </div>
                   </div>
                 ) : (
