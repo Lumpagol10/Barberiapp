@@ -261,7 +261,7 @@ export default function AgendaTab({
                     key={`${slot}-${idx}`} 
                     aria-label="Agendar turno"
                     onClick={onAddManualTurn}
-                    className={`w-full p-6 flex items-center justify-between group border-b border-zinc-800/10 last:border-0 ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale hover:bg-zinc-950/10 transition-colors text-left' : 'bg-zinc-950/10 hover:bg-amber-500/5 transition-all'}`}
+                    className={`w-full p-6 flex items-center justify-between group border-b border-zinc-800/10 last:border-0 transition-all duration-200 hover:bg-amber-500/5 hover:border-amber-500/20 group-hover:grayscale-0 group-hover:opacity-100 ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale' : 'bg-zinc-950/10'}`}
                   >
                     <div className="flex flex-col items-start gap-1">
                       <div className="font-mono text-zinc-600 font-black text-xs uppercase tracking-tighter">{slot}hs</div>
@@ -399,7 +399,7 @@ export default function AgendaTab({
                     <tr 
                       key={`${slot}-${idx}`} 
                       onClick={onAddManualTurn}
-                      className={`transition-all group ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale hover:bg-zinc-900 cursor-pointer' : 'bg-zinc-950/5 hover:bg-amber-500/5 cursor-pointer'}`}
+                      className={`transition-all duration-200 group cursor-pointer hover:bg-amber-500/5 group-hover:grayscale-0 group-hover:opacity-100 ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale' : 'bg-zinc-950/5'}`}
                     >
                       <td className="px-8 py-8">
                         <div className="flex items-center gap-4">
