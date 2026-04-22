@@ -38,6 +38,16 @@ export default function ProgramarTab({
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl pb-24 lg:pb-0 min-h-screen">
+      <style jsx>{`
+        /* Apple-style Cleanup: Ocultar indicadores nativos de calendarios/relojes */
+        input[type="time"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-inner-spin-button,
+        input[type="time"]::-webkit-clear-button {
+          display: none !important;
+          -webkit-appearance: none;
+          margin: 0;
+        }
+      `}</style>
       <DashboardHeader 
         title="Agenda Semanal"
         subtitle={<p className="text-zinc-500 font-medium italic hidden md:block">Confirmá los días que vas a trabajar esta semana</p>}
