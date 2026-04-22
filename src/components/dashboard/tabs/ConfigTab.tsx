@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Settings, Camera, Trash2, Type as TypeIcon, Globe, Copy, Share2, Phone, User as UserIcon, LogOut, Loader2, Store } from 'lucide-react'
+import { Settings, Camera, Trash2, Type as TypeIcon, Globe, Copy, Share2, Phone, User as UserIcon, LogOut, Loader2, Store, AlertTriangle } from 'lucide-react'
+import { toast } from 'sonner'
 import { ConfiguracionBarberia } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
 import Image from 'next/image'
