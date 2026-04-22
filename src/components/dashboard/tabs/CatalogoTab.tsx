@@ -280,16 +280,16 @@ export default function CatalogoTab({
         {/* Lado Derecho: Listado de Productos */}
         <div className="xl:col-span-2 space-y-6">
            <div className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-4 sm:p-6 lg:p-10 backdrop-blur-xl min-h-[600px]">
-              <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10 border-b border-white/5 pb-8">
                 <div>
                    <h3 className="text-2xl font-black uppercase italic tracking-tighter">Mis Productos</h3>
                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Gestioná tu stock y precios</p>
                 </div>
                 <button 
                   onClick={() => openProductModal()}
-                  className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3.5 bg-amber-600 hover:bg-amber-500 text-black font-black text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3.5 bg-amber-600 hover:bg-amber-500 text-black font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
                 >
-                  <Plus className="w-4 h-4 stroke-[3]" /> AGREGAR PRODUCTO
+                  <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" /> AGREGAR PRODUCTO
                 </button>
               </div>
 
