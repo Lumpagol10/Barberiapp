@@ -214,17 +214,17 @@ export default function AgendaTab({
                         )}
                       </div>
                       
-                      {/* BOTÓN ELIMINAR SIEMPRE VISIBLE MOBILE (ESQUINA SUPERIOR DERECHA) - X ELEGANTE */}
+                      {/* BOTÓN ELIMINAR SIEMPRE VISIBLE MOBILE (ESQUINA SUPERIOR DERECHA) - X ROJA SUAVE */}
                       {!isPast && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             onDeleteTurn?.(turn.id);
                           }}
-                          className="absolute top-4 right-4 p-4 text-amber-500/30 hover:text-amber-500 transition-colors active:scale-95"
+                          className="absolute top-2 right-2 p-5 text-red-500/60 hover:text-red-500 transition-colors active:scale-95 z-10"
                           title="Eliminar Turno"
                         >
-                          <X className="w-5 h-5 stroke-[3]" />
+                          <X className="w-5 h-5 stroke-[2.5]" />
                         </button>
                       )}
 
