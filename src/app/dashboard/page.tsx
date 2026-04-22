@@ -214,7 +214,13 @@ export default function Dashboard() {
      const { data: salesDaily } = await supabase.from('ventas_productos').select('precio, metodo_pago').eq('user_id', userId).eq('fecha', viewDate)
      const { data: salesMonthly } = await supabase.from('ventas_productos').select('precio').eq('user_id', userId).gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth)
      const { data: salesAnnual } = await supabase.from('ventas_productos').select('precio').eq('user_id', userId).gte('fecha', firstDayOfYear)
-     const { data: salesHistory } = await supabase.from('ventas_productos').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20)
+     const salesQuery = supabase.from('ventas_productos').select('*').eq('user_id', userId)
+     if (historyFilterMode === 'day') {
+       salesQuery.eq('fecha', viewDate).order('created_at', { ascending: true })
+     } else {
+       salesQuery.gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth).order('fecha', { ascending: false }).order('created_at', { ascending: false })
+     }
+     const { data: salesHistory } = await salesQuery.limit(50)
 
      const totalDailyTurns = dailyData?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
      const totalDailySales = salesDaily?.reduce((acc, curr) => acc + (Number(curr.precio) || 0), 0) || 0
