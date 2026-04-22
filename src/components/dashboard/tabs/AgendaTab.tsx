@@ -119,40 +119,37 @@ export default function AgendaTab({
             </h3>
           </div>
           
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-            <div className="w-full sm:w-auto flex flex-col xs:flex-row items-end xs:items-center gap-3">
-              <div className="w-full sm:w-auto">
-                <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1 block">📅 Calendario de Agenda:</label>
-                <div className="relative group">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4 w-full sm:w-auto">
+            <div className="w-full sm:w-auto">
+              <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1.5 block ml-1">Calendario de Agenda</label>
+              <div className="flex items-center gap-3">
+                <div className="relative group w-full sm:w-auto">
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none" />
                   <input 
                     type="date"
                     value={viewDate}
                     onChange={(e) => setViewDate(e.target.value)}
-                    className="w-full sm:w-auto bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/50 rounded-xl py-3.5 pl-12 pr-4 text-xs font-black text-white uppercase outline-none transition-all [color-scheme:dark]"
+                    className="w-full sm:w-auto bg-zinc-950/50 border border-zinc-800 hover:border-amber-500/50 rounded-xl h-[46px] pl-12 pr-4 text-xs font-black text-white uppercase outline-none transition-all [color-scheme:dark]"
                   />
                 </div>
+                
+                {!isToday && (
+                  <button 
+                    onClick={() => setViewDate(todayStr)}
+                    className="flex-1 sm:flex-none px-4 bg-amber-600/10 hover:bg-amber-600 text-amber-500 hover:text-black text-[9px] font-black uppercase rounded-xl border border-amber-500/20 shadow-lg active:scale-95 transition-all animate-in fade-in zoom-in duration-300 italic tracking-widest h-[46px] flex items-center justify-center whitespace-nowrap"
+                  >
+                    ↩ Volver a Hoy
+                  </button>
+                )}
               </div>
-              
-              {!isToday && (
-                <button 
-                  onClick={() => setViewDate(todayStr)}
-                  className="w-full xs:w-auto px-4 py-3.5 bg-amber-600/10 hover:bg-amber-600 text-amber-500 hover:text-black text-[9px] font-black uppercase rounded-xl border border-amber-500/20 shadow-lg active:scale-95 transition-all animate-in fade-in zoom-in duration-300 italic tracking-widest h-[46px] flex items-center justify-center"
-                >
-                  ↩ Volver a Hoy
-                </button>
-              )}
             </div>
-            <div className="hidden sm:flex items-center gap-2 shrink-0">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest hidden xs:inline">ACTUALIZADO</span>
-            </div>
+
             {isToday && (
               <button 
                 onClick={onAddManualTurn}
-                className="w-full sm:w-auto px-6 py-3.5 bg-orange-600 hover:bg-orange-500 text-black font-black text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-orange-900/20 active:scale-95 flex items-center justify-center gap-2 border border-orange-500/20"
+                className="w-full sm:w-auto px-6 bg-orange-600 hover:bg-orange-500 text-black font-black text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-orange-900/20 active:scale-95 flex items-center justify-center gap-2 border border-orange-500/20 h-[46px] whitespace-nowrap"
               >
-                <Plus className="w-3.5 h-3.5" /> AGREGAR TURNO MANUAL
+                <Plus className="w-3.5 h-3.5 stroke-[3]" /> AGREGAR TURNO MANUAL
               </button>
             )}
           </div>
