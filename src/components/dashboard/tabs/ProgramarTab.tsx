@@ -156,8 +156,7 @@ export default function ProgramarTab({
                               }
                               removePlanningSlot(idx, slotIdx)
                             }}
-                            className={`absolute -top-2 -right-2 w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg transition-all hover:scale-110 z-10 
-                              ${isOccupied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                            className={`absolute -top-3 -right-3 w-8 h-8 bg-red-600/90 text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-lg shadow-red-900/40 transition-all hover:scale-110 active:scale-90 z-20 opacity-100`}
                           >
                             ✕
                           </button>
