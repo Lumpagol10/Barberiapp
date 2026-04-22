@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCroppedImg } from '@/lib/imageUtils'
@@ -40,6 +40,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal'
 import { GlobalFooter } from '@/components/layout/GlobalFooter'
 
 export default function Dashboard() {
+  const mainRef = useRef<HTMLElement>(null)
   const [activeTab, setActiveTab] = useState<DashboardTab>('agenda')
   const [loading, setLoading] = useState(true)
   const [checkingAuth, setCheckingAuth] = useState(true)
@@ -157,9 +158,13 @@ export default function Dashboard() {
     window.scrollTo(0, 0)
   }, [router])
 
-  // Persistir pestaña activa
+  // Persistir pestaña activa y Reset de Scroll
   useEffect(() => {
     localStorage.setItem('activeDashboardTab', activeTab)
+    if (mainRef.current) {
+      mainRef.current.scrollTo(0, 0)
+    }
+    window.scrollTo(0, 0)
   }, [activeTab])
 
   const fetchVipStatus = useCallback(async (userId: string) => {
@@ -704,7 +709,7 @@ export default function Dashboard() {
         config={config} userEmail={user?.email} setShowLogoutModal={setShowLogoutModal}
       />
 
-      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-[100dvh] lg:h-screen overflow-y-auto max-w-full overflow-x-hidden custom-scrollbar pb-32">
+      <main ref={mainRef} className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-[100dvh] lg:h-screen overflow-y-auto max-w-full overflow-x-hidden custom-scrollbar pb-32">
         {/* BRANDING LIBERADO (SIN CAJAS, SIN FONDOS) */}
         {config && (
           <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full mb-10 bg-transparent border-none p-0 shadow-none">
