@@ -47,7 +47,7 @@ export default function FinanzasTab({
         icon={<DollarSign className="w-6 h-6" />}
       />
 
-      <div className="flex justify-end mb-8">
+      <div className="flex justify-end mb-4 md:mb-6">
         <button 
           onClick={() => setShowVentaModal(true)}
           className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3.5 bg-amber-600 hover:bg-amber-500 text-black font-black text-xs rounded-2xl transition-all shadow-xl shadow-amber-900/20 active:scale-95 uppercase tracking-widest flex items-center justify-center gap-3"
@@ -56,7 +56,7 @@ export default function FinanzasTab({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-10 lg:mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-6 lg:mb-8">
         {/* Total Diario */}
         <div className="bg-zinc-900/50 border border-emerald-500/20 p-5 sm:p-6 lg:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-emerald-950/10 backdrop-blur-xl group hover:border-emerald-500/40 transition-all">
           <div className="flex flex-row items-start justify-between gap-4 mb-4 sm:mb-6">

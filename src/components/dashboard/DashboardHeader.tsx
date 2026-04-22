@@ -30,7 +30,7 @@ export default function DashboardHeader({
   if (!config) return null
 
   return (
-    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8 mb-6 md:mb-12 lg:mb-16 w-full max-w-full overflow-x-hidden">
+    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-4 md:mb-6 lg:mb-8 w-full max-w-full overflow-x-hidden">
       {/* Contenedor Principal Adaptativo */}
       <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
         {/* FILA 2: FECHA Y SUBTITULO */}

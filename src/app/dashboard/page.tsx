@@ -709,7 +709,7 @@ export default function Dashboard() {
         config={config} userEmail={user?.email} setShowLogoutModal={setShowLogoutModal}
       />
 
-      <main ref={mainRef} className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-[100dvh] lg:h-screen overflow-y-auto max-w-full overflow-x-hidden custom-scrollbar pb-32">
+      <main ref={mainRef} className="flex-1 p-4 sm:p-6 lg:px-12 lg:pt-6 w-full lg:w-auto relative min-h-[100dvh] lg:h-screen overflow-y-auto max-w-full overflow-x-hidden custom-scrollbar pb-32">
         {/* BRANDING LIBERADO (SIN CAJAS, SIN FONDOS) */}
         {config && (
           <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full mb-10 bg-transparent border-none p-0 shadow-none">
