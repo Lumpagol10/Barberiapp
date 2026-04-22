@@ -167,7 +167,7 @@ export default function AgendaTab({
         <div className={`block md:hidden transition-opacity duration-300 ${fetchingTurns ? 'opacity-50' : 'opacity-100'}`}>
           {hasContent ? (
             <div className="divide-y divide-zinc-800/30">
-              {timeline.map(({ slot, turn, isPast }) => (
+              {timeline.map(({ slot, turn, isPast }, idx) => (
                 turn ? (
                   <div key={turn.id} className={`p-6 space-y-4 active:bg-white/[0.02] transition-colors relative ${isPast ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
                     <div className="flex justify-between items-start pr-12">
@@ -251,7 +251,7 @@ export default function AgendaTab({
                   </div>
                 ) : (
                   <button 
-                    key={slot} 
+                    key={`${slot}-${idx}`} 
                     onClick={isPast ? undefined : onAddManualTurn}
                     disabled={isPast}
                     className={`w-full p-6 flex items-center justify-between transition-all group border-b border-zinc-800/10 last:border-0 ${isPast ? 'bg-zinc-950/20 opacity-30 grayscale cursor-not-allowed' : 'bg-zinc-950/10 hover:bg-amber-500/5'}`}
@@ -292,7 +292,7 @@ export default function AgendaTab({
             </thead>
             <tbody className="divide-y divide-zinc-800/20">
               {hasContent ? (
-                timeline.map(({ slot, turn, isPast }) => (
+                timeline.map(({ slot, turn, isPast }, idx) => (
                   turn ? (
                     <tr key={turn.id} className={`transition-colors group ${isPast ? 'opacity-30 grayscale pointer-events-none select-none' : 'hover:bg-white/[0.02]'}`}>
                       <td className="px-8 py-8">
@@ -383,7 +383,7 @@ export default function AgendaTab({
                     </tr>
                   ) : (
                     <tr 
-                      key={slot} 
+                      key={`${slot}-${idx}`} 
                       onClick={isPast ? undefined : onAddManualTurn}
                       className={`transition-all group ${isPast ? 'bg-zinc-950/20 opacity-30 grayscale cursor-not-allowed text-zinc-700' : 'bg-zinc-950/5 hover:bg-amber-500/5 cursor-pointer'}`}
                     >
