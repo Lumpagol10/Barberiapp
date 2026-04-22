@@ -3,7 +3,7 @@
 import React from 'react'
 import { 
   Calendar, Clock, CheckCircle, MessageCircle, Phone, Scissors, 
-  Trash2, UserPlus, Star, ChevronLeft, ChevronRight, Plus 
+  Trash2, UserPlus, Star, ChevronLeft, ChevronRight, Plus, X 
 } from 'lucide-react'
 import { Turno, ConfiguracionBarberia, Cliente, HorarioEspecifico } from '@/types/dashboard'
 import DashboardHeader from '../DashboardHeader'
@@ -214,17 +214,17 @@ export default function AgendaTab({
                         )}
                       </div>
                       
-                      {/* BOTÓN ELIMINAR SIEMPRE VISIBLE MOBILE (ESQUINA SUPERIOR DERECHA) */}
+                      {/* BOTÓN ELIMINAR SIEMPRE VISIBLE MOBILE (ESQUINA SUPERIOR DERECHA) - X ELEGANTE */}
                       {!isPast && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             onDeleteTurn?.(turn.id);
                           }}
-                          className="absolute top-4 right-4 p-4 text-red-500/40 hover:text-red-500 transition-colors active:scale-95"
+                          className="absolute top-4 right-4 p-4 text-amber-500/30 hover:text-amber-500 transition-colors active:scale-95"
                           title="Eliminar Turno"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <X className="w-5 h-5 stroke-[3]" />
                         </button>
                       )}
 
