@@ -6,6 +6,7 @@ import { Calendar as CalendarIcon, Clock, User, Phone, CheckCircle2, AlertTriang
 import { toast } from 'sonner'
 import Image from 'next/image'
 import { ConfiguracionBarberia } from '@/types/dashboard'
+import { GlobalFooter } from '@/components/layout/GlobalFooter'
 
 interface BookingClientProps {
   initialBarberConfig: ConfiguracionBarberia
@@ -265,7 +266,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 flex flex-col items-center justify-center p-6 relative overflow-x-hidden pb-32">
       {/* Optimizaciones de Red para Google Maps */}
       <link rel="preconnect" href="https://maps.google.com" />
       <link rel="preconnect" href="https://maps.gstatic.com" />
@@ -451,6 +452,8 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
           </form>
         </div>
       </main>
+      
+      <GlobalFooter />
     </div>
   )
 }

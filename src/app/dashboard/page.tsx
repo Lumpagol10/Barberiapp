@@ -37,6 +37,7 @@ import CropperModal from '@/components/dashboard/modals/CropperModal'
 import ManualTurnoModal from '@/components/dashboard/modals/ManualTurnoModal'
 import RegisterClientModal from '@/components/dashboard/modals/RegisterClientModal'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import { GlobalFooter } from '@/components/layout/GlobalFooter'
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('agenda')
@@ -693,14 +694,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-[100dvh] lg:h-screen lg:overflow-hidden bg-[#050505] text-zinc-100 flex lg:pb-0 pb-12 font-sans max-w-full overflow-x-hidden overflow-y-auto lg:overflow-y-visible">
+    <div className="flex flex-col lg:flex-row min-h-[100dvh] lg:h-screen lg:overflow-hidden bg-[#050505] text-zinc-100 font-sans max-w-full overflow-x-hidden">
       <Sidebar 
         activeTab={activeTab} setActiveTab={setActiveTab} 
         isMobileSidebarOpen={isMobileSidebarOpen} setIsMobileSidebarOpen={setIsMobileSidebarOpen}
         config={config} userEmail={user?.email} setShowLogoutModal={setShowLogoutModal}
       />
 
-      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-screen lg:h-screen lg:overflow-y-auto max-w-full overflow-x-hidden custom-scrollbar">
+      <main className="flex-1 p-4 sm:p-6 lg:p-12 w-full lg:w-auto relative min-h-[100dvh] lg:h-screen overflow-y-auto max-w-full overflow-x-hidden custom-scrollbar pb-32">
         {/* BRANDING LIBERADO (SIN CAJAS, SIN FONDOS) */}
         {config && (
           <div className="flex lg:hidden flex-row items-center justify-center gap-4 w-full mb-10 bg-transparent border-none p-0 shadow-none">
@@ -841,6 +842,8 @@ export default function Dashboard() {
             />
           )}
         </>
+        
+        <GlobalFooter />
       </main>
 
       <CheckoutModal 

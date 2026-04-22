@@ -51,10 +51,7 @@ export default function RootLayout({
           }}
           richColors
         />
-        <div className="flex-1 w-full pb-32 flex flex-col">
-          {children}
-        </div>
-        <GlobalFooter />
+        {children}
       </body>
     </html>
   );

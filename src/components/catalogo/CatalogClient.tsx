@@ -4,6 +4,7 @@ import React from 'react'
 import { MessageCircle, ShoppingBag, ArrowLeft, Store, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { Producto, CategoriaProducto, ConfiguracionBarberia } from '@/types/dashboard'
+import { GlobalFooter } from '@/components/layout/GlobalFooter'
 
 interface CatalogClientProps {
   barberConfig: ConfiguracionBarberia
@@ -31,7 +32,7 @@ export default function CatalogClient({ barberConfig, products, categories }: Ca
   const orphans = products.filter(p => !p.categoria_id || !categories.find(c => c.id === p.categoria_id))
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 font-sans pb-20 selection:bg-amber-500/30">
+    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 font-sans pb-32 selection:bg-amber-500/30 flex flex-col relative">
       
       {/* Background Decor */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
@@ -133,6 +134,8 @@ export default function CatalogClient({ barberConfig, products, categories }: Ca
            <ArrowLeft className="w-4 h-4" /> Volver a Reserva
          </Link>
       </footer>
+      
+      <GlobalFooter />
     </div>
   )
 }
