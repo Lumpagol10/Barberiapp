@@ -42,17 +42,19 @@ export default function AgendaTab({
   onDeleteTurn
 }: AgendaTabProps) {
   
-  const isToday = viewDate === new Intl.DateTimeFormat('en-CA', { 
+  const todayStr = new Intl.DateTimeFormat('en-CA', { 
     timeZone: 'America/Argentina/Buenos_Aires', 
     year: 'numeric', month: '2-digit', day: '2-digit' 
   }).format(new Date())
+
+  const isToday = viewDate === todayStr
 
   const formattedDate = new Intl.DateTimeFormat('es-AR', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     timeZone: 'America/Argentina/Buenos_Aires'
-  }).format(new Date()).toUpperCase()
+  }).format(new Date(viewDate + 'T12:00:00')).toUpperCase()
 
   const dayPlanning = planningSchedule.find(p => p.fecha === viewDate)
   const allSlots = dayPlanning?.slots || []
@@ -98,26 +100,35 @@ export default function AgendaTab({
         }
       `}</style>
       <DashboardHeader 
-        title={`HOY ES ${formattedDate}`}
+        title={isToday ? `HOY ES ${formattedDate}` : `ESTÁS VIENDO EL ${formattedDate}`}
         config={config}
         onOpenSidebar={onOpenSidebar}
         onShare={onShare}
         showStats={true}
         statsValue={turns.length}
-        statsLabel="Pendientes Hoy"
+        statsLabel="Pendientes de Hoy"
       />
 
       <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
         <div className="p-6 sm:p-8 border-b border-zinc-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-zinc-900/20">
           <div className="w-full sm:w-auto">
-            <h3 className="text-xl font-black uppercase italic tracking-tighter">
+            <h3 className="text-xl font-black uppercase italic tracking-tighter flex flex-wrap items-center gap-4">
               {isToday ? 'Próximos Turnos' : `Turnos del ${new Date(viewDate + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}`}
+              
+              {!isToday && (
+                <button 
+                  onClick={() => setViewDate(todayStr)}
+                  className="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-black text-[9px] font-black uppercase rounded-full shadow-lg shadow-amber-900/40 active:scale-95 transition-all animate-in fade-in zoom-in duration-300 italic tracking-widest"
+                >
+                  ↩ Volver a Hoy
+                </button>
+              )}
             </h3>
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
             <div className="w-full sm:w-auto">
-              <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1 block sm:hidden">Cambiar Fecha:</label>
+              <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1 block">📅 Calendario de Agenda:</label>
               <div className="relative group">
                 <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500 pointer-events-none" />
                 <input 
