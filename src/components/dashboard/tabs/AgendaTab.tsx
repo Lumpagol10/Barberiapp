@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { 
   Calendar, Clock, CheckCircle, MessageCircle, Phone, Scissors, 
   Trash2, UserPlus, Star, ChevronLeft, ChevronRight, Plus, X 
@@ -49,12 +49,14 @@ export default function AgendaTab({
 
   const isToday = viewDate === todayStr
 
-  const formattedDate = new Intl.DateTimeFormat('es-AR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    timeZone: 'America/Argentina/Buenos_Aires'
-  }).format(new Date(viewDate + 'T12:00:00')).toUpperCase()
+  const formattedDate = useMemo(() => {
+    return new Intl.DateTimeFormat('es-AR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'America/Argentina/Buenos_Aires'
+    }).format(new Date(viewDate + 'T12:00:00')).toUpperCase()
+  }, [viewDate])
 
   const dayPlanning = planningSchedule.find(p => p.fecha === viewDate)
   const allSlots = dayPlanning?.slots || []
@@ -214,17 +216,20 @@ export default function AgendaTab({
                         )}
                       </div>
                       
-                      {/* BOTÓN ELIMINAR SIEMPRE VISIBLE MOBILE (ESQUINA SUPERIOR DERECHA) - X ROJA SUAVE */}
+                      {/* BOTÓN ELIMINAR MINIMALISTA MOBILE (ESQUINA SUPERIOR DERECHA) - X SUTIL */}
                       {!isPast && (
                         <button
+                          type="button"
+                          aria-label="Eliminar turno"
                           onClick={(e) => {
                             e.stopPropagation();
                             onDeleteTurn?.(turn.id);
                           }}
-                          className="absolute top-2 right-2 p-5 text-red-500/60 hover:text-red-500 transition-colors active:scale-95 z-10"
-                          title="Eliminar Turno"
+                          className="absolute top-1 right-1 p-3 text-red-500/50 hover:text-red-500 active:scale-95 z-10"
                         >
-                          <X className="w-5 h-5 stroke-[2.5]" />
+                          <div className="w-4 h-4 rounded-full flex items-center justify-center bg-red-500/10 border border-red-500/10">
+                            <X className="w-3 h-3 stroke-[3]" />
+                          </div>
                         </button>
                       )}
 
@@ -252,9 +257,9 @@ export default function AgendaTab({
                 ) : (
                   <button 
                     key={`${slot}-${idx}`} 
-                    onClick={isPast ? undefined : onAddManualTurn}
-                    disabled={isPast}
-                    className={`w-full p-6 flex items-center justify-between transition-all group border-b border-zinc-800/10 last:border-0 ${isPast ? 'bg-zinc-950/20 opacity-30 grayscale cursor-not-allowed' : 'bg-zinc-950/10 hover:bg-amber-500/5'}`}
+                    aria-label="Agendar turno"
+                    onClick={onAddManualTurn}
+                    className={`w-full p-6 flex items-center justify-between group border-b border-zinc-800/10 last:border-0 ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale' : 'bg-zinc-950/10 hover:bg-amber-500/5'}`}
                   >
                     <div className="flex flex-col items-start gap-1">
                       <div className="font-mono text-zinc-600 font-black text-xs uppercase tracking-tighter">{slot}hs</div>
@@ -384,8 +389,8 @@ export default function AgendaTab({
                   ) : (
                     <tr 
                       key={`${slot}-${idx}`} 
-                      onClick={isPast ? undefined : onAddManualTurn}
-                      className={`transition-all group ${isPast ? 'bg-zinc-950/20 opacity-30 grayscale cursor-not-allowed text-zinc-700' : 'bg-zinc-950/5 hover:bg-amber-500/5 cursor-pointer'}`}
+                      onClick={onAddManualTurn}
+                      className={`transition-all group ${isPast ? 'bg-zinc-950/20 opacity-40 grayscale' : 'bg-zinc-950/5 hover:bg-amber-500/5 cursor-pointer'}`}
                     >
                       <td className="px-8 py-8">
                         <div className="flex items-center gap-4">

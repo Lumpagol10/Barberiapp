@@ -147,6 +147,7 @@ export default function ProgramarTab({
                           />
                           <button 
                             type="button"
+                            aria-label="Eliminar slot"
                             onClick={() => {
                               if (isOccupied) {
                                 toast.error("No podés borrar este horario porque ya tenés un cliente agendado. Cancelá el turno primero.", {
@@ -156,9 +157,11 @@ export default function ProgramarTab({
                               }
                               removePlanningSlot(idx, slotIdx)
                             }}
-                            className={`absolute -top-3 -right-3 w-8 h-8 bg-red-600/90 text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-lg shadow-red-900/40 transition-all hover:scale-110 active:scale-90 z-20 opacity-100`}
+                            className="absolute -top-2.5 -right-2.5 p-3 text-red-500/80 hover:text-red-500 active:scale-95 z-20 outline-none"
                           >
-                            ✕
+                            <div className="w-5 h-5 bg-red-600/20 rounded-full flex items-center justify-center border border-red-500/20 backdrop-blur-sm">
+                              <span className="text-[10px] font-black">✕</span>
+                            </div>
                           </button>
                           {isOccupied && (
                             <div className="absolute -top-1.5 -right-1.5 px-2 py-0.5 bg-red-600 text-white text-[7px] font-black uppercase rounded-full shadow-lg">
