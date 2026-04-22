@@ -374,12 +374,12 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     </div>
                   </div>
                 ) : diaCerrado ? (
-                  <div className="bg-red-600/5 border border-red-900/40 p-6 rounded-2xl text-center animate-in fade-in duration-500">
-                    <div className="w-12 h-12 bg-red-900/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <AlertTriangle className="w-6 h-6 text-red-500" />
+                  <div className="bg-red-600/5 border border-red-900/30 p-4 rounded-xl text-center animate-in fade-in duration-500">
+                    <div className="w-10 h-10 bg-red-900/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <AlertTriangle className="w-5 h-5 text-red-500" />
                     </div>
-                    <h3 className="text-sm font-black uppercase tracking-tighter italic mb-2">Agenda No Programada</h3>
-                    <p className="text-zinc-600 text-[10px] font-medium leading-tight italic max-w-xs mx-auto">No hay turnos disponibles para esta fecha aún.</p>
+                    <h3 className="text-[11px] font-black uppercase tracking-widest italic mb-1">Agenda No Programada</h3>
+                    <p className="text-zinc-600 text-[9px] font-medium leading-tight italic max-w-xs mx-auto">No hay turnos disponibles para esta fecha aún.</p>
                   </div>
                 ) : (() => {
                   const isToday = fecha === new Intl.DateTimeFormat('en-CA', { 
@@ -406,12 +406,12 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
 
                   if (isToday && displaySlots.length === 0) {
                     return (
-                      <div className="bg-amber-500/5 border border-amber-500/20 p-6 rounded-2xl text-center animate-in fade-in duration-500">
-                        <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <CheckCircle2 className="w-6 h-6 text-amber-500" />
+                      <div className="bg-amber-500/5 border border-amber-500/10 p-4 rounded-xl text-center animate-in fade-in duration-500">
+                        <div className="w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <CheckCircle2 className="w-5 h-5 text-amber-500" />
                         </div>
-                        <h3 className="text-sm font-black uppercase tracking-tighter italic mb-2">¡Día Completado!</h3>
-                        <p className="text-zinc-500 text-[10px] font-medium leading-tight italic max-w-xs mx-auto">Ya no quedan turnos disponibles para hoy. Consultá los turnos para mañana.</p>
+                        <h3 className="text-[11px] font-black uppercase tracking-widest italic mb-1">¡Día Completado!</h3>
+                        <p className="text-zinc-500 text-[9px] font-medium leading-tight italic max-w-xs mx-auto">Ya no quedan turnos disponibles para hoy.</p>
                       </div>
                     )
                   }
@@ -453,7 +453,9 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
         </div>
       </main>
       
-      <GlobalFooter />
+      <div className="pb-16 pt-4">
+        <GlobalFooter />
+      </div>
     </div>
   )
 }
