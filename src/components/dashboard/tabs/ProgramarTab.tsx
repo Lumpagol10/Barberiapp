@@ -58,8 +58,8 @@ export default function ProgramarTab({
 
       {/* SECCIÓN RUTINA MAESTRA ELIMINADA POR USUARIO */}
       {planningSchedule.length > 0 && (
-        <div className="mb-10 p-6 bg-amber-600/10 border border-amber-600/20 rounded-[2rem] flex items-center gap-4 animate-in fade-in duration-500">
-          <div className="p-3 bg-amber-600 rounded-xl text-black shadow-lg shadow-amber-900/40">
+        <div className="mb-10 p-6 bg-amber-600/10 border border-amber-600/20 rounded-[2rem] flex items-center gap-4">
+          <div className="p-3 bg-amber-600 rounded-xl text-black">
             <Calendar className="w-5 h-5" />
           </div>
           <p className="text-amber-500 text-sm font-black uppercase tracking-tighter leading-tight italic">
@@ -82,7 +82,7 @@ export default function ProgramarTab({
           ))
         ) : (
           planningSchedule.map((dia, idx) => (
-            <div key={dia.fecha} className={`bg-zinc-900/40 border transition-all rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-emerald-500/20 shadow-lg' : 'border-white/5 opacity-60'}`}>
+            <div key={dia.fecha} className={`bg-zinc-900/40 border rounded-[2.5rem] p-6 lg:p-10 flex flex-col gap-8 ${dia.activo ? 'border-emerald-500/20' : 'border-white/5 opacity-60'}`}>
               {/* Header del Día */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-zinc-800/50">
                 <div>
@@ -91,7 +91,7 @@ export default function ProgramarTab({
                       {diasLetras[new Date(dia.fecha + 'T12:00:00').getDay()]} {new Date(dia.fecha + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}
                     </h3>
                     {dia.fecha === new Date().toLocaleDateString('en-CA') && (
-                      <span className="px-3 py-1 bg-amber-600 text-black text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-amber-900/40 animate-pulse">
+                      <span className="px-3 py-1 bg-amber-600 text-black text-[10px] font-black uppercase tracking-widest rounded-full">
                         HOY
                       </span>
                     )}
@@ -137,7 +137,7 @@ export default function ProgramarTab({
 
               {/* Gestión de Slots */}
               {dia.activo && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="space-y-8">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {(dia.slots || []).map((slot, slotIdx) => {
                       const isOccupied = upcomingTurns.some(t => t.fecha === dia.fecha && t.hora.startsWith(slot))
@@ -167,10 +167,10 @@ export default function ProgramarTab({
                               }
                               removePlanningSlot(idx, slotIdx)
                             }}
-                            className="absolute -top-2.5 -right-2.5 p-3 text-red-500/80 hover:text-red-500 active:scale-95 z-20 outline-none"
+                            className="absolute -top-1 -right-1 p-3 text-red-500/50 hover:text-red-500 active:scale-95 z-10 outline-none"
                           >
-                            <div className="w-5 h-5 bg-red-600/20 rounded-full flex items-center justify-center border border-red-500/20 backdrop-blur-sm">
-                              <span className="text-[10px] font-black">✕</span>
+                            <div className="w-4 h-4 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/10">
+                              <span className="text-[10px] font-black flex items-center justify-center -mt-[1px]">✕</span>
                             </div>
                           </button>
                           {isOccupied && (
@@ -199,11 +199,11 @@ export default function ProgramarTab({
       </div>
 
       {planningSchedule.length > 0 && (
-        <div className="flex justify-end sticky bottom-6 z-50 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="flex justify-end sticky bottom-6 z-50">
           <button 
             onClick={onUpdatePlanning}
             disabled={saving}
-            className="w-full md:w-auto px-10 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 text-black font-black text-sm rounded-xl transition-all shadow-2xl shadow-emerald-900/40 active:scale-95 flex items-center justify-center gap-3 uppercase tracking-tighter"
+            className="w-full md:w-auto px-10 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 text-black font-black text-sm rounded-xl active:scale-95 flex items-center justify-center gap-3 uppercase tracking-tighter"
           >
             {saving ? 'GUARDANDO...' : '🚀 PUBLICAR AGENDA SEMANAL'}
           </button>

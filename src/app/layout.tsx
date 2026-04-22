@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from 'sonner'
+import { GlobalFooter } from '@/components/layout/GlobalFooter'
 
 export default function RootLayout({
   children,
@@ -50,7 +51,10 @@ export default function RootLayout({
           }}
           richColors
         />
-        {children}
+        <div className="flex-1 w-full pb-32 flex flex-col">
+          {children}
+        </div>
+        <GlobalFooter />
       </body>
     </html>
   );
