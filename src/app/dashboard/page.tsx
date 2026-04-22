@@ -76,9 +76,6 @@ export default function Dashboard() {
   // Finances states
   const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null)
   const [checkoutPrice, setCheckoutPrice] = useState('')
-  const [financesDate, setFinancesDate] = useState(() => {
-    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
-  })
   const [financesMonth, setFinancesMonth] = useState(() => {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires', year: 'numeric', month: '2-digit' }).format(new Date())
   })
@@ -200,13 +197,13 @@ export default function Dashboard() {
     const lastDayOfMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).toISOString().split('T')[0]
     const firstDayOfYear = new Date().getFullYear() + '-01-01'
 
-    const { data: dailyData } = await supabase.from('turnos').select('precio, metodo_pago').eq('barbero_id', userId).eq('estado', 'completado').eq('fecha', financesDate)
+    const { data: dailyData } = await supabase.from('turnos').select('precio, metodo_pago').eq('barbero_id', userId).eq('estado', 'completado').eq('fecha', viewDate)
     const { data: monthlyData } = await supabase.from('turnos').select('precio').eq('barbero_id', userId).eq('estado', 'completado').gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth)
      const { data: annualData } = await supabase.from('turnos').select('precio').eq('barbero_id', userId).eq('estado', 'completado').gte('fecha', firstDayOfYear)
  
      const historyQuery = supabase.from('turnos').select('*').eq('barbero_id', userId).eq('estado', 'completado')
      if (historyFilterMode === 'day') {
-       historyQuery.eq('fecha', financesDate).order('hora', { ascending: true })
+       historyQuery.eq('fecha', viewDate).order('hora', { ascending: true })
      } else {
        historyQuery.gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth).order('fecha', { ascending: false }).order('hora', { ascending: false })
      }
@@ -214,7 +211,7 @@ export default function Dashboard() {
      const { data: historyData } = await historyQuery.limit(50)
 
      // NUEVO: Consultar Ventas de Productos
-     const { data: salesDaily } = await supabase.from('ventas_productos').select('precio, metodo_pago').eq('user_id', userId).eq('fecha', financesDate)
+     const { data: salesDaily } = await supabase.from('ventas_productos').select('precio, metodo_pago').eq('user_id', userId).eq('fecha', viewDate)
      const { data: salesMonthly } = await supabase.from('ventas_productos').select('precio').eq('user_id', userId).gte('fecha', firstDayOfMonth).lte('fecha', lastDayOfMonth)
      const { data: salesAnnual } = await supabase.from('ventas_productos').select('precio').eq('user_id', userId).gte('fecha', firstDayOfYear)
      const { data: salesHistory } = await supabase.from('ventas_productos').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20)
@@ -256,7 +253,7 @@ export default function Dashboard() {
        annualTotal: totalAnnualTurns + totalAnnualSales,
        history: combinedHistory.slice(0, 50)
      })
-   }, [financesDate, financesMonth, historyFilterMode])
+   }, [viewDate, financesMonth, historyFilterMode])
 
   const fetchClients = useCallback(async (userId: string) => {
     try {
@@ -792,7 +789,7 @@ export default function Dashboard() {
           )}
           {activeTab === 'finanzas' && (
             <FinanzasTab 
-              financesData={financesData} financesDate={financesDate} setFinancesDate={setFinancesDate}
+              financesData={financesData} financesDate={viewDate} setFinancesDate={setViewDate}
               financesMonth={financesMonth} setFinancesMonth={setFinancesMonth}
               historyFilterMode={historyFilterMode} setHistoryFilterMode={setHistoryFilterMode}
               config={config} onOpenSidebar={() => setIsMobileSidebarOpen(true)}
