@@ -279,7 +279,7 @@ export default function CatalogoTab({
 
         {/* Lado Derecho: Listado de Productos */}
         <div className="xl:col-span-2 space-y-6">
-           <div className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-6 lg:p-10 backdrop-blur-xl min-h-[600px]">
+           <div className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-4 sm:p-6 lg:p-10 backdrop-blur-xl min-h-[600px]">
               <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-8">
                 <div>
                    <h3 className="text-2xl font-black uppercase italic tracking-tighter">Mis Productos</h3>
@@ -287,7 +287,7 @@ export default function CatalogoTab({
                 </div>
                 <button 
                   onClick={() => openProductModal()}
-                  className="px-6 py-3.5 bg-amber-600 hover:bg-amber-500 text-black font-black text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3.5 bg-amber-600 hover:bg-amber-500 text-black font-black text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4 stroke-[3]" /> AGREGAR PRODUCTO
                 </button>
@@ -313,7 +313,7 @@ export default function CatalogoTab({
                           ) : (
                             <ImageIcon className="w-12 h-12 text-zinc-800" />
                           )}
-                          <div className="absolute top-4 right-4 flex gap-2 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                          <div className="absolute top-4 right-4 flex gap-2 translate-y-0 opacity-100 lg:translate-y-[-10px] lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 transition-all">
                              <button onClick={() => openProductModal(prod)} className="p-2 bg-black/60 backdrop-blur-md text-amber-500 rounded-xl hover:bg-amber-500 hover:text-black">
                                <Edit3 className="w-4 h-4" />
                              </button>

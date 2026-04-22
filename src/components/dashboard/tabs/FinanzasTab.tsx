@@ -50,7 +50,7 @@ export default function FinanzasTab({
       <div className="flex justify-end mb-8">
         <button 
           onClick={() => setShowVentaModal(true)}
-          className="flex items-center gap-3 px-6 py-4 bg-amber-600 hover:bg-amber-500 text-black font-black text-xs rounded-2xl transition-all shadow-xl shadow-amber-900/20 active:scale-95 uppercase tracking-widest"
+          className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3.5 bg-amber-600 hover:bg-amber-500 text-black font-black text-xs rounded-2xl transition-all shadow-xl shadow-amber-900/20 active:scale-95 uppercase tracking-widest flex items-center justify-center gap-3"
         >
           <Plus className="w-4 h-4 stroke-[3]" /> Venta de Producto
         </button>
