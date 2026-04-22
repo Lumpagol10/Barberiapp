@@ -96,6 +96,7 @@ export default function Dashboard() {
   
   // Config states
   const [editNombre, setEditNombre] = useState('')
+  const [editSlug, setEditSlug] = useState('')
   const [editPhone, setEditPhone] = useState('')
   const [editMaps, setEditMaps] = useState('')
   const [editLogoUrl, setEditLogoUrl] = useState<string | null>(null)
@@ -143,6 +144,7 @@ export default function Dashboard() {
         const parsed = JSON.parse(cachedConfig)
         setConfig(parsed)
         setEditNombre(parsed.nombre_barberia)
+        setEditSlug(parsed.slug || '')
         setEditPhone(parsed.telefono_barbero.replace('+54', ''))
         setEditMaps(parsed.google_maps_link || '')
         setEditLogoUrl(parsed.logo_url || null)
@@ -331,6 +333,7 @@ export default function Dashboard() {
         setConfig(configData)
         localStorage.setItem('barberia_config_cache', JSON.stringify(configData))
         setEditNombre(configData.nombre_barberia)
+        setEditSlug(configData.slug || '')
         setEditPhone(configData.telefono_barbero.replace('+54', ''))
         setEditMaps(configData.google_maps_link || '')
         setEditLogoUrl(configData.logo_url || null)
@@ -423,10 +426,9 @@ export default function Dashboard() {
   const handleUpdateConfig = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    const newSlug = editNombre.toLowerCase().trim().replace(/\s+/g, '-')
     const { error } = await supabase.from('configuracion_barberia').update({
       nombre_barberia: editNombre, 
-      slug: newSlug, 
+      slug: editSlug, 
       telefono_barbero: `+54${editPhone}`, 
       google_maps_link: editMaps, 
       logo_url: editLogoUrl,
@@ -826,6 +828,7 @@ export default function Dashboard() {
           {activeTab === 'config' && (
             <ConfigTab 
               editNombre={editNombre} setEditNombre={setEditNombre}
+              editSlug={editSlug} setEditSlug={setEditSlug}
               editPhone={editPhone} setEditPhone={setEditPhone}
               editMaps={editMaps} setEditMaps={setEditMaps}
               editLogoUrl={editLogoUrl} setEditLogoUrl={setEditLogoUrl}

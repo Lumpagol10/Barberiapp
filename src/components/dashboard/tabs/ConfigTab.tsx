@@ -9,6 +9,8 @@ import Image from 'next/image'
 interface ConfigTabProps {
   editNombre: string
   setEditNombre: (val: string) => void
+  editSlug: string
+  setEditSlug: (val: string) => void
   editPhone: string
   setEditPhone: (val: string) => void
   editMaps: string
@@ -34,6 +36,8 @@ interface ConfigTabProps {
 export default function ConfigTab({
   editNombre,
   setEditNombre,
+  editSlug,
+  setEditSlug,
   editPhone,
   setEditPhone,
   editMaps,
@@ -55,7 +59,8 @@ export default function ConfigTab({
   saving,
   onOpenSidebar
 }: ConfigTabProps) {
-  const reservationUrl = typeof window !== 'undefined' ? `${window.location.origin}/reserva/${config?.slug}` : ''
+  const [isSlugLocked, setIsSlugLocked] = React.useState(true)
+  const reservationUrl = typeof window !== 'undefined' ? `${window.location.origin}/reserva/${editSlug}` : ''
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl">
@@ -130,35 +135,79 @@ export default function ConfigTab({
                 />
               </div>
 
-              {/* Link de Reserva Dinámico Pro */}
-              <div className="bg-emerald-600/5 border border-emerald-600/10 rounded-3xl p-6 lg:p-8 space-y-5 shadow-inner">
-                 <label className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500 flex items-center gap-2">
-                   <Globe className="w-3 h-3" /> Tu Link Profesional de Reservas
-                 </label>
-                 <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1 bg-zinc-950/80 border border-zinc-800 rounded-xl px-6 py-5 text-emerald-500 font-black text-sm md:text-base truncate shadow-inner tracking-tighter">
-                       {reservationUrl}
+              {/* Link de Reserva Dinámico Pro con Bloqueo de Seguridad */}
+              <div className={`bg-zinc-950/50 border ${isSlugLocked ? 'border-zinc-800' : 'border-amber-500/30'} rounded-3xl p-6 lg:p-8 space-y-6 shadow-inner transition-all duration-500`}>
+                 <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-2">
+                      <Globe className="w-3 h-3" /> Identificador de URL (Slug)
+                    </label>
+                    <button 
+                      type="button"
+                      onClick={() => setIsSlugLocked(!isSlugLocked)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-tighter transition-all ${isSlugLocked ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-amber-600 text-black shadow-lg shadow-amber-900/40'}`}
+                    >
+                      {isSlugLocked ? (
+                        <>🔓 DESBLOQUEAR EDICIÓN</>
+                      ) : (
+                        <>🔒 BLOQUEAR CAMPO</>
+                      )}
+                    </button>
+                 </div>
+
+                 <div className="space-y-4">
+                    <div className="relative group">
+                       <input 
+                          value={editSlug}
+                          disabled={isSlugLocked}
+                          onChange={(e) => setEditSlug(e.target.value.toLowerCase().trim().replace(/\s+/g, '-'))}
+                          className={`w-full bg-zinc-950 border ${isSlugLocked ? 'border-zinc-800 text-zinc-600' : 'border-amber-600/50 text-amber-500'} rounded-xl px-6 py-5 font-black text-base md:text-lg transition-all outline-none tracking-tighter sm:pr-24 cursor-text`}
+                          placeholder="tu-barberia"
+                       />
+                       <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-800 uppercase hidden sm:block italic">URL PERMANENTE</span>
                     </div>
-                    <div className="flex gap-3">
-                       <button 
-                          type="button"
-                          onClick={() => {
-                              navigator.clipboard.writeText(reservationUrl)
-                              alert('✅ Link de reserva copiado')
-                           }}
-                          className="flex-1 sm:flex-none p-5 bg-emerald-600 text-black rounded-xl hover:bg-emerald-500 transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
-                          title="Copiar Link"
-                       >
-                          <Copy className="w-6 h-6" />
-                       </button>
-                       <button 
-                          type="button"
-                          onClick={onShare}
-                          className="flex-1 sm:flex-none p-5 bg-zinc-800 text-white rounded-xl hover:bg-zinc-700 transition-all active:scale-95 border border-zinc-700/50"
-                          title="Compartir"
-                       >
-                          <Share2 className="w-6 h-6" />
-                       </button>
+
+                    {!isSlugLocked && (
+                      <div className="bg-red-950/20 border border-red-900/30 p-4 rounded-xl animate-in zoom-in-95 duration-300">
+                        <div className="flex items-start gap-3">
+                           <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                           <p className="text-[10px] sm:text-xs text-red-200 font-bold leading-relaxed uppercase tracking-tight">
+                              <span className="text-red-500 block mb-1">⚠️ ¡ATENCIÓN CRÍTICA!</span>
+                              Si cambiás este identificador, todos tus códigos QR actuales y links compartidos en Instagram o WhatsApp 
+                              <span className="text-red-500 underline mx-1">DEJARÁN DE FUNCIONAR</span> 
+                              inmediatamente.
+                           </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-2 border-t border-white/5">
+                       <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-3 ml-1">Tu Link Actual:</p>
+                       <div className="flex flex-col sm:flex-row gap-4">
+                          <div className="flex-1 bg-zinc-950/80 border border-zinc-800 rounded-xl px-6 py-4 text-emerald-500 font-black text-sm md:text-base truncate shadow-inner tracking-tighter opacity-80">
+                             {reservationUrl}
+                          </div>
+                          <div className="flex gap-3">
+                             <button 
+                                type="button"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(reservationUrl)
+                                    toast.success('✅ Link de reserva copiado')
+                                 }}
+                                className="flex-1 sm:flex-none px-6 bg-emerald-600 text-black rounded-xl hover:bg-emerald-500 transition-all active:scale-95 shadow-lg shadow-emerald-900/20 flex items-center justify-center"
+                                title="Copiar Link"
+                             >
+                                <Copy className="w-5 h-5" />
+                             </button>
+                             <button 
+                                type="button"
+                                onClick={onShare}
+                                className="flex-1 sm:flex-none px-6 bg-zinc-800 text-white rounded-xl hover:bg-zinc-700 transition-all active:scale-95 border border-zinc-700/50 flex items-center justify-center"
+                                title="Compartir"
+                             >
+                                <Share2 className="w-5 h-5" />
+                             </button>
+                          </div>
+                       </div>
                     </div>
                  </div>
               </div>
