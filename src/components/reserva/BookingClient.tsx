@@ -274,7 +274,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
       
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-900/10 rounded-full blur-[120px]" />
       
-      <header className="mb-4 text-center relative z-10 px-4 pt-2 w-full max-w-xl">
+      <header className="mb-4 text-center relative z-10 px-4 pt-2 w-full max-w-xl md:max-w-4xl">
         <div className="flex flex-row items-center justify-center gap-3 mb-2">
           <div className="w-10 h-10 md:w-16 md:h-16 bg-zinc-900 rounded-full border border-amber-600/20 p-0.5 shadow-2xl overflow-hidden flex items-center justify-center relative">
             <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden relative">
@@ -313,7 +313,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
         </div>
       </header>
 
-      <main className="w-full max-w-xl md:max-w-2xl relative z-10 px-2 sm:px-0 pb-12">
+      <main className="w-full max-w-xl md:max-w-4xl relative z-10 px-2 sm:px-0 pb-12">
         <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-4 md:p-6 rounded-[2rem] shadow-2xl overflow-hidden">
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -426,7 +426,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   }
 
                   return (
-                    <div className="grid grid-cols-5 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar border-t border-zinc-800/30 pt-3">
+                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 md:gap-3 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar border-t border-zinc-800/30 pt-4">
                       {displaySlots.map((slot) => {
                           const isSelected = horaSeleccionada === slot
                           return (
