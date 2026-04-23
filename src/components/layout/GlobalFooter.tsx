@@ -7,7 +7,7 @@ export function GlobalFooter() {
 
   return (
     <>
-      <footer className="w-full py-8 text-center flex flex-col items-center justify-center gap-2 mt-auto shrink-0 relative z-10 px-4">
+      <footer className="w-full py-4 text-center flex flex-col items-center justify-center gap-1.5 shrink-0 relative z-10 px-4">
         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest italic">
           Barberiapp • Developed by Franco Lucero
         </p>

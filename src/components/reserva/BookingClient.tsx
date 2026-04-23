@@ -312,7 +312,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
         </div>
       </header>
 
-      <main className="w-full max-w-xl md:max-w-2xl relative z-10 px-2 sm:px-0">
+      <main className="w-full max-w-xl md:max-w-2xl relative z-10 px-2 sm:px-0 pb-12">
         <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-4 md:p-6 rounded-[2rem] shadow-2xl overflow-hidden">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -449,13 +449,13 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
             <button disabled={loading || !horaSeleccionada || !isValidPhone} type="submit" className="w-full py-3.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-black text-sm rounded-xl transition-all shadow-lg disabled:opacity-30 disabled:grayscale flex items-center justify-center gap-2 mt-2">
               {loading ? <div className="w-6 h-6 border-4 border-black/30 border-t-black rounded-full animate-spin" /> : 'CONFIRMAR RESERVA'}
             </button>
+            
+            <div className="pt-2">
+              <GlobalFooter />
+            </div>
           </form>
         </div>
       </main>
-      
-      <div className="pb-16 pt-4">
-        <GlobalFooter />
-      </div>
     </div>
   )
 }
