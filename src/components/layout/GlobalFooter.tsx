@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 export function GlobalFooter() {
   const [showLegal, setShowLegal] = useState(false)
@@ -19,41 +20,44 @@ export function GlobalFooter() {
         </button>
       </footer>
 
-      {showLegal && (
-        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative">
-            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter mb-4">
-              Términos de Uso y Privacidad
+      {showLegal && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-zinc-900 border border-white/10 rounded-[2rem] p-6 md:p-10 max-w-lg w-full shadow-2xl relative animate-in zoom-in-95 fade-in duration-300">
+            <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-6 underline decoration-amber-500 underline-offset-8">
+              Términos y Privacidad
             </h2>
-            <div className="text-zinc-400 text-sm space-y-4 mb-8">
+            <div className="text-zinc-400 text-xs md:text-sm space-y-4 mb-8 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
               <p>
-                <strong>Propiedad Intelectual:</strong> Esta plataforma, incluyendo su código, 
+                <strong className="text-amber-500 uppercase text-[10px] tracking-widest block mb-1">Propiedad Intelectual</strong>
+                Esta plataforma, incluyendo su código, 
                 diseño, marca Barberiapp y la arquitectura de software, son propiedad exclusiva de 
                 Franco Lucero ("Desarrollador"). La suscripción al servicio (SaaS) otorga 
                 únicamente una licencia de uso revocable. Queda estrictamente prohibida su copia, 
                 reventa o ingeniería inversa.
               </p>
               <p>
-                <strong>Protección de Datos:</strong> Los datos de clientes registrados (nombres y 
+                <strong className="text-amber-500 uppercase text-[10px] tracking-widest block mb-1">Protección de Datos</strong>
+                Los datos de clientes registrados (nombres y 
                 teléfonos) pertenecen exclusivamente a la barbería suscripta. Barberiapp provee la 
                 infraestructura en la nube pero no vende, cede ni utiliza la base de datos de 
                 terceros. La seguridad operativa está garantizada mediante protocolos estándar 
                 de la industria, mas el Desarrollador no asume responsabilidad directa por fugas de 
                 datos causadas por negligencia en el manejo de credenciales del negocio.
               </p>
-              <p>
+              <p className="italic text-[10px]">
                 Al utilizar la plataforma, la Barbería acepta estas condiciones como 
                 contrato de servicio vinculante.
               </p>
             </div>
             <button 
               onClick={() => setShowLegal(false)}
-              className="w-full py-3.5 bg-amber-600 hover:bg-amber-500 text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all"
+              className="w-full py-4 bg-amber-600 hover:bg-amber-500 text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-lg active:scale-95"
             >
               Entendido y Aceptado
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
