@@ -360,7 +360,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
             {/* Selector de Horas */}
             {showSlots && (
               <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">
+                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 mb-3">
                   <Clock className="w-3 h-3" /> Seleccioná el Horario
                 </label>
                 
@@ -374,12 +374,12 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     </div>
                   </div>
                 ) : diaCerrado ? (
-                  <div className="bg-red-600/5 border border-red-900/30 p-4 rounded-xl text-center animate-in fade-in duration-500">
-                    <div className="w-10 h-10 bg-red-900/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <div className="bg-red-600/5 border border-red-900/20 p-3 rounded-xl flex items-center gap-3 text-left animate-in fade-in duration-500">
+                    <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                    <div className="flex flex-col">
+                      <h3 className="text-[10px] font-black uppercase tracking-widest italic leading-none mb-1">Agenda No Programada</h3>
+                      <p className="text-zinc-600 text-[8px] font-bold italic leading-tight">No hay turnos disponibles para esta fecha aún.</p>
                     </div>
-                    <h3 className="text-[11px] font-black uppercase tracking-widest italic mb-1">Agenda No Programada</h3>
-                    <p className="text-zinc-600 text-[9px] font-medium leading-tight italic max-w-xs mx-auto">No hay turnos disponibles para esta fecha aún.</p>
                   </div>
                 ) : (() => {
                   const isToday = fecha === new Intl.DateTimeFormat('en-CA', { 
@@ -406,12 +406,12 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
 
                   if (isToday && displaySlots.length === 0) {
                     return (
-                      <div className="bg-amber-500/5 border border-amber-500/10 p-4 rounded-xl text-center animate-in fade-in duration-500">
-                        <div className="w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <CheckCircle2 className="w-5 h-5 text-amber-500" />
+                      <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl flex items-center gap-3 text-left animate-in fade-in duration-500">
+                        <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0" />
+                        <div className="flex flex-col">
+                          <h3 className="text-[10px] font-black uppercase tracking-widest italic leading-none mb-1">¡Día Completado!</h3>
+                          <p className="text-zinc-500 text-[8px] font-bold italic leading-tight">Ya no quedan turnos disponibles para hoy.</p>
                         </div>
-                        <h3 className="text-[11px] font-black uppercase tracking-widest italic mb-1">¡Día Completado!</h3>
-                        <p className="text-zinc-500 text-[9px] font-medium leading-tight italic max-w-xs mx-auto">Ya no quedan turnos disponibles para hoy.</p>
                       </div>
                     )
                   }
