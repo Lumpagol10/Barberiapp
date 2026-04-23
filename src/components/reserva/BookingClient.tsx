@@ -266,7 +266,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 flex flex-col items-center justify-center p-6 relative overflow-x-hidden pb-32">
+    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 flex flex-col items-center p-4 relative overflow-x-hidden pb-12">
       {/* Optimizaciones de Red para Google Maps */}
       <link rel="preconnect" href="https://maps.google.com" />
       <link rel="preconnect" href="https://maps.gstatic.com" />
@@ -274,9 +274,9 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
       
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-900/10 rounded-full blur-[120px]" />
       
-      <header className="mb-2 md:mb-8 text-center relative z-10 px-4 pt-0">
-        <div className="flex items-center justify-center mb-2 md:mb-4">
-          <div className="w-14 h-14 md:w-28 md:h-28 bg-zinc-900 rounded-full border border-amber-600/20 p-1 shadow-2xl overflow-hidden flex items-center justify-center relative group">
+      <header className="mb-4 text-center relative z-10 px-4 pt-2 w-full max-w-xl">
+        <div className="flex flex-row items-center justify-center gap-3 mb-2">
+          <div className="w-10 h-10 md:w-16 md:h-16 bg-zinc-900 rounded-full border border-amber-600/20 p-0.5 shadow-2xl overflow-hidden flex items-center justify-center relative">
             <div className="w-full h-full rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden relative">
               {barberConfig.logo_url ? (
                 <img 
@@ -285,16 +285,17 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   className="w-full h-full object-cover rounded-full" 
                 />
               ) : (
-                <Store className="w-6 h-6 md:w-12 md:h-12 text-zinc-800" />
+                <Store className="w-5 h-5 md:w-8 md:h-8 text-zinc-800" />
               )}
             </div>
           </div>
+          <h1 className="text-xl md:text-3xl font-black tracking-tighter uppercase break-words">
+            {barberConfig.nombre_barberia}
+          </h1>
         </div>
-        <h1 className="text-xl md:text-5xl font-black tracking-tighter uppercase mb-1 break-words px-2">
-          {barberConfig.nombre_barberia}
-        </h1>
-        <div className="flex flex-col items-center gap-1">
-          <p className="text-zinc-600 tracking-widest text-[7px] md:text-[8px] font-bold uppercase leading-relaxed">
+
+        <div className="flex flex-col items-center gap-1.5">
+          <p className="text-zinc-600 tracking-widest text-[7px] md:text-[8px] font-bold uppercase">
             RESERVAS ONLINE | BARBERIAPP
           </p>
           
@@ -303,9 +304,9 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
               href={barberConfig.google_maps_link} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-2 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-500 hover:text-amber-500 rounded-full text-[8px] font-black uppercase tracking-widest transition-all duration-200 active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 text-zinc-500 hover:text-amber-500 rounded-full text-[7px] font-black uppercase tracking-widest transition-all shadow-xl"
             >
-              <Globe className="w-3 h-3" />
+              <Globe className="w-2.5 h-2.5" />
               UBICACIÓN
             </a>
           )}
@@ -450,7 +451,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
               {loading ? <div className="w-6 h-6 border-4 border-black/30 border-t-black rounded-full animate-spin" /> : 'CONFIRMAR RESERVA'}
             </button>
             
-            <div className="pt-2">
+            <div className="pt-0.5">
               <GlobalFooter />
             </div>
           </form>
