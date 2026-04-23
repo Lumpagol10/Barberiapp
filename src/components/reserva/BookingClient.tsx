@@ -289,7 +289,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
               )}
             </div>
           </div>
-          <h1 className="text-xl md:text-3xl font-black tracking-tighter uppercase break-words">
+          <h1 className="text-xl md:text-5xl font-black tracking-tighter uppercase break-words">
             {barberConfig.nombre_barberia}
           </h1>
         </div>
@@ -318,16 +318,16 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Nombre</label>
+                <label className="text-[10px] md:text-[13px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Nombre</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
-                  <input required value={nombre} onChange={(e) => setNombre(e.target.value)} type="text" placeholder="Juan Pérez" className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-3 pl-10 pr-3 outline-none text-white transition-all text-xs" />
+                  <input required value={nombre} onChange={(e) => setNombre(e.target.value)} type="text" placeholder="Juan Pérez" className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-3 md:py-4 pl-10 pr-3 outline-none text-white transition-all text-xs md:text-base" />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Teléfono</label>
+                <label className="text-[10px] md:text-[13px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Teléfono</label>
                 <div className="flex items-center bg-zinc-800/30 border border-zinc-700/30 focus-within:border-amber-500/50 rounded-xl overflow-hidden transition-all">
-                  <div className="bg-zinc-800 px-3 py-3 border-r border-zinc-700/30 text-zinc-600 font-bold text-[10px]">
+                  <div className="bg-zinc-800 px-3 py-3 md:py-4 border-r border-zinc-700/30 text-zinc-600 font-bold text-[10px] md:text-sm">
                     +54
                   </div>
                   <input 
@@ -336,14 +336,14 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     onChange={(e) => setPhoneSuffix(e.target.value.replace(/\D/g, ''))} 
                     type="tel" 
                     placeholder="2634XXXXXX" 
-                    className={`flex-1 min-w-0 bg-transparent py-3 px-3 outline-none text-white font-bold placeholder:text-zinc-700 text-xs border-l ${phoneSuffix.length > 0 && !isValidPhone ? 'border-amber-500/30 text-amber-200' : 'border-zinc-700/50'}`}
+                    className={`flex-1 min-w-0 bg-transparent py-3 md:py-4 px-3 outline-none text-white font-bold placeholder:text-zinc-700 text-xs md:text-base border-l ${phoneSuffix.length > 0 && !isValidPhone ? 'border-amber-500/30 text-amber-200' : 'border-zinc-700/50'}`}
                   />
                 </div>
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Fecha de Reserva</label>
+              <label className="text-[10px] md:text-[13px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Fecha de Reserva</label>
               <div className="relative flex items-center">
                 <input 
                   type="date" 
@@ -352,7 +352,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                   onChange={(e) => handleDateChange(e.target.value)}
                   min={new Date().toLocaleDateString('en-CA')}
                   max={new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA')}
-                  className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-3 px-4 outline-none text-white font-bold transition-all [color-scheme:dark] relative [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10 text-xs" 
+                  className="w-full bg-zinc-800/30 border border-zinc-700/30 focus:border-amber-500/50 rounded-xl py-3 md:py-4 px-4 outline-none text-white font-bold transition-all [color-scheme:dark] relative [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10 text-xs md:text-base" 
                 />
                 <CalendarIcon className="absolute right-4 w-4 h-4 text-amber-500 z-0" />
               </div>
@@ -361,8 +361,8 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
             {/* Selector de Horas */}
             {showSlots && (
               <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 mb-3">
-                  <Clock className="w-3 h-3" /> Seleccioná el Horario
+                <label className="flex items-center gap-2 text-[10px] md:text-sm font-black uppercase tracking-[0.2em] text-zinc-500 ml-1 mb-3">
+                  <Clock className="w-3 h-3 md:w-4 md:h-4" /> Seleccioná el Horario
                 </label>
                 
                 {isFetchingAvailability ? (
@@ -375,11 +375,11 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                     </div>
                   </div>
                 ) : diaCerrado ? (
-                  <div className="bg-red-600/5 border border-red-900/20 p-3 rounded-xl flex items-center gap-3 text-left animate-in fade-in duration-500">
-                    <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                  <div className="bg-red-600/5 border border-red-900/20 p-3 md:p-6 rounded-xl flex items-center gap-3 text-left animate-in fade-in duration-500">
+                    <AlertTriangle className="w-5 h-5 md:w-8 md:h-8 text-red-500 shrink-0" />
                     <div className="flex flex-col">
-                      <h3 className="text-[10px] font-black uppercase tracking-widest italic leading-none mb-1">Agenda No Programada</h3>
-                      <p className="text-zinc-600 text-[8px] font-bold italic leading-tight">No hay turnos disponibles para esta fecha aún.</p>
+                      <h3 className="text-[10px] md:text-base font-black uppercase tracking-widest italic leading-none mb-1">Agenda No Programada</h3>
+                      <p className="text-zinc-600 text-[8px] md:text-sm font-bold italic leading-tight">No hay turnos disponibles para esta fecha aún.</p>
                     </div>
                   </div>
                 ) : (() => {
@@ -407,11 +407,11 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
 
                   if (isToday && displaySlots.length === 0) {
                     return (
-                      <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl flex items-center gap-3 text-left animate-in fade-in duration-500">
-                        <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0" />
+                      <div className="bg-amber-500/5 border border-amber-500/10 p-3 md:p-6 rounded-xl flex items-center gap-3 text-left animate-in fade-in duration-500">
+                        <CheckCircle2 className="w-5 h-5 md:w-8 md:h-8 text-amber-500 shrink-0" />
                         <div className="flex flex-col">
-                          <h3 className="text-[10px] font-black uppercase tracking-widest italic leading-none mb-1">¡Día Completado!</h3>
-                          <p className="text-zinc-500 text-[8px] font-bold italic leading-tight">Ya no quedan turnos disponibles para hoy.</p>
+                          <h3 className="text-[10px] md:text-base font-black uppercase tracking-widest italic leading-none mb-1">¡Día Completado!</h3>
+                          <p className="text-zinc-500 text-[8px] md:text-sm font-bold italic leading-tight">Ya no quedan turnos disponibles para hoy.</p>
                         </div>
                       </div>
                     )
@@ -434,7 +434,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
                               key={slot} 
                               type="button" 
                               onClick={() => setHoraSeleccionada(slot)} 
-                              className={`py-2 px-1 rounded-lg text-center text-[10px] font-bold transition-all border ${isSelected ? 'bg-amber-600 border-amber-500 text-black' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:border-amber-500/50'}`}
+                              className={`py-2 md:py-3 px-1 rounded-lg text-center text-[10px] md:text-sm font-bold transition-all border ${isSelected ? 'bg-amber-600 border-amber-500 text-black' : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:border-amber-500/50'}`}
                             >
                               {slot}
                             </button>
@@ -447,8 +447,8 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
               </div>
             )}
 
-            <button disabled={loading || !horaSeleccionada || !isValidPhone} type="submit" className="w-full py-3.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-black text-sm rounded-xl transition-all shadow-lg disabled:opacity-30 disabled:grayscale flex items-center justify-center gap-2 mt-2">
-              {loading ? <div className="w-6 h-6 border-4 border-black/30 border-t-black rounded-full animate-spin" /> : 'CONFIRMAR RESERVA'}
+            <button disabled={loading || !horaSeleccionada || !isValidPhone} type="submit" className="w-full py-4 md:py-6 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-black font-black text-sm md:text-2xl rounded-xl transition-all shadow-lg disabled:opacity-30 disabled:grayscale flex items-center justify-center gap-2 mt-2">
+              {loading ? <div className="w-6 h-6 md:w-8 md:h-8 border-4 border-black/30 border-t-black rounded-full animate-spin" /> : 'CONFIRMAR RESERVA'}
             </button>
             
             <div className="pt-0.5">
