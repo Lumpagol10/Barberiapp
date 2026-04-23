@@ -315,7 +315,7 @@ export default function BookingClient({ initialBarberConfig }: BookingClientProp
 
       <main className="w-full max-w-xl md:max-w-2xl relative z-10 px-2 sm:px-0 pb-12">
         <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/5 p-4 md:p-6 rounded-[2rem] shadow-2xl overflow-hidden">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Nombre</label>
