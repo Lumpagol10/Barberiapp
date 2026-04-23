@@ -13,6 +13,7 @@ export function GlobalFooter() {
           Barberiapp • Developed by Franco Lucero
         </p>
         <button 
+          type="button"
           onClick={() => setShowLegal(true)}
           className="text-[9px] text-zinc-700 hover:text-amber-500 underline underline-offset-4 transition-colors"
         >
@@ -21,12 +22,12 @@ export function GlobalFooter() {
       </footer>
 
       {showLegal && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6">
-          <div className="bg-zinc-900 border border-white/10 rounded-[2rem] p-6 md:p-10 max-w-lg w-full shadow-2xl relative animate-in zoom-in-95 fade-in duration-300">
-            <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-6 underline decoration-amber-500 underline-offset-8">
+        <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+          <div className="bg-zinc-900 border border-white/10 rounded-[2rem] p-5 md:p-10 max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl relative animate-in zoom-in-95 fade-in duration-300">
+            <h2 className="text-xl md:text-2xl font-black text-white uppercase italic tracking-tighter mb-4 underline decoration-amber-500 underline-offset-8 shrink-0">
               Términos y Privacidad
             </h2>
-            <div className="text-zinc-400 text-xs md:text-sm space-y-4 mb-8 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="text-zinc-400 text-xs md:text-sm space-y-4 mb-6 overflow-y-auto pr-2 custom-scrollbar">
               <p>
                 <strong className="text-amber-500 uppercase text-[10px] tracking-widest block mb-1">Propiedad Intelectual</strong>
                 Esta plataforma, incluyendo su código, 
@@ -50,8 +51,9 @@ export function GlobalFooter() {
               </p>
             </div>
             <button 
+              type="button"
               onClick={() => setShowLegal(false)}
-              className="w-full py-4 bg-amber-600 hover:bg-amber-500 text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-lg active:scale-95"
+              className="w-full py-3.5 bg-amber-600 hover:bg-amber-500 text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-lg active:scale-95 shrink-0 mt-auto"
             >
               Entendido y Aceptado
             </button>
